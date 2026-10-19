@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/book_card.dart';
+import 'bookform_screen.dart';
 
 class BookListScreen extends StatefulWidget {
   const BookListScreen({super.key});
@@ -10,7 +11,7 @@ class BookListScreen extends StatefulWidget {
 
 class _BookListScreenState extends State<BookListScreen> {
   final TextEditingController searchController = TextEditingController();
-
+  int characterCount = 0;
   //mock data
   final List<Map<String, dynamic>> books = [
     {'title': 'Clean Code', 'author': 'Robert C. Martin', 'copies': 5},
@@ -30,6 +31,11 @@ class _BookListScreenState extends State<BookListScreen> {
     // E2:
     // Khởi tạo danh sách hiển thị ban đầu.
     filteredBooks = List.from(books);
+
+    searchController.addListener(() {
+      characterCount = searchController.text.length;
+      setState(() {});
+    });
   }
 
   // E3:
@@ -65,11 +71,32 @@ class _BookListScreenState extends State<BookListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+        // 1: Tạo await Navigator.push
+        final newBook = await Navigator.push<Map<String, dynamic>>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const BookFormScreen(),
+          ),
+        );
+        // 2. Nếu newBook != null thì thêm vào books 
+        // và cập nhật filteredBooks trong setState().
+        if (newBook != null) {
+          setState(() {
+            books.add(newBook);
+            filteredBooks = List.from(books);
+          });
+        }
+      },
+        child: const Icon(Icons.add),
+      ),
+      // 1: Thêm thuộc tính title với giá trị 'Librio'.
       appBar: AppBar(title: const Text('Librio')),
+      // 2: Tạo LayoutBuilder để xử lý giao diện trên các kích thước màn hình khác nhau.
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // 1: Dựa vào constraints.maxWidth
-          // để xác định isWide (ngưỡng 600px).
+          // 1: Dựa vào constraints.maxWidth để xác định isWide (ngưỡng 600px).
           final isWide = constraints.maxWidth >= 600;
 
           return Padding(
@@ -116,6 +143,8 @@ class _BookListScreenState extends State<BookListScreen> {
                       ),
                     ],
                   ),
+                // Thông báo số ký tự
+                Text('Số ký tự: $characterCount'),
                 const SizedBox(height: 12),
                 // 3: Expanded chứa:
                 // - Thông báo nếu filteredBooks rỗng.
