@@ -12,6 +12,7 @@ class BookListScreen extends StatefulWidget {
 class _BookListScreenState extends State<BookListScreen> {
   final TextEditingController searchController = TextEditingController();
   int characterCount = 0;
+
   //mock data
   final List<Map<String, dynamic>> books = [
     {'title': 'Clean Code', 'author': 'Robert C. Martin', 'copies': 5},
@@ -23,6 +24,21 @@ class _BookListScreenState extends State<BookListScreen> {
   // Tạo biến filteredBooks để lưu danh sách sau lọc.
   // Dùng late vì sẽ gán giá trị ban đầu trong initState().
   late List<Map<String, dynamic>> filteredBooks;
+  List<Map<String, dynamic>> filterBooks(String keyword) {
+    final normalizedKeyword = keyword.trim().toLowerCase();
+
+    // Nếu normalizedKeyword rỗng:
+    // Trả về toàn bộ books.
+    if (normalizedKeyword.isEmpty) {
+      return List.from(books); // Return full list if no keyword
+    }
+    // Nếu có từ khóa:
+    // Dùng books.where(...) để lọc theo title.
+    return books.where((book) {
+      final title = book['title'] as String;
+      return title.toLowerCase().contains(normalizedKeyword);
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -46,19 +62,7 @@ class _BookListScreenState extends State<BookListScreen> {
   // cập nhật UI bằng setState().
   void searchBooks() {
     setState(() {
-      // Bỏ khoảng trắng đầu/cuối và chuyển về chữ thường
-      // để tìm kiếm không phân biệt chữ hoa, chữ thường.
-      String keyword = searchController.text.trim().toLowerCase();
-      //ô search không có gì
-      if (keyword.isEmpty) {
-        filteredBooks = List.from(books);
-      } else {
-        //ô search có gì thì tìm sách theo title
-        filteredBooks = books.where((book) {
-          final title = book['title'] as String;
-          return title.toLowerCase().contains(keyword);
-        }).toList();
-      }
+      filteredBooks = filterBooks(searchController.text);
     });
   }
 
@@ -80,12 +84,13 @@ class _BookListScreenState extends State<BookListScreen> {
             builder: (context) => const BookFormScreen(),
           ),
         );
+        if (!mounted) return;
         // 2. Nếu newBook != null thì thêm vào books 
         // và cập nhật filteredBooks trong setState().
         if (newBook != null) {
           setState(() {
             books.add(newBook);
-            filteredBooks = List.from(books);
+            filteredBooks = filterBooks(searchController.text);
           });
         }
       },
