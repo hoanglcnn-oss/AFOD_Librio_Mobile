@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/auth/data/fake_auth_repository.dart';
 import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/register_screen.dart';
 
 class DofaApp extends StatelessWidget {
   const DofaApp({super.key});

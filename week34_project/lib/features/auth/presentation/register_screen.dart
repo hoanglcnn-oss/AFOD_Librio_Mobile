@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../bloc/auth_bloc.dart';
+import '../data/fake_auth_repository.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -22,7 +27,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tạo tài khoản Librobe')),
+      appBar: AppBar(
+        title: const Text('Tạo tài khoản Librobe'),
+        automaticallyImplyLeading: false,
+      ),
 
       // Body có thể cuộn khi bàn phím mở
       body: SingleChildScrollView(
@@ -32,7 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             children: [
               const Text(
-                'Tạo tài khoản Librobe',
+                'Đăng Ký',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 40),
@@ -175,6 +183,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   }
                 },
                 child: const Text('Đăng ký'),
+              ),
+
+              const SizedBox(height: 16),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Đã có tài khoản?'),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+
+                    child: const Text('Đăng nhập'),
+                  ),
+                ],
               ),
             ],
           ),
