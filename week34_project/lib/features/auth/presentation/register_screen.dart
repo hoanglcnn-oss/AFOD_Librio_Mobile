@@ -9,6 +9,15 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return 'Vui lòng nhập số điện thoại';
                   }
 
-                  // TODO: Cho phép 0 + 9 chữ số
-                  // hoặc 84 + 9 chữ số.
+                  // Cho phép 0 + 9 chữ số hoặc 84 + 9 chữ số.
                   final phoneRegex = RegExp(r'^(0|84)\d{9}$');
 
                   if (!phoneRegex.hasMatch(phone)) {
@@ -94,13 +102,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
 
               TextFormField(
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Mật khẩu'),
-
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  labelText: 'Mật khẩu',
+                  suffixIcon: IconButton(
+                    tooltip: _obscurePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Mật khẩu không được rỗng';
+                    return 'Vui lòng nhập mật khẩu';
                   }
+
+                  if (value.length < 8) {
+                    return 'Mật khẩu phải có ít nhất 8 ký tự';
+                  }
+
                   return null;
                 },
               ),
@@ -108,14 +136,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 20),
 
               TextFormField(
-                obscureText: true,
-                decoration: const InputDecoration(
+                obscureText: _obscureConfirmPassword,
+                decoration: InputDecoration(
                   labelText: 'Xác nhận mật khẩu',
+                  suffixIcon: IconButton(
+                    tooltip: _obscureConfirmPassword
+                        ? 'Hiện mật khẩu'
+                        : 'Ẩn mật khẩu',
+                    icon: Icon(
+                      _obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                      });
+                    },
+                  ),
                 ),
-
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Xác nhận mật khẩu không được rỗng';
+                  }
+                  if (value != _passwordController.text) {
+                    return 'Mật khẩu xác nhận không khớp';
                   }
                   return null;
                 },
