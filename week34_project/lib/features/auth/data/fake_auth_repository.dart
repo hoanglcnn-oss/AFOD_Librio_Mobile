@@ -12,4 +12,14 @@ class FakeAuthRepository implements AuthRepository {
 
     throw Exception('Email hoặc mật khẩu không đúng');
   }
+
+  @override
+  Future<void> register({
+    required String fullName,
+    required String phone,
+    required String email,
+    required String password,
+  }) async {
+    await Future.delayed(const Duration(seconds: 1));
+  }
 }

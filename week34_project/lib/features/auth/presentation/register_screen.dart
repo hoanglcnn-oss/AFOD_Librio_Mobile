@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -8,6 +13,9 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _fullNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -16,6 +24,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     _passwordController.dispose();
+    _fullNameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -53,6 +64,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 40),
 
                         TextFormField(
+                          controller: _fullNameController,
                           decoration: const InputDecoration(
                             labelText: 'Họ và tên',
                           ),
@@ -68,11 +80,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 20),
 
                         TextFormField(
+                          controller: _phoneController,
                           decoration: const InputDecoration(
                             labelText: 'Số điện thoại',
                           ),
                           keyboardType: TextInputType.phone,
-                          // SỐ ĐIỆN THOẠI — thay đúng validator hiện tại
+
                           validator: (value) {
                             final phone = value?.trim() ?? '';
 
@@ -80,11 +93,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               return 'Vui lòng nhập số điện thoại';
                             }
 
-                            // Cho phép 0 + 9 chữ số hoặc 84 + 9 chữ số.
-                            final phoneRegex = RegExp(r'^(0|84)\d{9}$');
+                            final phoneRegex = RegExp(r'^0[35789]\d{8}$');
 
                             if (!phoneRegex.hasMatch(phone)) {
-                              return 'SĐT phải có 10 chữ số bắt đầu bằng 0 hoặc 11 chữ số bắt đầu bằng 84';
+                              return 'SĐT phải có 10 chữ số với đầu số 03, 05, 07, 08 hoặc 09';
                             }
 
                             return null;
@@ -94,6 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 20),
 
                         TextFormField(
+                          controller: _emailController,
                           decoration: const InputDecoration(labelText: 'Email'),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
@@ -190,16 +203,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         const SizedBox(height: 20),
 
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                debugPrint('Form hợp lệ - chưa gọi API');
-                              }
-                            },
-                            child: const Text('Đăng ký'),
-                          ),
+                        BlocConsumer<AuthBloc, AuthState>(
+                          listener: (context, state) {
+                            if (state is AuthSuccess) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.message)),
+                              );
+
+                              Navigator.pop(context);
+                            }
+
+                            if (state is AuthFailure) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(state.message)),
+                              );
+                            }
+                          },
+                          builder: (context, state) {
+                            final isLoading = state is AuthLoading;
+
+                            return SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: isLoading
+                                    ? null
+                                    : () {
+                                        if (_formKey.currentState!.validate()) {
+                                          context.read<AuthBloc>().add(
+                                            RegisterRequested(
+                                              fullName: _fullNameController.text
+                                                  .trim(),
+                                              phone: _phoneController.text
+                                                  .trim(),
+                                              email: _emailController.text
+                                                  .trim(),
+                                              password:
+                                                  _passwordController.text,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                child: isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text('Đăng ký'),
+                              ),
+                            );
+                          },
                         ),
 
                         const SizedBox(height: 16),

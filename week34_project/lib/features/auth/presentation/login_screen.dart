@@ -133,6 +133,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 SnackBar(content: Text(state.message)),
                               );
                             }
+                            if (ModalRoute.of(context)?.isCurrent != true) {
+                              return;
+                            }
                           },
                           builder: (context, state) {
                             if (state is AuthLoading) {

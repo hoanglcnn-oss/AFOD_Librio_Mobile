@@ -1,8 +1,10 @@
 abstract class AuthRepository {
-  // Khai báo phương thức login()
-  // - nhận String email
-  // - nhận String password
-  // - trả Future<void>
-  // - không có phần thân hàm
   Future<void> login(String email, String password);
+
+  Future<void> register({
+    required String fullName,
+    required String phone,
+    required String email,
+    required String password,
+  });
 }
