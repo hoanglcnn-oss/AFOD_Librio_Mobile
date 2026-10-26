@@ -122,9 +122,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         BlocConsumer<AuthBloc, AuthState>(
                           listener: (context, state) {
-                            if (state is AuthSuccess) {
+                            if (state is AuthAuthenticated) {
+                              if (ModalRoute.of(context)?.isCurrent != true) {
+                                return;
+                              }
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.message)),
+                                SnackBar(
+                                  content: Text(
+                                    'Xin chào ${state.user.fullName}',
+                                  ),
+                                ),
                               );
                             }
 

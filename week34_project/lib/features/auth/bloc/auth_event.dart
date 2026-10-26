@@ -38,3 +38,7 @@ class RegisterRequested extends AuthEvent {
   @override
   List<Object?> get props => [fullName, phone, email, password];
 }
+
+class RestoreSessionRequested extends AuthEvent {
+  const RestoreSessionRequested();
+}

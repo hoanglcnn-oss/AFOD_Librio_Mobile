@@ -1,10 +1,15 @@
-abstract class AuthRepository {
-  Future<void> login(String email, String password);
+import 'models/auth_response.dart';
+import 'models/user_profile.dart';
 
-  Future<void> register({
+abstract class AuthRepository {
+  Future<AuthResponse> login(String email, String password);
+
+  Future<AuthResponse> register({
     required String fullName,
     required String phone,
     required String email,
     required String password,
   });
+
+  Future<UserProfile> getCurrentUser(String token);
 }

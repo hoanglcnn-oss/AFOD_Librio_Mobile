@@ -1,16 +1,20 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'auth_event.dart';
 import 'auth_state.dart';
 import '../data/auth_repository.dart';
+import '../../../core/storage/token_storage.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
-  AuthBloc({required this.authRepository}) : super(const AuthInitial()) {
-    // Đăng ký xử lý LoginRequested bằng on<LoginRequested>()
+  final TokenStorage tokenStorage;
+  AuthBloc({required this.authRepository, required this.tokenStorage})
+    : super(const AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<RegisterRequested>(_onRegisterRequested);
+    on<RestoreSessionRequested>(_onRestoreSessionRequested);
   }
 
   // Khi nhận LoginRequested:
@@ -20,13 +24,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading());
+
     try {
-      // Truyền email, password từ event.
-      await authRepository.login(event.email, event.password);
-      // Nếu không xảy ra exception:
-      emit(const AuthSuccess(message: 'Đăng nhập thành công'));
+      final response = await authRepository.login(event.email, event.password);
+
+      // Chỉ lưu JWT khi backend trả về đăng nhập thành công.
+      await tokenStorage.saveToken(response.accessToken);
+
+      // Chỉ authenticated sau khi lưu token thành công.
+      emit(AuthAuthenticated(user: response.user));
     } catch (error) {
-      // Sử dụng thông báo lỗi.
       emit(AuthFailure(message: _errorMessage(error)));
     }
   }
@@ -43,9 +50,44 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
       );
-      emit(const AuthSuccess(message: 'Đăng ký thành công'));
+      emit(const AuthRegisterSuccess());
     } catch (error) {
       emit(AuthFailure(message: _errorMessage(error)));
+    }
+  }
+
+  Future<void> _onRestoreSessionRequested(
+    RestoreSessionRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+
+    try {
+      final token = await tokenStorage.readToken();
+      if (token == null || token.isEmpty) {
+        emit(const AuthUnauthenticated());
+        return;
+      }
+
+      final user = await authRepository.getCurrentUser(token);
+      emit(AuthAuthenticated(user: user));
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        await tokenStorage.deleteToken();
+        emit(const AuthUnauthenticated());
+      } else {
+        emit(
+          const AuthSessionFailure(
+            message: 'Không thể kiểm tra phiên đăng nhập',
+          ),
+        );
+      }
+    } catch (error) {
+      emit(
+        const AuthSessionFailure(
+          message: 'Không thể khôi phục phiên đăng nhập',
+        ),
+      );
     }
   }
 

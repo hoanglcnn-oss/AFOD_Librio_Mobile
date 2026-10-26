@@ -205,9 +205,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         BlocConsumer<AuthBloc, AuthState>(
                           listener: (context, state) {
-                            if (state is AuthSuccess) {
+                            if (state is AuthRegisterSuccess) {
+                              if (ModalRoute.of(context)?.isCurrent != true) {
+                                return;
+                              }
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(state.message)),
+                                SnackBar(content: Text('Đăng ký thành công')),
                               );
 
                               Navigator.pop(context);

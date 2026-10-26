@@ -10,7 +10,6 @@ Future<void> main() async {
   );
 
   try {
-    // TODO 1:
     // Gửi GET request tới 'posts/999999'.
     // Lưu kết quả vào biến response.
     final response = await dio.get('posts/999999');

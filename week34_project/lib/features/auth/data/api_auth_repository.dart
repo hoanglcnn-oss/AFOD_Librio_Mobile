@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:week34_project/features/auth/data/models/user_profile.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/dio_client.dart';
 import 'auth_repository.dart';
+import 'models/auth_response.dart';
 
 class ApiAuthRepository implements AuthRepository {
   final Dio _dio;
@@ -10,21 +12,22 @@ class ApiAuthRepository implements AuthRepository {
   ApiAuthRepository({Dio? dio}) : _dio = dio ?? DioClient.dio;
 
   @override
-  Future<void> login(String email, String password) async {
-    await _dio.post(
+  Future<AuthResponse> login(String email, String password) async {
+    final response = await _dio.post(
       ApiConstants.login,
       data: {'identifier': email, 'password': password},
     );
+    return AuthResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
   @override
-  Future<void> register({
+  Future<AuthResponse> register({
     required String fullName,
     required String phone,
     required String email,
     required String password,
   }) async {
-    await _dio.post(
+    final response = await _dio.post(
       ApiConstants.register,
       data: {
         'fullName': fullName,
@@ -33,5 +36,16 @@ class ApiAuthRepository implements AuthRepository {
         'password': password,
       },
     );
+    return AuthResponse.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<UserProfile> getCurrentUser(String token) async {
+    final response = await _dio.get(
+      ApiConstants.me,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return UserProfile.fromJson(response.data as Map<String, dynamic>);
   }
 }

@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../features/auth/bloc/auth_bloc.dart';
+import '../features/auth/bloc/auth_event.dart';
+import '../features/auth/bloc/auth_state.dart';
 import '../features/auth/data/api_auth_repository.dart';
 import '../features/auth/presentation/login_screen.dart';
+import '../core/storage/token_storage.dart';
 
 class DofaApp extends StatelessWidget {
   const DofaApp({super.key});
@@ -12,7 +15,10 @@ class DofaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<AuthBloc>(
-      create: (context) => AuthBloc(authRepository: ApiAuthRepository()),
+      create: (context) => AuthBloc(
+        authRepository: ApiAuthRepository(),
+        tokenStorage: TokenStorage(),
+      )..add(const RestoreSessionRequested()),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         // builder: (context, child) {
@@ -77,8 +83,57 @@ class DofaApp extends StatelessWidget {
             errorStyle: const TextStyle(color: Color(0xFFBA1A1A), fontSize: 12),
           ),
         ),
-        home: const LoginScreen(),
+        home: const AuthGate(),
       ),
+    );
+  }
+}
+
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state is AuthAuthenticated) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Librio Mobile')),
+            body: Center(child: Text('Xin chào ${state.user.fullName}!')),
+          );
+        }
+
+        if (state is AuthSessionFailure) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(state.message),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<AuthBloc>().add(
+                        const RestoreSessionRequested(),
+                      );
+                    },
+                    child: const Text('Thử lại'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        if (state is AuthUnauthenticated ||
+            state is AuthRegisterSuccess ||
+            state is AuthFailure) {
+          return const LoginScreen();
+        }
+
+        // AuthInitial / AuthLoading
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
     );
   }
 }
