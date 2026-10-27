@@ -90,15 +90,41 @@ class DofaApp extends StatelessWidget {
   }
 }
 
-class AuthGate extends StatelessWidget {
+class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
   @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  late bool _isAuthenticated;
+
+  @override
+  void initState() {
+    super.initState();
+    _isAuthenticated = context.read<AuthBloc>().state is AuthAuthenticated;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
         if (state is AuthAuthenticated) {
-          return const MainScreen();
+          setState(() {
+            _isAuthenticated = true;
+          });
+        } else if (state is AuthUnauthenticated) {
+          setState(() {
+            _isAuthenticated = false;
+          });
+        }
+      },
+      builder: (context, state) {
+        if (state is AuthInitial || state is AuthRestoring) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
 
         if (state is AuthSessionFailure) {
@@ -123,14 +149,7 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-        if (state is AuthUnauthenticated ||
-            state is AuthRegisterSuccess ||
-            state is AuthFailure) {
-          return const LoginScreen();
-        }
-
-        // AuthInitial / AuthLoading
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return _isAuthenticated ? const MainScreen() : const LoginScreen();
       },
     );
   }

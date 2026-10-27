@@ -52,3 +52,7 @@ class AuthSessionFailure extends AuthState {
   @override
   List<Object?> get props => [message];
 }
+
+class AuthRestoring extends AuthState {
+  const AuthRestoring();
+}

@@ -81,7 +81,7 @@ void main() {
 
     final states = await statesFuture;
 
-    expect(states[0], isA<AuthLoading>());
+    expect(states[0], isA<AuthRestoring>());
     expect(states[1], isA<AuthAuthenticated>());
 
     final authenticated = states[1] as AuthAuthenticated;

@@ -60,8 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     RestoreSessionRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading());
-
+    emit(const AuthRestoring());
     try {
       final token = await tokenStorage.readToken();
       if (token == null || token.isEmpty) {
