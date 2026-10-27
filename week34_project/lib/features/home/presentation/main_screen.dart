@@ -33,7 +33,13 @@ class _MainScreenState extends State<MainScreen> {
             create: (_) =>
                 BooksBloc(booksRepository: ApiBooksRepository())
                   ..add(const LoadBooks()),
-            child: const BooksScreen(),
+            child: Builder(
+              builder: (context) {
+                return BooksScreen(
+                  repository: context.read<BooksBloc>().booksRepository,
+                );
+              },
+            ),
           ),
           const ProfileScreen(),
         ],

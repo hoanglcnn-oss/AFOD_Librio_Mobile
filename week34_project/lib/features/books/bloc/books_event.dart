@@ -10,3 +10,12 @@ abstract class BooksEvent extends Equatable {
 class LoadBooks extends BooksEvent {
   const LoadBooks();
 }
+
+class SearchBooks extends BooksEvent {
+  final String keyword;
+
+  const SearchBooks(this.keyword);
+
+  @override
+  List<Object?> get props => [keyword];
+}

@@ -10,6 +10,7 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
 
   BooksBloc({required this.booksRepository}) : super(const BooksInitial()) {
     on<LoadBooks>(_onLoadBooks);
+    on<SearchBooks>(_onSearchBooks);
   }
 
   Future<void> _onLoadBooks(LoadBooks event, Emitter<BooksState> emit) async {
@@ -38,5 +39,26 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
     }
 
     return 'Không thể tải danh sách sách';
+  }
+
+  Future<void> _onSearchBooks(
+    SearchBooks event,
+    Emitter<BooksState> emit,
+  ) async {
+    emit(const BooksLoading());
+
+    try {
+      final result = await booksRepository.getBooks(
+        page: 1,
+        limit: 10,
+        search: event.keyword.trim(),
+      );
+
+      emit(BooksLoaded(booksPage: result));
+    } on DioException catch (error) {
+      emit(BooksFailure(message: _getErrorMessage(error)));
+    } catch (_) {
+      emit(const BooksFailure(message: 'Không thể tìm kiếm sách'));
+    }
   }
 }

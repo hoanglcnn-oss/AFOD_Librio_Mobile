@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:week34_project/features/books/data/models/book.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/dio_client.dart';
@@ -26,5 +27,14 @@ class ApiBooksRepository implements BooksRepository {
     );
 
     return BooksPage.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<Book> getBookById(String id) async {
+    final response = await _dio.get(
+      '${ApiConstants.books}/${Uri.encodeComponent(id)}',
+    );
+
+    return Book.fromJson(response.data as Map<String, dynamic>);
   }
 }

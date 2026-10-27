@@ -29,4 +29,17 @@ class FakeBooksRepository implements BooksRepository {
       ],
     );
   }
+
+  @override
+  Future<Book> getBookById(String id) async {
+    final page = await getBooks();
+
+    for (final book in page.books) {
+      if (book.id == id) {
+        return book;
+      }
+    }
+
+    throw Exception('Không tìm thấy sách');
+  }
 }
