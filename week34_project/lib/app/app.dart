@@ -7,6 +7,7 @@ import '../features/auth/bloc/auth_event.dart';
 import '../features/auth/bloc/auth_state.dart';
 import '../features/auth/data/api_auth_repository.dart';
 import '../features/auth/presentation/login_screen.dart';
+import '../features/home/presentation/main_screen.dart';
 import '../core/storage/token_storage.dart';
 
 class DofaApp extends StatelessWidget {
@@ -97,10 +98,7 @@ class AuthGate extends StatelessWidget {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         if (state is AuthAuthenticated) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('Librio Mobile')),
-            body: Center(child: Text('Xin chào ${state.user.fullName}!')),
-          );
+          return const MainScreen();
         }
 
         if (state is AuthSessionFailure) {
