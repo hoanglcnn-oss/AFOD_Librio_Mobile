@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
+import '../bloc/auth_event.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -56,6 +57,17 @@ class ProfileScreen extends StatelessWidget {
               subtitle: Text(
                 user.isActive ? 'Đang hoạt động' : 'Không hoạt động',
               ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Logout button
+            OutlinedButton.icon(
+              onPressed: () {
+                context.read<AuthBloc>().add(const LogoutRequested());
+              },
+              icon: const Icon(Icons.logout),
+              label: const Text('Đăng xuất'),
             ),
           ],
         );

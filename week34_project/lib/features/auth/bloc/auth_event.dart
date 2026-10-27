@@ -42,3 +42,7 @@ class RegisterRequested extends AuthEvent {
 class RestoreSessionRequested extends AuthEvent {
   const RestoreSessionRequested();
 }
+
+class LogoutRequested extends AuthEvent {
+  const LogoutRequested();
+}

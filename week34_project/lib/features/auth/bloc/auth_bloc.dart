@@ -14,6 +14,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginRequested>(_onLoginRequested);
     on<RegisterRequested>(_onRegisterRequested);
     on<RestoreSessionRequested>(_onRestoreSessionRequested);
+    on<LogoutRequested>(_onLogoutRequested);
   }
 
   // Khi nhận LoginRequested:
@@ -85,6 +86,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         const AuthSessionFailure(
           message: 'Không thể khôi phục phiên đăng nhập',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onLogoutRequested(
+    LogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      await tokenStorage.deleteToken();
+      emit(const AuthUnauthenticated());
+    } catch (error) {
+      emit(
+        const AuthSessionFailure(
+          message: 'Không thể đăng xuất, vui lòng thử lại',
         ),
       );
     }

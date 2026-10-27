@@ -91,4 +91,24 @@ void main() {
 
     await bloc.close();
   });
+  test('Logout xóa token và phát Unauthenticated', () async {
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('fake_token');
+
+    final bloc = AuthBloc(
+      authRepository: FakeAuthRepository(),
+      tokenStorage: tokenStorage,
+    );
+
+    final statesFuture = bloc.stream.take(1).toList();
+
+    bloc.add(const LogoutRequested());
+
+    final states = await statesFuture;
+
+    expect(states.single, isA<AuthUnauthenticated>());
+    expect(tokenStorage.savedToken, isNull);
+
+    await bloc.close();
+  });
 }
