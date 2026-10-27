@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../auth/presentation/profile_screen.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../books/bloc/books_bloc.dart';
+import '../../books/bloc/books_event.dart';
+import '../../books/data/api_books_repository.dart';
+import '../../books/presentation/books_screen.dart';
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -21,9 +28,14 @@ class _MainScreenState extends State<MainScreen> {
 
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [
-          Center(child: Text('Danh sách sách — triển khai ngày 28/10')),
-          ProfileScreen(),
+        children: [
+          BlocProvider(
+            create: (_) =>
+                BooksBloc(booksRepository: ApiBooksRepository())
+                  ..add(const LoadBooks()),
+            child: const BooksScreen(),
+          ),
+          const ProfileScreen(),
         ],
       ),
 
