@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../auth/bloc/auth_bloc.dart';
 import '../../auth/bloc/auth_state.dart';
 import '../../books/data/models/book.dart';
+import '../../members/data/api_members_repository.dart';
+import '../../members/data/member_resolver.dart';
 
 import '../bloc/borrowing_bloc.dart';
 import '../bloc/borrowing_event.dart';
@@ -27,21 +29,60 @@ class BorrowConfirmScreen extends StatelessWidget {
   }
 }
 
-class _BorrowConfirmContent extends StatelessWidget {
+class _BorrowConfirmContent extends StatefulWidget {
   final Book book;
 
   const _BorrowConfirmContent({required this.book});
 
   @override
+  State<_BorrowConfirmContent> createState() => _BorrowConfirmContentState();
+}
+
+class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
+  late final MemberResolver _resolver;
+  late Future<String?> _memberIdFuture;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _resolver = MemberResolver(membersRepository: ApiMembersRepository());
+
+    _memberIdFuture = _resolveMember();
+  }
+
+  Future<String?> _resolveMember() async {
+    final authState = context.read<AuthBloc>().state;
+
+    if (authState is! AuthAuthenticated) {
+      debugPrint('MEMBER: user not authenticated');
+      return null;
+    }
+
+    final user = authState.user;
+
+    debugPrint('MEMBER: role=${user.role}');
+    debugPrint('MEMBER: hasMemberId=${user.memberId != null}');
+
+    final result = await _resolver.resolve(
+      memberId: user.memberId,
+      email: user.email,
+      role: user.role,
+    );
+
+    debugPrint('MEMBER: resolved=${result != null}');
+
+    return result;
+  }
+
+  void _retryResolve() {
+    setState(() {
+      _memberIdFuture = _resolveMember();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final authState = context.watch<AuthBloc>().state;
-
-    final memberId = authState is AuthAuthenticated
-        ? authState.user.memberId
-        : null;
-
-    final hasMemberId = memberId != null && memberId.trim().isNotEmpty;
-
     return BlocListener<BorrowingBloc, BorrowingState>(
       listener: (context, state) {
         if (state is BorrowingSuccess) {
@@ -59,54 +100,94 @@ class _BorrowConfirmContent extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(title: const Text('Xác nhận mượn sách')),
-        body: BlocBuilder<BorrowingBloc, BorrowingState>(
-          builder: (context, state) {
-            final isSubmitting = state is BorrowingSubmitting;
+        body: FutureBuilder<String?>(
+          future: _memberIdFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-            return ListView(
+            if (snapshot.hasError) {
+              return _buildResolveError('Không thể tra cứu hồ sơ độc giả.');
+            }
+
+            final memberId = snapshot.data;
+
+            if (memberId == null || memberId.isEmpty) {
+              return _buildResolveError(
+                'Không tìm thấy hồ sơ độc giả liên kết '
+                'với tài khoản này.',
+              );
+            }
+
+            return _buildConfirmation(memberId);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResolveError(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.info_outline, size: 48),
+            const SizedBox(height: 12),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: _retryResolve,
+              child: const Text('Thử lại'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmation(String memberId) {
+    return BlocBuilder<BorrowingBloc, BorrowingState>(
+      builder: (context, state) {
+        final isSubmitting = state is BorrowingSubmitting;
+        final isSuccess = state is BorrowingSuccess;
+
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
                 Text(
-                  book.title,
+                  widget.book.title,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 12),
-                Text('Tác giả: ${book.authorName}'),
-                Text('Số lượng còn: ${book.copiesAvailable}'),
-
+                Text('Tác giả: ${widget.book.authorName}'),
+                Text('Số lượng còn: ${widget.book.copiesAvailable}'),
                 const SizedBox(height: 24),
-
                 const ListTile(
                   leading: Icon(Icons.event),
                   title: Text('Thời hạn mượn'),
                   subtitle: Text('14 ngày'),
                 ),
-
-                if (!hasMemberId) ...[
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Chưa xác định được hồ sơ độc giả '
-                    'của tài khoản hiện tại.',
-                  ),
-                ],
-
+                const ListTile(
+                  leading: Icon(Icons.verified_user_outlined),
+                  title: Text('Hồ sơ độc giả'),
+                  subtitle: Text('Đã xác định'),
+                ),
                 const SizedBox(height: 24),
-
                 FilledButton(
-                  onPressed: isSubmitting || !book.canBorrow || !hasMemberId
+                  onPressed: isSubmitting || isSuccess || !widget.book.canBorrow
                       ? null
                       : () {
-                          final validMemberId = memberId;
-
-                          if (validMemberId.trim().isEmpty) {
-                            return;
-                          }
-
                           context.read<BorrowingBloc>().add(
                             BorrowBookRequested(
                               CreateBorrowingRequest(
-                                memberId: validMemberId,
-                                bookId: book.id,
+                                memberId: memberId,
+                                bookId: widget.book.id,
                                 durationDays: 14,
                               ),
                             ),
@@ -121,10 +202,10 @@ class _BorrowConfirmContent extends StatelessWidget {
                       : const Text('Xác nhận mượn'),
                 ),
               ],
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

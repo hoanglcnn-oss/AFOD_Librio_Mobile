@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/network/dio_client.dart';
 import 'members_repository.dart';
@@ -28,7 +29,9 @@ class ApiMembersRepository implements MembersRepository {
       final json = response.data as Map<String, dynamic>;
       final data = json['data'] as List<dynamic>;
       final meta = json['meta'] as Map<String, dynamic>;
-
+      debugPrint('MEMBERS API: status=${response.statusCode}');
+      debugPrint('MEMBERS API: data.length=${data.length}');
+      debugPrint('MEMBERS API: hasNext=${meta['hasNextPage']}');
       final matches = data
           .map((item) => Member.fromJson(item as Map<String, dynamic>))
           .where((member) => member.email.trim().toLowerCase() == normalized)

@@ -15,6 +15,9 @@ String getBorrowingErrorMessage(Object error) {
       case 400:
         return 'Không đủ điều kiện mượn sách. '
             'Vui lòng kiểm tra hạn thẻ, hạn mức hoặc số lượng sách.';
+      case 401:
+        return 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn. '
+            'Vui lòng đăng nhập lại.';
       case 404:
         return 'Không tìm thấy sách hoặc hồ sơ độc giả.';
       case 409:
