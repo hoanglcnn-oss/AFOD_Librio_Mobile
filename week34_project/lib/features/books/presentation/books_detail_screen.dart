@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../data/books_repository.dart';
 import '../data/models/book.dart';
+import '../../borrowings/presentation/borrow_confirm_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final String bookId;
@@ -127,10 +128,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
               const SizedBox(height: 24),
 
-              // Borrowing Flow sẽ được triển khai sau.
-              ElevatedButton(
-                onPressed: null,
-                child: const Text('Mượn sách — sắp triển khai'),
+              FilledButton(
+                onPressed: !book.canBorrow
+                    ? null
+                    : () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BorrowConfirmScreen(book: book),
+                          ),
+                        );
+                      },
+                child: const Text('Mượn sách'),
               ),
             ],
           );
