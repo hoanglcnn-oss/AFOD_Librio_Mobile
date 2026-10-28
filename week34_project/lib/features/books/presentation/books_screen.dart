@@ -127,15 +127,21 @@ class _BooksScreenState extends State<BooksScreen> {
 
           return BookCard(
             book: book,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
+            onTap: () async {
+              final borrowed = await Navigator.of(context).push<bool>(
+                MaterialPageRoute<bool>(
                   builder: (_) => BookDetailScreen(
                     bookId: book.id,
                     repository: widget.repository,
                   ),
                 ),
               );
+
+              if (!context.mounted) return;
+
+              if (borrowed == true) {
+                context.read<BooksBloc>().add(const LoadBooks());
+              }
             },
           );
         },

@@ -86,11 +86,18 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
     return BlocListener<BorrowingBloc, BorrowingState>(
       listener: (context, state) {
         if (state is BorrowingSuccess) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => BorrowResultScreen(borrowing: state.borrowing),
-            ),
-          );
+          Navigator.of(context)
+              .push<bool>(
+                MaterialPageRoute<bool>(
+                  builder: (_) =>
+                      BorrowResultScreen(borrowing: state.borrowing),
+                ),
+              )
+              .then((_) {
+                if (!context.mounted) return;
+
+                Navigator.of(context).pop(true);
+              });
         }
 
         if (state is BorrowingFailure) {

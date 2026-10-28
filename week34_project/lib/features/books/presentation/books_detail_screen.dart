@@ -131,12 +131,18 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               FilledButton(
                 onPressed: !book.canBorrow
                     ? null
-                    : () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
+                    : () async {
+                        final borrowed = await Navigator.of(context).push<bool>(
+                          MaterialPageRoute<bool>(
                             builder: (_) => BorrowConfirmScreen(book: book),
                           ),
                         );
+
+                        if (!context.mounted) return;
+
+                        if (borrowed == true) {
+                          Navigator.of(context).pop(true);
+                        }
                       },
                 child: const Text('Mượn sách'),
               ),

@@ -51,7 +51,7 @@ class BorrowResultScreen extends StatelessWidget {
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.of(context).pop(true);
                 },
                 child: const Text('Quay về danh sách sách'),
               ),
