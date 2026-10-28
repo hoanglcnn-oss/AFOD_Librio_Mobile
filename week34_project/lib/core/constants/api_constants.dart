@@ -9,4 +9,5 @@ class ApiConstants {
   static const String me = '/auth/me';
 
   static const String books = '/books';
+  static const String borrowings = '/borrowings';
 }

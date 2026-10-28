@@ -6,6 +6,7 @@ class UserProfile {
   final String role;
   final bool isActive;
   final DateTime createdAt;
+  final String? memberId;
 
   const UserProfile({
     required this.id,
@@ -15,6 +16,7 @@ class UserProfile {
     required this.role,
     required this.isActive,
     required this.createdAt,
+    this.memberId,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class UserProfile {
       role: json['role'] as String,
       isActive: json['isActive'] as bool,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      memberId: json['memberId'] != null ? json['memberId'] as String : null,
     );
   }
 }
