@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../data/books_repository.dart';
 import 'books_detail_screen.dart';
@@ -65,9 +66,32 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     }
   }
 
+  final MobileScannerController _scannerController = MobileScannerController(
+    formats: [BarcodeFormat.ean13],
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
+
+  Future<void> _onBarcodeDetected(BarcodeCapture capture) async {
+    if (_isLoading) return;
+
+    for (final barcode in capture.barcodes) {
+      final isbn = barcode.rawValue;
+
+      if (isbn == null || !RegExp(r'^\d{13}$').hasMatch(isbn)) {
+        continue;
+      }
+
+      _controller.text = isbn;
+
+      await _findBook(isbn);
+      break;
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
+    _scannerController.dispose();
     super.dispose();
   }
 
@@ -83,7 +107,30 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
             const SizedBox(height: 12),
             const Text('Quét mã vạch ISBN-13'),
             const SizedBox(height: 12),
-            const Text('Camera sẽ được tích hợp ở bước tiếp theo.'),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 300),
+                child: AspectRatio(
+                  aspectRatio: 1, // Vuông 1:1
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: MobileScanner(
+                      controller: _scannerController,
+                      fit: BoxFit.cover,
+                      onDetect: _onBarcodeDetected,
+                      errorBuilder: (context, error) {
+                        return const Center(
+                          child: Text(
+                            'Không mở được camera. Hãy nhập ISBN thủ công.',
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             TextField(
               controller: _controller,
