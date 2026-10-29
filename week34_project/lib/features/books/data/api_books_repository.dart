@@ -37,4 +37,15 @@ class ApiBooksRepository implements BooksRepository {
 
     return Book.fromJson(response.data as Map<String, dynamic>);
   }
+
+  @override
+  Future<Book> getBookByIsbn(String isbn) async {
+    final normalizedIsbn = isbn.replaceAll(RegExp(r'[\s-]'), '');
+
+    final response = await _dio.get(
+      '${ApiConstants.books}/isbn/${Uri.encodeComponent(normalizedIsbn)}',
+    );
+
+    return Book.fromJson(response.data as Map<String, dynamic>);
+  }
 }

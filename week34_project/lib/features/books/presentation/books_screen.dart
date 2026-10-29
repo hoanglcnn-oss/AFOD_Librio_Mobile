@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:week34_project/features/books/presentation/barcode_scanner_screen.dart';
 
 import '../bloc/books_bloc.dart';
 import '../bloc/books_event.dart';
@@ -54,18 +55,39 @@ class _BooksScreenState extends State<BooksScreen> {
             decoration: InputDecoration(
               hintText: 'Tìm theo tên sách, tác giả...',
 
-              // Nút xác nhận tìm kiếm
+              // Nút tìm kiếm bên trái
               prefixIcon: IconButton(
                 tooltip: 'Tìm kiếm',
                 icon: const Icon(Icons.search),
                 onPressed: _submitSearch,
               ),
 
-              // Nút xóa tìm kiếm
-              suffixIcon: IconButton(
-                tooltip: 'Xóa tìm kiếm',
-                icon: const Icon(Icons.clear),
-                onPressed: _clearSearch,
+              // Hai nút bên phải
+              suffixIcon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Nút xóa tìm kiếm
+                  IconButton(
+                    tooltip: 'Xóa tìm kiếm',
+                    icon: const Icon(Icons.clear),
+                    onPressed: _clearSearch,
+                  ),
+
+                  // Nút quét ISBN
+                  IconButton(
+                    tooltip: 'Quét mã ISBN',
+                    icon: const Icon(Icons.qr_code_scanner),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => BarcodeScannerScreen(
+                            repository: widget.repository,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
 
               border: const OutlineInputBorder(),
