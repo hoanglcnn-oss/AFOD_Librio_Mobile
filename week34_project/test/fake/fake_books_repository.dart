@@ -42,4 +42,21 @@ class FakeBooksRepository implements BooksRepository {
 
     throw Exception('Không tìm thấy sách');
   }
+
+  @override
+  Future<Book> getBookByIsbn(String isbn) async {
+    if (isbn.isEmpty) {
+      throw Exception('ISBN không được để trống');
+    }
+
+    final page = await getBooks();
+
+    for (final book in page.books) {
+      if (book.isbn == isbn) {
+        return book;
+      }
+    }
+
+    throw Exception('Không tìm thấy sách với ISBN $isbn');
+  }
 }
