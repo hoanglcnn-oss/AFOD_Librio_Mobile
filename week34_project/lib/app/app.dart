@@ -6,8 +6,8 @@ import '../features/auth/bloc/auth_bloc.dart';
 import '../features/auth/bloc/auth_event.dart';
 import '../features/auth/bloc/auth_state.dart';
 import '../features/auth/data/api_auth_repository.dart';
-import '../features/auth/presentation/login_screen.dart';
-import '../features/home/presentation/main_screen.dart';
+import '../features/auth/presentation/pages/login_screen.dart';
+import '../features/home/presentation/pages/main_screen.dart';
 import '../core/storage/token_storage.dart';
 
 class DofaApp extends StatelessWidget {

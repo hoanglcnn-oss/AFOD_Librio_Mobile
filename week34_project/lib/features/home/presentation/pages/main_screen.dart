@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-
-import '../../auth/presentation/profile_screen.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:week34_project/features/auth/presentation/pages/profile_screen.dart';
+import 'package:week34_project/features/books/bloc/books_bloc.dart';
+import 'package:week34_project/features/books/bloc/books_event.dart';
+import 'package:week34_project/features/books/data/api_books_repository.dart';
+import 'package:week34_project/features/books/presentation/pages/books_screen.dart';
 
-import '../../books/bloc/books_bloc.dart';
-import '../../books/bloc/books_event.dart';
-import '../../books/data/api_books_repository.dart';
-import '../../books/presentation/books_screen.dart';
+import '../widgets/home_bottom_nav_bar.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -25,7 +24,6 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppBar(
         title: Text(_selectedIndex == 0 ? 'Librio Mobile' : 'Tài khoản'),
       ),
-
       body: IndexedStack(
         index: _selectedIndex,
         children: [
@@ -44,26 +42,13 @@ class _MainScreenState extends State<MainScreen> {
           const ProfileScreen(),
         ],
       ),
-
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: HomeBottomNavBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Sách',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Tài khoản',
-          ),
-        ],
       ),
     );
   }

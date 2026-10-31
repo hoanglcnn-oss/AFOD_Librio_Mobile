@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/models/borrowing.dart';
+import '../../data/models/borrowing.dart';
 
 class BorrowResultScreen extends StatelessWidget {
   final Borrowing borrowing;
@@ -70,3 +70,4 @@ class BorrowResultScreen extends StatelessWidget {
     return '$day/$month/${local.year}';
   }
 }
+

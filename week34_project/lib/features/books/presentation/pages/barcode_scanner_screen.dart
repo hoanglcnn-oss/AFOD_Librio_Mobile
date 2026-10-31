@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import '../data/books_repository.dart';
+import '../../data/books_repository.dart';
 import 'books_detail_screen.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
@@ -160,3 +160,4 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     );
   }
 }
+

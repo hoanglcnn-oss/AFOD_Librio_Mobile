@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
+import 'package:week34_project/features/auth/bloc/auth_state.dart';
+import 'package:week34_project/features/books/data/models/book.dart';
+import 'package:week34_project/features/members/data/api_members_repository.dart';
+import 'package:week34_project/features/members/data/member_resolver.dart';
 
-import '../../auth/bloc/auth_bloc.dart';
-import '../../auth/bloc/auth_state.dart';
-import '../../books/data/models/book.dart';
-import '../../members/data/api_members_repository.dart';
-import '../../members/data/member_resolver.dart';
-
-import '../bloc/borrowing_bloc.dart';
-import '../bloc/borrowing_event.dart';
-import '../bloc/borrowing_state.dart';
-import '../data/api_borrowing_repository.dart';
-import '../data/models/create_borrowing_request.dart';
+import '../../bloc/borrowing_bloc.dart';
+import '../../bloc/borrowing_event.dart';
+import '../../bloc/borrowing_state.dart';
+import '../../data/api_borrowing_repository.dart';
+import '../../data/models/create_borrowing_request.dart';
+import '../widgets/borrow_confirm_card.dart';
 import 'borrow_result_screen.dart';
 
 class BorrowConfirmScreen extends StatelessWidget {
@@ -101,8 +101,9 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
         }
 
         if (state is BorrowingFailure) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(state.message)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       child: Scaffold(
@@ -161,56 +162,22 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
         final isSubmitting = state is BorrowingSubmitting;
         final isSuccess = state is BorrowingSuccess;
 
-        return Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Text(
-                  widget.book.title,
-                  style: Theme.of(context).textTheme.headlineSmall,
+        return BorrowConfirmCard(
+          book: widget.book,
+          memberId: memberId,
+          isSubmitting: isSubmitting,
+          isSuccess: isSuccess,
+          onConfirm: () {
+            context.read<BorrowingBloc>().add(
+              BorrowBookRequested(
+                CreateBorrowingRequest(
+                  memberId: memberId,
+                  bookId: widget.book.id,
+                  durationDays: 14,
                 ),
-                const SizedBox(height: 12),
-                Text('Tác giả: ${widget.book.authorName}'),
-                Text('Số lượng còn: ${widget.book.copiesAvailable}'),
-                const SizedBox(height: 24),
-                const ListTile(
-                  leading: Icon(Icons.event),
-                  title: Text('Thời hạn mượn'),
-                  subtitle: Text('14 ngày'),
-                ),
-                const ListTile(
-                  leading: Icon(Icons.verified_user_outlined),
-                  title: Text('Hồ sơ độc giả'),
-                  subtitle: Text('Đã xác định'),
-                ),
-                const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: isSubmitting || isSuccess || !widget.book.canBorrow
-                      ? null
-                      : () {
-                          context.read<BorrowingBloc>().add(
-                            BorrowBookRequested(
-                              CreateBorrowingRequest(
-                                memberId: memberId,
-                                bookId: widget.book.id,
-                                durationDays: 14,
-                              ),
-                            ),
-                          );
-                        },
-                  child: isSubmitting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Xác nhận mượn'),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

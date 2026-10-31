@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../data/books_repository.dart';
-import '../data/models/book.dart';
-import '../../borrowings/presentation/borrow_confirm_screen.dart';
+import '../../data/books_repository.dart';
+import '../../data/models/book.dart';
+import '../../../borrowings/presentation/pages/borrow_confirm_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final String bookId;
@@ -153,3 +153,4 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 }
+
