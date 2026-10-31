@@ -70,4 +70,3 @@ class BorrowResultScreen extends StatelessWidget {
     return '$day/$month/${local.year}';
   }
 }
-

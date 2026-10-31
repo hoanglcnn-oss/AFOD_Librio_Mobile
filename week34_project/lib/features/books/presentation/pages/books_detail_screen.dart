@@ -153,4 +153,3 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
   }
 }
-

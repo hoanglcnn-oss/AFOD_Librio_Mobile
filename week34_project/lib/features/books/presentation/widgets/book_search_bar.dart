@@ -54,4 +54,3 @@ class BookSearchBar extends StatelessWidget {
     );
   }
 }
-

@@ -30,4 +30,3 @@ class HomeBottomNavBar extends StatelessWidget {
     );
   }
 }
-

@@ -22,4 +22,3 @@ class LoadingStatus extends StatelessWidget {
     return const Text('Không xử lý');
   }
 }
-
