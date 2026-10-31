@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:week34_project/features/books/presentation/barcode_scanner_screen.dart';
 
-import '../bloc/books_bloc.dart';
-import '../bloc/books_event.dart';
-import '../bloc/books_state.dart';
-import '../data/books_repository.dart';
+import '../../bloc/books_bloc.dart';
+import '../../bloc/books_event.dart';
+import '../../bloc/books_state.dart';
+import '../../data/books_repository.dart';
+import '../widgets/book_card.dart';
+import '../widgets/book_search_bar.dart';
+import 'barcode_scanner_screen.dart';
 import 'books_detail_screen.dart';
-import 'widgets/book_card.dart';
 
 class BooksScreen extends StatefulWidget {
   final BooksRepository repository;
@@ -46,53 +47,18 @@ class _BooksScreenState extends State<BooksScreen> {
     return Column(
       children: [
         // Thanh tìm kiếm
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: TextField(
-            controller: _searchController,
-            textInputAction: TextInputAction.search,
-            onSubmitted: (_) => _submitSearch(),
-            decoration: InputDecoration(
-              hintText: 'Tìm theo tên sách, tác giả...',
-
-              // Nút tìm kiếm bên trái
-              prefixIcon: IconButton(
-                tooltip: 'Tìm kiếm',
-                icon: const Icon(Icons.search),
-                onPressed: _submitSearch,
+        BookSearchBar(
+          controller: _searchController,
+          onSearch: _submitSearch,
+          onClear: _clearSearch,
+          onScanBarcode: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) =>
+                    BarcodeScannerScreen(repository: widget.repository),
               ),
-
-              // Hai nút bên phải
-              suffixIcon: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Nút xóa tìm kiếm
-                  IconButton(
-                    tooltip: 'Xóa tìm kiếm',
-                    icon: const Icon(Icons.clear),
-                    onPressed: _clearSearch,
-                  ),
-
-                  // Nút quét ISBN
-                  IconButton(
-                    tooltip: 'Quét mã ISBN',
-                    icon: const Icon(Icons.qr_code_scanner),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => BarcodeScannerScreen(
-                            repository: widget.repository,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              border: const OutlineInputBorder(),
-            ),
-          ),
+            );
+          },
         ),
 
         // Danh sách sách

@@ -1,15 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 
-import '../../../core/constants/api_constants.dart';
-import '../../../core/network/dio_client.dart';
+import 'datasources/books_remote_data_source.dart';
 import 'books_repository.dart';
 import 'models/books_page.dart';
 
 class ApiBooksRepository implements BooksRepository {
-  final Dio _dio;
+  final BooksRemoteDataSource _remoteDataSource;
 
-  ApiBooksRepository({Dio? dio}) : _dio = dio ?? DioClient.dio;
+  ApiBooksRepository({BooksRemoteDataSource? remoteDataSource, Dio? dio})
+    : _remoteDataSource =
+          remoteDataSource ?? BooksRemoteDataSourceImpl(dio: dio);
 
   @override
   Future<BooksPage> getBooks({
@@ -17,35 +18,27 @@ class ApiBooksRepository implements BooksRepository {
     int limit = 10,
     String? search,
   }) async {
-    final response = await _dio.get(
-      ApiConstants.books,
-      queryParameters: {
-        'page': page,
-        'limit': limit,
-        if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
-      },
+    final data = await _remoteDataSource.getBooks(
+      page: page,
+      limit: limit,
+      search: search,
     );
 
-    return BooksPage.fromJson(response.data as Map<String, dynamic>);
+    return BooksPage.fromJson(data);
   }
 
   @override
   Future<Book> getBookById(String id) async {
-    final response = await _dio.get(
-      '${ApiConstants.books}/${Uri.encodeComponent(id)}',
-    );
+    final data = await _remoteDataSource.getBookById(id);
 
-    return Book.fromJson(response.data as Map<String, dynamic>);
+    return Book.fromJson(data);
   }
 
   @override
   Future<Book> getBookByIsbn(String isbn) async {
     final normalizedIsbn = isbn.replaceAll(RegExp(r'[\s-]'), '');
+    final data = await _remoteDataSource.getBookByIsbn(normalizedIsbn);
 
-    final response = await _dio.get(
-      '${ApiConstants.books}/isbn/${Uri.encodeComponent(normalizedIsbn)}',
-    );
-
-    return Book.fromJson(response.data as Map<String, dynamic>);
+    return Book.fromJson(data);
   }
 }

@@ -1,14 +1,15 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
-import '../../../core/network/dio_client.dart';
+import 'datasources/members_remote_data_source.dart';
 import 'members_repository.dart';
 import 'models/member.dart';
 
 class ApiMembersRepository implements MembersRepository {
-  final Dio _dio;
+  final MembersRemoteDataSource _remoteDataSource;
 
-  ApiMembersRepository({Dio? dio}) : _dio = dio ?? DioClient.dio;
+  ApiMembersRepository({MembersRemoteDataSource? remoteDataSource, Dio? dio})
+    : _remoteDataSource =
+          remoteDataSource ?? MembersRemoteDataSourceImpl(dio: dio);
 
   @override
   Future<Member?> findByEmail(String email) async {
@@ -21,17 +22,15 @@ class ApiMembersRepository implements MembersRepository {
     var page = 1;
 
     while (true) {
-      final response = await _dio.get(
-        '/members',
-        queryParameters: {'search': normalized, 'page': page, 'limit': 100},
+      final json = await _remoteDataSource.getMembers(
+        search: normalized,
+        page: page,
+        limit: 100,
       );
 
-      final json = response.data as Map<String, dynamic>;
       final data = json['data'] as List<dynamic>;
       final meta = json['meta'] as Map<String, dynamic>;
-      debugPrint('MEMBERS API: status=${response.statusCode}');
-      debugPrint('MEMBERS API: data.length=${data.length}');
-      debugPrint('MEMBERS API: hasNext=${meta['hasNextPage']}');
+
       final matches = data
           .map((item) => Member.fromJson(item as Map<String, dynamic>))
           .where((member) => member.email.trim().toLowerCase() == normalized)

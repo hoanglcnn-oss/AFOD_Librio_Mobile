@@ -1,23 +1,25 @@
 import 'package:dio/dio.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 
-import '../../../core/constants/api_constants.dart';
-import '../../../core/network/dio_client.dart';
+import 'datasources/auth_remote_data_source.dart';
 import 'auth_repository.dart';
 import 'models/auth_response.dart';
 
 class ApiAuthRepository implements AuthRepository {
-  final Dio _dio;
+  final AuthRemoteDataSource _remoteDataSource;
 
-  ApiAuthRepository({Dio? dio}) : _dio = dio ?? DioClient.dio;
+  ApiAuthRepository({AuthRemoteDataSource? remoteDataSource, Dio? dio})
+    : _remoteDataSource =
+          remoteDataSource ?? AuthRemoteDataSourceImpl(dio: dio);
 
   @override
   Future<AuthResponse> login(String email, String password) async {
-    final response = await _dio.post(
-      ApiConstants.login,
-      data: {'identifier': email, 'password': password},
+    final data = await _remoteDataSource.login(
+      identifier: email,
+      password: password,
     );
-    return AuthResponse.fromJson(response.data as Map<String, dynamic>);
+
+    return AuthResponse.fromJson(data);
   }
 
   @override
@@ -27,25 +29,20 @@ class ApiAuthRepository implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    final response = await _dio.post(
-      ApiConstants.register,
-      data: {
-        'fullName': fullName,
-        'phone': phone,
-        'email': email,
-        'password': password,
-      },
+    final data = await _remoteDataSource.register(
+      fullName: fullName,
+      phone: phone,
+      email: email,
+      password: password,
     );
-    return AuthResponse.fromJson(response.data as Map<String, dynamic>);
+
+    return AuthResponse.fromJson(data);
   }
 
   @override
   Future<UserProfile> getCurrentUser(String token) async {
-    final response = await _dio.get(
-      ApiConstants.me,
-      options: Options(headers: {'Authorization': 'Bearer $token'}),
-    );
+    final data = await _remoteDataSource.getCurrentUser(token);
 
-    return UserProfile.fromJson(response.data as Map<String, dynamic>);
+    return UserProfile.fromJson(data);
   }
 }

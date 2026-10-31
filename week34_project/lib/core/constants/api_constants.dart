@@ -10,4 +10,5 @@ class ApiConstants {
 
   static const String books = '/books';
   static const String borrowings = '/borrowings';
+  static const String members = '/members';
 }
