@@ -36,12 +36,15 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
   ) async {
     final currentState = state;
 
-    if (currentState is! MyBorrowingsLoaded) {
+    final page = switch (currentState) {
+      MyBorrowingsLoaded s => s.borrowingsPage,
+      MyBorrowingsReturnFailure s => s.borrowingsPage,
+      _ => null,
+    };
+
+    if (page == null) {
       return;
     }
-
-    final page = currentState.borrowingsPage;
-
     // Không cho phép trả lại phiếu đã RETURNED.
     final matches = page.borrowings.where(
       (borrowing) => borrowing.id == event.borrowingId,

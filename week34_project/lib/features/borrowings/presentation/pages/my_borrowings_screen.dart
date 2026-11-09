@@ -73,6 +73,29 @@ class MyBorrowingsScreen extends StatelessWidget {
         if (state is MyBorrowingsInitial || state is MyBorrowingsLoading) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (state is MyBorrowingsFailure) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(state.message, textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: () {
+                      context.read<MyBorrowingsBloc>().add(
+                        LoadMyBorrowings(memberId),
+                      );
+                    },
+                    child: const Text('Thử lại'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
         final page = switch (state) {
           MyBorrowingsLoaded s => s.borrowingsPage,
           MyBorrowingsReturning s => s.borrowingsPage,

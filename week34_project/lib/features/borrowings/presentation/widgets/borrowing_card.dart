@@ -69,6 +69,8 @@ class BorrowingCard extends StatelessWidget {
               label: 'Ngày mượn',
               value: _formatDate(borrowing.borrowDate),
             ),
+            const SizedBox(height: 6),
+            _InfoRow(label: 'Hạn trả', value: _formatDate(borrowing.dueDate)),
             if (borrowing.status != 'RETURNED' && onReturn != null) ...[
               const SizedBox(height: 12),
               Align(
@@ -86,8 +88,6 @@ class BorrowingCard extends StatelessWidget {
                 ),
               ),
             ],
-            const SizedBox(height: 6),
-            _InfoRow(label: 'Hạn trả', value: _formatDate(borrowing.dueDate)),
           ],
         ),
       ),
