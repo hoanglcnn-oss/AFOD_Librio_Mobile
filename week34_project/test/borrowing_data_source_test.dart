@@ -120,5 +120,37 @@ void main() {
       expect(result['meta']['totalItems'], 6);
       expect(result['meta']['hasNextPage'], false);
     });
+    test('returnBook gửi POST đúng path, JWT và body', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'POST');
+            expect(options.path, '/borrowings/brw-01/return');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+            expect(options.data, {'finePaid': false});
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {'id': 'brw-01', 'status': 'RETURNED'},
+              ),
+            );
+          },
+        ),
+      );
+
+      final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
+
+      final result = await dataSource.returnBook(
+        borrowingId: 'brw-01',
+        token: 'test-token',
+        data: {'finePaid': false},
+      );
+
+      expect(result['status'], 'RETURNED');
+    });
   });
 }

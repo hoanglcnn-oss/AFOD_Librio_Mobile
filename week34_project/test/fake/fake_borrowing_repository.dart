@@ -5,7 +5,8 @@ import 'package:week34_project/features/borrowings/data/models/borrowings_page.d
 
 class FakeBorrowingRepository implements BorrowingRepository {
   bool shouldFail;
-
+  bool shouldFailReturn = false;
+  int returnCallCount = 0;
   FakeBorrowingRepository({this.shouldFail = false});
 
   @override
@@ -65,6 +66,22 @@ class FakeBorrowingRepository implements BorrowingRepository {
 
   @override
   Future<Borrowing> returnBook({required String borrowingId}) async {
-    throw UnimplementedError();
+    returnCallCount++;
+
+    if (shouldFailReturn) {
+      throw Exception('Không thể trả sách');
+    }
+
+    return Borrowing(
+      id: borrowingId,
+      transactionCode: 'BRW-2026-0001',
+      memberId: 'mem-01',
+      memberName: 'Nguyễn Văn An',
+      bookId: 'book-01',
+      bookTitle: 'Clean Code',
+      borrowDate: DateTime.utc(2026, 10, 29),
+      dueDate: DateTime.utc(2026, 11, 12),
+      status: 'RETURNED',
+    );
   }
 }

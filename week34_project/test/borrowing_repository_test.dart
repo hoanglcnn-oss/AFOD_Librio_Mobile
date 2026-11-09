@@ -211,4 +211,75 @@ void main() {
 
     expect(requestCount, 0);
   });
+  test('returnBook gửi JWT và parse RETURNED', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          expect(options.method, 'POST');
+          expect(options.path, '/borrowings/brw-01/return');
+          expect(options.headers['Authorization'], 'Bearer test-token');
+          expect(options.data, {'finePaid': false});
+
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: {
+                'id': 'brw-01',
+                'transactionCode': 'BRW-2026-0001',
+                'memberId': 'mem-01',
+                'memberName': 'Nguyễn Văn An',
+                'bookId': 'book-01',
+                'bookTitle': 'Clean Code',
+                'borrowDate': '2026-10-29T08:00:00Z',
+                'dueDate': '2026-11-12T08:00:00Z',
+                'status': 'RETURNED',
+              },
+            ),
+          );
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    final result = await repository.returnBook(borrowingId: 'brw-01');
+
+    expect(result.id, 'brw-01');
+    expect(result.status, 'RETURNED');
+  });
+  test('returnBook thiếu JWT không gửi request', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+
+    var requestCount = 0;
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          requestCount++;
+          handler.next(options);
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    await expectLater(
+      repository.returnBook(borrowingId: 'brw-01'),
+      throwsA(isA<StateError>()),
+    );
+
+    expect(requestCount, 0);
+  });
 }
