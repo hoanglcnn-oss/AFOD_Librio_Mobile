@@ -38,4 +38,26 @@ void main() {
     expect(borrowing.status, 'BORROWED');
     expect(borrowing.dueDate.day, 12);
   });
+  test('Borrowing parse renewCount và return/fine fields', () {
+    final borrowing = Borrowing.fromJson({
+      'id': 'brw-01',
+      'transactionCode': 'BRW-2026-0001',
+      'memberId': 'mem-01',
+      'memberName': 'Nguyễn Văn An',
+      'bookId': 'book-01',
+      'bookTitle': 'Clean Code',
+      'borrowDate': '2026-11-01T08:00:00Z',
+      'dueDate': '2026-11-15T08:00:00Z',
+      'returnDate': null,
+      'renewCount': 1,
+      'fineAmount': 0,
+      'finePaid': false,
+      'status': 'BORROWED',
+    });
+
+    expect(borrowing.renewCount, 1);
+    expect(borrowing.returnDate, isNull);
+    expect(borrowing.fineAmount, 0);
+    expect(borrowing.finePaid, false);
+  });
 }

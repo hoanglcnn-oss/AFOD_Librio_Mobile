@@ -19,7 +19,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   bool _hasOpenedBorrowings = false;
-
+  bool _borrowingsNeedsRefresh = false;
+  int _borrowingsRefreshVersion = 0;
   late final BooksBloc _booksBloc;
 
   @override
@@ -54,18 +55,25 @@ class _MainScreenState extends State<MainScreen> {
           // Index 0: Books
           BlocProvider.value(
             value: _booksBloc,
-            child: BooksScreen(repository: _booksBloc.booksRepository),
+            child: BooksScreen(
+              repository: _booksBloc.booksRepository,
+              onBorrowSucceeded: () {
+                setState(() {
+                  _borrowingsNeedsRefresh = true;
+                });
+              },
+            ),
           ),
 
           // Index 1: My Borrowings
           _hasOpenedBorrowings
               ? MyBorrowingsTab(
+                  key: ValueKey(_borrowingsRefreshVersion),
                   onReturnSucceeded: () {
                     _booksBloc.add(const LoadBooks());
                   },
                 )
               : const SizedBox.shrink(),
-
           // Index 2: Profile
           const ProfileScreen(),
         ],
@@ -79,6 +87,11 @@ class _MainScreenState extends State<MainScreen> {
 
             if (index == 1) {
               _hasOpenedBorrowings = true;
+
+              if (_borrowingsNeedsRefresh) {
+                _borrowingsRefreshVersion++;
+                _borrowingsNeedsRefresh = false;
+              }
             }
           });
         },
