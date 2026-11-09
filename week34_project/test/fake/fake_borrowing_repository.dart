@@ -62,4 +62,9 @@ class FakeBorrowingRepository implements BorrowingRepository {
       hasNextPage: false,
     );
   }
+
+  @override
+  Future<Borrowing> returnBook({required String borrowingId}) async {
+    throw UnimplementedError();
+  }
 }

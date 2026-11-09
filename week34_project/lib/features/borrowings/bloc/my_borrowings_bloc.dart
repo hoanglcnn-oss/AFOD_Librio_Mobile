@@ -10,6 +10,7 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
   MyBorrowingsBloc({required this.borrowingRepository})
     : super(const MyBorrowingsInitial()) {
     on<LoadMyBorrowings>(_onLoadMyBorrowings);
+    on<ReturnBookRequested>(_onReturnBookRequested);
   }
 
   Future<void> _onLoadMyBorrowings(
@@ -26,6 +27,48 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
       emit(MyBorrowingsLoaded(result));
     } catch (error) {
       emit(MyBorrowingsFailure(error.toString()));
+    }
+  }
+
+  Future<void> _onReturnBookRequested(
+    ReturnBookRequested event,
+    Emitter<MyBorrowingsState> emit,
+  ) async {
+    final currentState = state;
+
+    if (currentState is! MyBorrowingsLoaded) {
+      return;
+    }
+
+    final page = currentState.borrowingsPage;
+
+    // Không cho phép trả lại phiếu đã RETURNED.
+    final matches = page.borrowings.where(
+      (borrowing) => borrowing.id == event.borrowingId,
+    );
+
+    if (matches.isEmpty || matches.first.status == 'RETURNED') {
+      return;
+    }
+
+    emit(
+      MyBorrowingsReturning(
+        borrowingsPage: page,
+        borrowingId: event.borrowingId,
+      ),
+    );
+
+    try {
+      await borrowingRepository.returnBook(borrowingId: event.borrowingId);
+
+      emit(MyBorrowingsReturnSuccess(page));
+    } catch (error) {
+      emit(
+        MyBorrowingsReturnFailure(
+          borrowingsPage: page,
+          message: error.toString(),
+        ),
+      );
     }
   }
 }

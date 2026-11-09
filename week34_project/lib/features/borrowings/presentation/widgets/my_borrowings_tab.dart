@@ -12,7 +12,9 @@ import '../../data/api_borrowing_repository.dart';
 import '../pages/my_borrowings_screen.dart';
 
 class MyBorrowingsTab extends StatefulWidget {
-  const MyBorrowingsTab({super.key});
+  final VoidCallback onReturnSucceeded;
+
+  const MyBorrowingsTab({super.key, required this.onReturnSucceeded});
 
   @override
   State<MyBorrowingsTab> createState() => _MyBorrowingsTabState();
@@ -74,7 +76,10 @@ class _MyBorrowingsTabState extends State<MyBorrowingsTab> {
           create: (_) =>
               MyBorrowingsBloc(borrowingRepository: ApiBorrowingRepository())
                 ..add(LoadMyBorrowings(memberId)),
-          child: const MyBorrowingsScreen(),
+          child: MyBorrowingsScreen(
+            memberId: memberId,
+            onReturnSucceeded: widget.onReturnSucceeded,
+          ),
         );
       },
     );

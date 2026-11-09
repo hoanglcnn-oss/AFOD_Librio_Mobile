@@ -14,6 +14,11 @@ abstract class BorrowingsRemoteDataSource {
     int page = 1,
     int limit = 10,
   });
+  Future<Map<String, dynamic>> returnBook({
+    required String borrowingId,
+    required String token,
+    Map<String, dynamic> data = const {},
+  });
 }
 
 class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
@@ -44,6 +49,21 @@ class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
     final response = await _dio.get(
       ApiConstants.borrowings,
       queryParameters: {'memberId': memberId, 'page': page, 'limit': limit},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> returnBook({
+    required String borrowingId,
+    required String token,
+    Map<String, dynamic> data = const {},
+  }) async {
+    final response = await _dio.post(
+      '${ApiConstants.borrowings}/$borrowingId/return',
+      data: data,
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

@@ -20,6 +20,22 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   bool _hasOpenedBorrowings = false;
 
+  late final BooksBloc _booksBloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _booksBloc = BooksBloc(booksRepository: ApiBooksRepository())
+      ..add(const LoadBooks());
+  }
+
+  @override
+  void dispose() {
+    _booksBloc.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,28 +47,30 @@ class _MainScreenState extends State<MainScreen> {
           _ => 'Librio Mobile',
         }),
       ),
+
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          BlocProvider(
-            create: (_) =>
-                BooksBloc(booksRepository: ApiBooksRepository())
-                  ..add(const LoadBooks()),
-            child: Builder(
-              builder: (context) {
-                return BooksScreen(
-                  repository: context.read<BooksBloc>().booksRepository,
-                );
-              },
-            ),
+          // Index 0: Books
+          BlocProvider.value(
+            value: _booksBloc,
+            child: BooksScreen(repository: _booksBloc.booksRepository),
           ),
+
+          // Index 1: My Borrowings
           _hasOpenedBorrowings
-              ? const MyBorrowingsTab()
+              ? MyBorrowingsTab(
+                  onReturnSucceeded: () {
+                    _booksBloc.add(const LoadBooks());
+                  },
+                )
               : const SizedBox.shrink(),
 
+          // Index 2: Profile
           const ProfileScreen(),
         ],
       ),
+
       bottomNavigationBar: HomeBottomNavBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {

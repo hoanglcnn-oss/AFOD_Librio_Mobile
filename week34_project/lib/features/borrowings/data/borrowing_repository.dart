@@ -9,4 +9,5 @@ abstract class BorrowingRepository {
     int page = 1,
     int limit = 10,
   });
+  Future<Borrowing> returnBook({required String borrowingId});
 }

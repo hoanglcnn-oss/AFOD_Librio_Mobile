@@ -4,9 +4,14 @@ import '../../data/models/borrowing.dart';
 
 class BorrowingCard extends StatelessWidget {
   final Borrowing borrowing;
-
-  const BorrowingCard({super.key, required this.borrowing});
-
+  final VoidCallback? onReturn;
+  final bool isReturning;
+  const BorrowingCard({
+    super.key,
+    required this.borrowing,
+    this.onReturn,
+    this.isReturning = false,
+  });
   String _formatDate(DateTime date) {
     final local = date.toLocal();
     return '${local.day.toString().padLeft(2, '0')}/'
@@ -64,6 +69,23 @@ class BorrowingCard extends StatelessWidget {
               label: 'Ngày mượn',
               value: _formatDate(borrowing.borrowDate),
             ),
+            if (borrowing.status != 'RETURNED' && onReturn != null) ...[
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton.icon(
+                  onPressed: isReturning ? null : onReturn,
+                  icon: isReturning
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.assignment_turned_in_outlined),
+                  label: Text(isReturning ? 'Đang xử lý...' : 'Trả sách'),
+                ),
+              ),
+            ],
             const SizedBox(height: 6),
             _InfoRow(label: 'Hạn trả', value: _formatDate(borrowing.dueDate)),
           ],

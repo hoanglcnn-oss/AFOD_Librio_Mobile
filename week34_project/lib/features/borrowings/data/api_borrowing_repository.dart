@@ -56,4 +56,21 @@ class ApiBorrowingRepository implements BorrowingRepository {
 
     return BorrowingsPage.fromJson(data);
   }
+
+  @override
+  Future<Borrowing> returnBook({required String borrowingId}) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    final data = await _remoteDataSource.returnBook(
+      borrowingId: borrowingId,
+      token: token,
+      data: const {'finePaid': false},
+    );
+
+    return Borrowing.fromJson(data);
+  }
 }
