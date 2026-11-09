@@ -4,6 +4,7 @@ import 'package:week34_project/core/storage/token_storage.dart';
 import 'datasources/borrowings_remote_data_source.dart';
 import 'borrowing_repository.dart';
 import 'models/borrowing.dart';
+import 'models/borrowings_page.dart';
 import 'models/create_borrowing_request.dart';
 
 class ApiBorrowingRepository implements BorrowingRepository {
@@ -32,5 +33,27 @@ class ApiBorrowingRepository implements BorrowingRepository {
     );
 
     return Borrowing.fromJson(data);
+  }
+
+  @override
+  Future<BorrowingsPage> getBorrowings({
+    required String memberId,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    final data = await _remoteDataSource.getBorrowings(
+      memberId: memberId,
+      token: token,
+      page: page,
+      limit: limit,
+    );
+
+    return BorrowingsPage.fromJson(data);
   }
 }

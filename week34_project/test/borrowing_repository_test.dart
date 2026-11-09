@@ -118,4 +118,97 @@ void main() {
 
     expect(requestCount, 0);
   });
+  test('getBorrowings gửi GET kèm JWT và parse danh sách', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          expect(options.method, 'GET');
+          expect(options.path, '/borrowings');
+          expect(options.queryParameters['memberId'], 'mem-01');
+          expect(options.queryParameters['page'], 1);
+          expect(options.queryParameters['limit'], 10);
+          expect(options.headers['Authorization'], 'Bearer test-token');
+
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: {
+                'data': [
+                  {
+                    'id': 'brw-01',
+                    'transactionCode': 'BRW-2026-0001',
+                    'memberId': 'mem-01',
+                    'memberName': 'Nguyễn Văn An',
+                    'bookId': 'book-01',
+                    'bookTitle': 'Clean Code',
+                    'borrowDate': '2026-10-29T08:00:00.000Z',
+                    'dueDate': '2026-11-12T08:00:00.000Z',
+                    'status': 'BORROWED',
+                  },
+                ],
+                'meta': {
+                  'page': 1,
+                  'limit': 10,
+                  'totalItems': 1,
+                  'totalPages': 1,
+                  'hasNextPage': false,
+                },
+              },
+            ),
+          );
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    final result = await repository.getBorrowings(memberId: 'mem-01');
+
+    expect(result.borrowings.length, 1);
+    expect(result.borrowings.first.bookTitle, 'Clean Code');
+    expect(result.borrowings.first.status, 'BORROWED');
+    expect(result.totalItems, 1);
+    expect(result.hasNextPage, false);
+  });
+  test('getBorrowings không gửi GET nếu thiếu JWT', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+
+    var requestCount = 0;
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          requestCount++;
+          handler.reject(
+            DioException(
+              requestOptions: options,
+              message: 'Không được gửi request',
+            ),
+          );
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    await expectLater(
+      repository.getBorrowings(memberId: 'mem-01'),
+      throwsA(isA<StateError>()),
+    );
+
+    expect(requestCount, 0);
+  });
 }

@@ -8,6 +8,12 @@ abstract class BorrowingsRemoteDataSource {
     required Map<String, dynamic> data,
     required String token,
   });
+  Future<Map<String, dynamic>> getBorrowings({
+    required String memberId,
+    required String token,
+    int page = 1,
+    int limit = 10,
+  });
 }
 
 class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
@@ -25,8 +31,22 @@ class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
       data: data,
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getBorrowings({
+    required String memberId,
+    required String token,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await _dio.get(
+      ApiConstants.borrowings,
+      queryParameters: {'memberId': memberId, 'page': page, 'limit': limit},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
 
     return response.data as Map<String, dynamic>;
   }
 }
-
