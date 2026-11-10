@@ -5,10 +5,12 @@ import '../../bloc/books_bloc.dart';
 import '../../bloc/books_event.dart';
 import '../../bloc/books_state.dart';
 import '../../data/books_repository.dart';
+import '../../data/models/book.dart';
 import '../widgets/book_card.dart';
 import '../widgets/book_search_bar.dart';
 import 'barcode_scanner_screen.dart';
 import 'books_detail_screen.dart';
+import '../../../borrowings/presentation/pages/borrowing_slip_confirm_screen.dart';
 
 class BooksScreen extends StatefulWidget {
   final BooksRepository repository;
@@ -27,7 +29,54 @@ class BooksScreen extends StatefulWidget {
 class _BooksScreenState extends State<BooksScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  // 1. Xử lý tìm kiếm
+  bool _selectionMode = false;
+
+  // Lưu đối tượng Book để không mất lựa chọn khi tìm kiếm/phân trang.
+  final Map<String, Book> _selectedBooks = {};
+
+  void _toggleSelectionMode() {
+    setState(() {
+      _selectionMode = !_selectionMode;
+      _selectedBooks.clear();
+    });
+  }
+
+  void _toggleBook(Book book) {
+    if (!book.canBorrow) return;
+
+    setState(() {
+      if (_selectedBooks.containsKey(book.id)) {
+        _selectedBooks.remove(book.id);
+      } else {
+        _selectedBooks[book.id] = book;
+      }
+    });
+  }
+
+  Future<void> _confirmSelection() async {
+    if (_selectedBooks.isEmpty) return;
+
+    final books = _selectedBooks.values.toList();
+
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) => BorrowingSlipConfirmScreen(books: books),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (created == true) {
+      setState(() {
+        _selectedBooks.clear();
+        _selectionMode = false;
+      });
+
+      context.read<BooksBloc>().add(const LoadBooks());
+    }
+  }
+
+  // Xử lý tìm kiếm
   void _submitSearch() {
     context.read<BooksBloc>().add(SearchBooks(_searchController.text));
   }
@@ -46,12 +95,32 @@ class _BooksScreenState extends State<BooksScreen> {
     super.dispose();
   }
 
-  // 2. Giao diện chính
+  // Giao diện chính
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Thanh tìm kiếm
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _selectionMode
+                      ? 'Đã chọn ${_selectedBooks.length} đầu sách'
+                      : 'Danh sách sách',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _toggleSelectionMode,
+                icon: Icon(_selectionMode ? Icons.close : Icons.checklist),
+                label: Text(_selectionMode ? 'Hủy' : 'Chọn nhiều'),
+              ),
+            ],
+          ),
+        ),
+
         BookSearchBar(
           controller: _searchController,
           onSearch: _submitSearch,
@@ -66,7 +135,6 @@ class _BooksScreenState extends State<BooksScreen> {
           },
         ),
 
-        // Danh sách sách
         Expanded(
           child: BlocBuilder<BooksBloc, BooksState>(
             builder: (context, state) {
@@ -74,6 +142,22 @@ class _BooksScreenState extends State<BooksScreen> {
             },
           ),
         ),
+
+        if (_selectionMode)
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _selectedBooks.isEmpty ? null : _confirmSelection,
+                  icon: const Icon(Icons.arrow_forward),
+                  label: Text('Tiếp tục (${_selectedBooks.length} sách)'),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -111,7 +195,7 @@ class _BooksScreenState extends State<BooksScreen> {
         return const Center(child: Text('Không tìm thấy sách phù hợp'));
       }
 
-      // List
+      // Danh sách sách: xem chi tiết hoặc chọn nhiều
       return ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: books.length,
@@ -120,7 +204,21 @@ class _BooksScreenState extends State<BooksScreen> {
 
           return BookCard(
             book: book,
+
+            // Chế độ chọn nhiều
+            selectionMode: _selectionMode,
+
+            // Sách này đã được chọn chưa?
+            isSelected: _selectedBooks.containsKey(book.id),
+
             onTap: () async {
+              // Nếu đang chọn nhiều: chạm card để chọn/bỏ chọn
+              if (_selectionMode) {
+                _toggleBook(book);
+                return;
+              }
+
+              // Bình thường: chạm card để xem chi tiết
               final borrowed = await Navigator.of(context).push<bool>(
                 MaterialPageRoute<bool>(
                   builder: (_) => BookDetailScreen(

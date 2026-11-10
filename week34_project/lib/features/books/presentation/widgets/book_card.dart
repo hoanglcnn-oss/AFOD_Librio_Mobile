@@ -5,16 +5,27 @@ import '../../data/models/book.dart';
 class BookCard extends StatelessWidget {
   final Book book;
   final VoidCallback? onTap;
+  final bool selectionMode;
+  final bool isSelected;
 
-  const BookCard({super.key, required this.book, this.onTap});
+  const BookCard({
+    super.key,
+    required this.book,
+    this.onTap,
+    this.selectionMode = false,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      color: selectionMode && isSelected
+          ? Theme.of(context).colorScheme.primaryContainer
+          : null,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
+        onTap: selectionMode && !book.canBorrow ? null : onTap,
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
@@ -62,7 +73,13 @@ class BookCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right),
+              if (selectionMode)
+                Checkbox(
+                  value: isSelected,
+                  onChanged: book.canBorrow ? (_) => onTap?.call() : null,
+                )
+              else
+                const Icon(Icons.chevron_right),
             ],
           ),
         ),

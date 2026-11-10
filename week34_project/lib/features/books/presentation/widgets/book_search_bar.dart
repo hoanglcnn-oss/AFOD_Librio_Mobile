@@ -17,7 +17,7 @@ class BookSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: TextField(
         controller: controller,
         textInputAction: TextInputAction.search,
@@ -25,28 +25,34 @@ class BookSearchBar extends StatelessWidget {
         decoration: InputDecoration(
           hintText: 'Tìm theo tên sách, tác giả...',
           // Nút tìm kiếm bên trái
-          prefixIcon: IconButton(
-            tooltip: 'Tìm kiếm',
-            icon: const Icon(Icons.search),
-            onPressed: onSearch,
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: IconButton(
+              tooltip: 'Tìm kiếm',
+              icon: const Icon(Icons.search),
+              onPressed: onSearch,
+            ),
           ),
           // Hai nút bên phải
-          suffixIcon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Nút xóa tìm kiếm
-              IconButton(
-                tooltip: 'Xóa tìm kiếm',
-                icon: const Icon(Icons.clear),
-                onPressed: onClear,
-              ),
-              // Nút quét ISBN
-              IconButton(
-                tooltip: 'Quét mã ISBN',
-                icon: const Icon(Icons.qr_code_scanner),
-                onPressed: onScanBarcode,
-              ),
-            ],
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Nút xóa tìm kiếm
+                IconButton(
+                  tooltip: 'Xóa tìm kiếm',
+                  icon: const Icon(Icons.clear),
+                  onPressed: onClear,
+                ),
+                // Nút quét ISBN
+                IconButton(
+                  tooltip: 'Quét mã ISBN',
+                  icon: const Icon(Icons.qr_code_scanner),
+                  onPressed: onScanBarcode,
+                ),
+              ],
+            ),
           ),
           border: const OutlineInputBorder(),
         ),
