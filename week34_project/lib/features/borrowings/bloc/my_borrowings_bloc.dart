@@ -40,6 +40,7 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
     final page = switch (currentState) {
       MyBorrowingsLoaded s => s.borrowingsPage,
       MyBorrowingsReturnFailure s => s.borrowingsPage,
+      MyBorrowingsRenewFailure s => s.borrowingsPage,
       _ => null,
     };
 

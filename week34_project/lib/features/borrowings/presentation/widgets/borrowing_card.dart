@@ -5,12 +5,19 @@ import '../../data/models/borrowing.dart';
 class BorrowingCard extends StatelessWidget {
   final Borrowing borrowing;
   final VoidCallback? onReturn;
+  final VoidCallback? onRenew;
   final bool isReturning;
+  final bool isRenewing;
+  final bool isBusy;
+
   const BorrowingCard({
     super.key,
     required this.borrowing,
     this.onReturn,
+    this.onRenew,
     this.isReturning = false,
+    this.isRenewing = false,
+    this.isBusy = false,
   });
   String _formatDate(DateTime date) {
     final local = date.toLocal();
@@ -22,7 +29,10 @@ class BorrowingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = borrowing.status;
-
+    final canRenew =
+        status == 'BORROWED' &&
+        borrowing.renewCount < 2 &&
+        !DateTime.now().isAfter(borrowing.dueDate);
     final statusLabel = switch (status) {
       'BORROWED' => 'Đang mượn',
       'OVERDUE' => 'Quá hạn',
@@ -71,21 +81,46 @@ class BorrowingCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             _InfoRow(label: 'Hạn trả', value: _formatDate(borrowing.dueDate)),
-            if (borrowing.status != 'RETURNED' && onReturn != null) ...[
+            if (status != 'RETURNED') ...[
+              const SizedBox(height: 6),
+
+              Text(
+                'Đã gia hạn: ${borrowing.renewCount}/2 lần',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+
               const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: OutlinedButton.icon(
-                  onPressed: isReturning ? null : onReturn,
-                  icon: isReturning
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.assignment_turned_in_outlined),
-                  label: Text(isReturning ? 'Đang xử lý...' : 'Trả sách'),
-                ),
+
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (canRenew)
+                    OutlinedButton.icon(
+                      onPressed: isBusy ? null : onRenew,
+                      icon: isRenewing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.update),
+                      label: Text(isRenewing ? 'Đang gia hạn...' : 'Gia hạn'),
+                    ),
+
+                  OutlinedButton.icon(
+                    onPressed: isBusy ? null : onReturn,
+                    icon: isReturning
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.assignment_turned_in_outlined),
+                    label: Text(isReturning ? 'Đang trả...' : 'Trả sách'),
+                  ),
+                ],
               ),
             ],
           ],
