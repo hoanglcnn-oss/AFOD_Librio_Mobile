@@ -40,6 +40,17 @@ class ApiAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<String> forgotPassword(String email) async {
+    final data = await _remoteDataSource.forgotPassword(email: email);
+
+    if (data['success'] != true) {
+      throw StateError('Không thể tiếp nhận yêu cầu đặt lại mật khẩu');
+    }
+
+    return data['message'] as String;
+  }
+
+  @override
   Future<UserProfile> getCurrentUser(String token) async {
     final data = await _remoteDataSource.getCurrentUser(token);
 
