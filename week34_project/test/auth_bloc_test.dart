@@ -7,7 +7,8 @@ import 'fake/fake_auth_repository.dart';
 import 'fake/fake_token_storage.dart';
 
 void main() {
-  test('Login thành công phát Loading rồi Authenticated', () async {
+  // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
+  test('LoginRequested | Thông tin đúng | Authenticated và lưu JWT', () async {
     final tokenStorage = FakeTokenStorage();
 
     final bloc = AuthBloc(
@@ -34,7 +35,7 @@ void main() {
     await bloc.close();
   });
 
-  test('Login thất bại phát Loading rồi Failure', () async {
+  test('LoginRequested | Mật khẩu sai | Loading -> Failure', () async {
     final tokenStorage = FakeTokenStorage();
 
     final bloc = AuthBloc(
@@ -65,33 +66,36 @@ void main() {
     await bloc.close();
   });
 
-  test('Restore session thành công phát Loading rồi Authenticated', () async {
-    final tokenStorage = FakeTokenStorage();
+  test(
+    'RestoreSessionRequested | JWT hợp lệ | Restoring -> Authenticated',
+    () async {
+      final tokenStorage = FakeTokenStorage();
 
-    await tokenStorage.saveToken('fake_token');
+      await tokenStorage.saveToken('fake_token');
 
-    final bloc = AuthBloc(
-      authRepository: FakeAuthRepository(),
-      tokenStorage: tokenStorage,
-    );
+      final bloc = AuthBloc(
+        authRepository: FakeAuthRepository(),
+        tokenStorage: tokenStorage,
+      );
 
-    final statesFuture = bloc.stream.take(2).toList();
+      final statesFuture = bloc.stream.take(2).toList();
 
-    bloc.add(const RestoreSessionRequested());
+      bloc.add(const RestoreSessionRequested());
 
-    final states = await statesFuture;
+      final states = await statesFuture;
 
-    expect(states[0], isA<AuthRestoring>());
-    expect(states[1], isA<AuthAuthenticated>());
+      expect(states[0], isA<AuthRestoring>());
+      expect(states[1], isA<AuthAuthenticated>());
 
-    final authenticated = states[1] as AuthAuthenticated;
+      final authenticated = states[1] as AuthAuthenticated;
 
-    expect(authenticated.user.email, 'test@example.com');
-    expect(tokenStorage.savedToken, 'fake_token');
+      expect(authenticated.user.email, 'test@example.com');
+      expect(tokenStorage.savedToken, 'fake_token');
 
-    await bloc.close();
-  });
-  test('Logout xóa token và phát Unauthenticated', () async {
+      await bloc.close();
+    },
+  );
+  test('LogoutRequested | Có JWT | Unauthenticated và xóa JWT', () async {
     final tokenStorage = FakeTokenStorage();
     await tokenStorage.saveToken('fake_token');
 

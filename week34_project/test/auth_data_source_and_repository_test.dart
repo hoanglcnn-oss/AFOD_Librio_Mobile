@@ -5,56 +5,60 @@ import 'package:week34_project/features/auth/data/datasources/auth_remote_data_s
 
 void main() {
   group('AuthRemoteDataSourceImpl', () {
-    test('login gửi POST /auth/login với identifier và password', () async {
-      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
+    test(
+      'login | Thông tin đăng nhập hợp lệ | POST /auth/login, đúng identifier và password',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
-      dio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            expect(options.method, 'POST');
-            expect(options.path, '/auth/login');
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'POST');
+              expect(options.path, '/auth/login');
 
-            final body = options.data as Map<String, dynamic>;
-            expect(body['identifier'], 'user@example.com');
-            expect(body['password'], 'secret123');
+              final body = options.data as Map<String, dynamic>;
+              expect(body['identifier'], 'user@example.com');
+              expect(body['password'], 'secret123');
 
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                statusCode: 200,
-                data: {
-                  'accessToken': 'jwt-123',
-                  'tokenType': 'Bearer',
-                  'expiresIn': 86400,
-                  'user': {
-                    'id': 'u1',
-                    'email': 'user@example.com',
-                    'phone': '0901234567',
-                    'fullName': 'Nguyễn Văn A',
-                    'role': 'MEMBER',
-                    'isActive': true,
-                    'createdAt': '2026-01-01T00:00:00.000Z',
-                    'memberId': 'm1',
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'accessToken': 'jwt-123',
+                    'tokenType': 'Bearer',
+                    'expiresIn': 86400,
+                    'user': {
+                      'id': 'u1',
+                      'email': 'user@example.com',
+                      'phone': '0901234567',
+                      'fullName': 'Nguyễn Văn A',
+                      'role': 'MEMBER',
+                      'isActive': true,
+                      'createdAt': '2026-01-01T00:00:00.000Z',
+                      'memberId': 'm1',
+                    },
                   },
-                },
-              ),
-            );
-          },
-        ),
-      );
+                ),
+              );
+            },
+          ),
+        );
 
-      final dataSource = AuthRemoteDataSourceImpl(dio: dio);
-      final result = await dataSource.login(
-        identifier: 'user@example.com',
-        password: 'secret123',
-      );
+        final dataSource = AuthRemoteDataSourceImpl(dio: dio);
+        final result = await dataSource.login(
+          identifier: 'user@example.com',
+          password: 'secret123',
+        );
 
-      expect(result['accessToken'], 'jwt-123');
-      expect(result['user']['fullName'], 'Nguyễn Văn A');
-    });
+        expect(result['accessToken'], 'jwt-123');
+        expect(result['user']['fullName'], 'Nguyễn Văn A');
+      },
+    );
 
     test(
-      'register gửi POST /auth/register với đầy đủ trường dữ liệu',
+      'register | Thông tin đăng ký đầy đủ | POST /auth/register, đúng request body',
       () async {
         final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
@@ -105,85 +109,132 @@ void main() {
         expect(result['accessToken'], 'jwt-reg');
       },
     );
-    test('forgotPassword gửi POST đúng email', () async {
-      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    test(
+      'forgotPassword | Email có khoảng trắng và chữ hoa | POST /auth/forgot-password, email được chuẩn hóa',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
-      dio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            expect(options.method, 'POST');
-            expect(options.path, '/auth/forgot-password');
-            expect(options.data, {'email': 'user@example.com'});
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'POST');
+              expect(options.path, '/auth/forgot-password');
+              expect(options.data, {'email': 'user@example.com'});
 
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                statusCode: 200,
-                data: {
-                  'success': true,
-                  'message':
-                      'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.',
-                },
-              ),
-            );
-          },
-        ),
-      );
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'success': true,
+                    'message':
+                        'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.',
+                  },
+                ),
+              );
+            },
+          ),
+        );
 
-      final dataSource = AuthRemoteDataSourceImpl(dio: dio);
+        final dataSource = AuthRemoteDataSourceImpl(dio: dio);
 
-      final result = await dataSource.forgotPassword(
-        email: '  USER@EXAMPLE.COM  ',
-      );
+        final result = await dataSource.forgotPassword(
+          email: '  USER@EXAMPLE.COM  ',
+        );
 
-      expect(result['success'], true);
-    });
-    test('getCurrentUser gửi GET /auth/me kèm Authorization header', () async {
-      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+        expect(result['success'], true);
+      },
+    );
+    test(
+      'getCurrentUser | Có JWT hợp lệ | GET /auth/me kèm Bearer token',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
-      dio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            expect(options.method, 'GET');
-            expect(options.path, '/auth/me');
-            expect(options.headers['Authorization'], 'Bearer my-token');
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'GET');
+              expect(options.path, '/auth/me');
+              expect(options.headers['Authorization'], 'Bearer my-token');
 
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                statusCode: 200,
-                data: {
-                  'id': 'u1',
-                  'email': 'user@example.com',
-                  'phone': '0901234567',
-                  'fullName': 'Nguyễn Văn A',
-                  'role': 'MEMBER',
-                  'isActive': true,
-                  'createdAt': '2026-01-01T00:00:00.000Z',
-                  'memberId': 'm1',
-                },
-              ),
-            );
-          },
-        ),
-      );
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'id': 'u1',
+                    'email': 'user@example.com',
+                    'phone': '0901234567',
+                    'fullName': 'Nguyễn Văn A',
+                    'role': 'MEMBER',
+                    'isActive': true,
+                    'createdAt': '2026-01-01T00:00:00.000Z',
+                    'memberId': 'm1',
+                  },
+                ),
+              );
+            },
+          ),
+        );
 
-      final dataSource = AuthRemoteDataSourceImpl(dio: dio);
-      final result = await dataSource.getCurrentUser('my-token');
+        final dataSource = AuthRemoteDataSourceImpl(dio: dio);
+        final result = await dataSource.getCurrentUser('my-token');
 
-      expect(result['id'], 'u1');
-      expect(result['memberId'], 'm1');
-    });
+        expect(result['id'], 'u1');
+        expect(result['memberId'], 'm1');
+      },
+    );
   });
 
   group('ApiAuthRepository', () {
-    test('login parse kết quả sang AuthResponse', () async {
-      final mockDataSource = _FakeAuthRemoteDataSource(
-        authResponseData: {
-          'accessToken': 'jwt-token',
-          'tokenType': 'Bearer',
-          'expiresIn': 3600,
-          'user': {
+    test(
+      'login | DataSource trả thông tin đăng nhập | parse đúng AuthResponse',
+      () async {
+        final mockDataSource = _FakeAuthRemoteDataSource(
+          authResponseData: {
+            'accessToken': 'jwt-token',
+            'tokenType': 'Bearer',
+            'expiresIn': 3600,
+            'user': {
+              'id': 'u1',
+              'email': 'user@example.com',
+              'phone': '0901234567',
+              'fullName': 'Nguyễn Văn A',
+              'role': 'MEMBER',
+              'isActive': true,
+              'createdAt': '2026-01-01T00:00:00.000Z',
+            },
+          },
+        );
+
+        final repository = ApiAuthRepository(remoteDataSource: mockDataSource);
+        final response = await repository.login('user@example.com', 'pass');
+
+        expect(response.accessToken, 'jwt-token');
+        expect(response.user.fullName, 'Nguyễn Văn A');
+        expect(response.user.role, 'MEMBER');
+      },
+    );
+    test(
+      'forgotPassword | DataSource trả success | trả về thông báo chung',
+      () async {
+        final repository = ApiAuthRepository(
+          remoteDataSource: _FakeAuthRemoteDataSource(),
+        );
+
+        final message = await repository.forgotPassword('user@example.com');
+
+        expect(
+          message,
+          'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.',
+        );
+      },
+    );
+    test(
+      'getCurrentUser | DataSource trả hồ sơ | parse đúng UserProfile',
+      () async {
+        final mockDataSource = _FakeAuthRemoteDataSource(
+          userProfileData: {
             'id': 'u1',
             'email': 'user@example.com',
             'phone': '0901234567',
@@ -191,50 +242,18 @@ void main() {
             'role': 'MEMBER',
             'isActive': true,
             'createdAt': '2026-01-01T00:00:00.000Z',
+            'memberId': 'm1',
           },
-        },
-      );
+        );
 
-      final repository = ApiAuthRepository(remoteDataSource: mockDataSource);
-      final response = await repository.login('user@example.com', 'pass');
+        final repository = ApiAuthRepository(remoteDataSource: mockDataSource);
+        final profile = await repository.getCurrentUser('token');
 
-      expect(response.accessToken, 'jwt-token');
-      expect(response.user.fullName, 'Nguyễn Văn A');
-      expect(response.user.role, 'MEMBER');
-    });
-    test('forgotPassword trả về thông báo chung', () async {
-      final repository = ApiAuthRepository(
-        remoteDataSource: _FakeAuthRemoteDataSource(),
-      );
-
-      final message = await repository.forgotPassword('user@example.com');
-
-      expect(
-        message,
-        'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.',
-      );
-    });
-    test('getCurrentUser parse kết quả sang UserProfile', () async {
-      final mockDataSource = _FakeAuthRemoteDataSource(
-        userProfileData: {
-          'id': 'u1',
-          'email': 'user@example.com',
-          'phone': '0901234567',
-          'fullName': 'Nguyễn Văn A',
-          'role': 'MEMBER',
-          'isActive': true,
-          'createdAt': '2026-01-01T00:00:00.000Z',
-          'memberId': 'm1',
-        },
-      );
-
-      final repository = ApiAuthRepository(remoteDataSource: mockDataSource);
-      final profile = await repository.getCurrentUser('token');
-
-      expect(profile.id, 'u1');
-      expect(profile.memberId, 'm1');
-      expect(profile.email, 'user@example.com');
-    });
+        expect(profile.id, 'u1');
+        expect(profile.memberId, 'm1');
+        expect(profile.email, 'user@example.com');
+      },
+    );
   });
 }
 

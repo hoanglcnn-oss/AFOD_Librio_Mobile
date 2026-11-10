@@ -4,8 +4,9 @@ import 'package:week34_project/features/borrowings/data/datasources/borrowings_r
 
 void main() {
   group('BorrowingsRemoteDataSourceImpl', () {
+    // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
     test(
-      'createBorrowing gửi đúng POST method, path, body và Authorization header',
+      'createBorrowing | Dữ liệu mượn hợp lệ | POST /borrowings, đúng body và JWT',
       () async {
         final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
@@ -60,133 +61,142 @@ void main() {
         expect(result['status'], 'BORROWED');
       },
     );
-    test('getBorrowings gửi đúng GET, query parameters và JWT', () async {
-      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    test(
+      'getBorrowings | Có memberId và phân trang | GET /borrowings, đúng queryParameters và JWT',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
-      dio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            // 1. Kiểm tra HTTP request
-            expect(options.method, 'GET');
-            expect(options.path, '/borrowings');
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              // 1. Kiểm tra HTTP request
+              expect(options.method, 'GET');
+              expect(options.path, '/borrowings');
 
-            // 2. Kiểm tra query parameters
-            expect(options.queryParameters['memberId'], 'mem-01');
-            expect(options.queryParameters['page'], 2);
-            expect(options.queryParameters['limit'], 5);
+              // 2. Kiểm tra query parameters
+              expect(options.queryParameters['memberId'], 'mem-01');
+              expect(options.queryParameters['page'], 2);
+              expect(options.queryParameters['limit'], 5);
 
-            // 3. Kiểm tra JWT
-            expect(options.headers['Authorization'], 'Bearer test-jwt');
+              // 3. Kiểm tra JWT
+              expect(options.headers['Authorization'], 'Bearer test-jwt');
 
-            // 4. Giả lập API trả về JSON phân trang
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                statusCode: 200,
-                data: {
-                  'data': [
-                    {
-                      'id': 'brw-02',
-                      'bookTitle': 'Flutter Basics',
-                      'status': 'BORROWED',
+              // 4. Giả lập API trả về JSON phân trang
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'data': [
+                      {
+                        'id': 'brw-02',
+                        'bookTitle': 'Flutter Basics',
+                        'status': 'BORROWED',
+                      },
+                    ],
+                    'meta': {
+                      'page': 2,
+                      'limit': 5,
+                      'totalItems': 6,
+                      'totalPages': 2,
+                      'hasNextPage': false,
                     },
-                  ],
-                  'meta': {
-                    'page': 2,
-                    'limit': 5,
-                    'totalItems': 6,
-                    'totalPages': 2,
-                    'hasNextPage': false,
                   },
-                },
-              ),
-            );
-          },
-        ),
-      );
+                ),
+              );
+            },
+          ),
+        );
 
-      final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
+        final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
 
-      final result = await dataSource.getBorrowings(
-        memberId: 'mem-01',
-        token: 'test-jwt',
-        page: 2,
-        limit: 5,
-      );
+        final result = await dataSource.getBorrowings(
+          memberId: 'mem-01',
+          token: 'test-jwt',
+          page: 2,
+          limit: 5,
+        );
 
-      // 5. Kiểm tra dữ liệu DataSource trả về
-      expect((result['data'] as List).length, 1);
-      expect(result['meta']['page'], 2);
-      expect(result['meta']['totalItems'], 6);
-      expect(result['meta']['hasNextPage'], false);
-    });
-    test('returnBook gửi POST đúng path, JWT và body', () async {
-      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+        // 5. Kiểm tra dữ liệu DataSource trả về
+        expect((result['data'] as List).length, 1);
+        expect(result['meta']['page'], 2);
+        expect(result['meta']['totalItems'], 6);
+        expect(result['meta']['hasNextPage'], false);
+      },
+    );
+    test(
+      'returnBook | Có borrowingId và JWT | POST /borrowings/:id/return, đúng body',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
-      dio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            expect(options.method, 'POST');
-            expect(options.path, '/borrowings/brw-01/return');
-            expect(options.headers['Authorization'], 'Bearer test-token');
-            expect(options.data, {'finePaid': false});
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'POST');
+              expect(options.path, '/borrowings/brw-01/return');
+              expect(options.headers['Authorization'], 'Bearer test-token');
+              expect(options.data, {'finePaid': false});
 
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                statusCode: 200,
-                data: {'id': 'brw-01', 'status': 'RETURNED'},
-              ),
-            );
-          },
-        ),
-      );
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {'id': 'brw-01', 'status': 'RETURNED'},
+                ),
+              );
+            },
+          ),
+        );
 
-      final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
+        final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
 
-      final result = await dataSource.returnBook(
-        borrowingId: 'brw-01',
-        token: 'test-token',
-        data: {'finePaid': false},
-      );
+        final result = await dataSource.returnBook(
+          borrowingId: 'brw-01',
+          token: 'test-token',
+          data: {'finePaid': false},
+        );
 
-      expect(result['status'], 'RETURNED');
-    });
-    test('renewLoan gửi POST đúng path, JWT và extraDays', () async {
-      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+        expect(result['status'], 'RETURNED');
+      },
+    );
+    test(
+      'renewLoan | Có borrowingId và extraDays = 7 | POST /borrowings/:id/renew, đúng body và JWT',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
-      dio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            expect(options.method, 'POST');
-            expect(options.path, '/borrowings/brw-01/renew');
-            expect(options.headers['Authorization'], 'Bearer test-token');
-            expect(options.data, {'extraDays': 7});
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'POST');
+              expect(options.path, '/borrowings/brw-01/renew');
+              expect(options.headers['Authorization'], 'Bearer test-token');
+              expect(options.data, {'extraDays': 7});
 
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                statusCode: 200,
-                data: {
-                  'id': 'brw-01',
-                  'dueDate': '2026-11-21T08:00:00Z',
-                  'renewCount': 1,
-                },
-              ),
-            );
-          },
-        ),
-      );
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'id': 'brw-01',
+                    'dueDate': '2026-11-21T08:00:00Z',
+                    'renewCount': 1,
+                  },
+                ),
+              );
+            },
+          ),
+        );
 
-      final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
+        final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
 
-      final result = await dataSource.renewLoan(
-        borrowingId: 'brw-01',
-        token: 'test-token',
-        extraDays: 7,
-      );
+        final result = await dataSource.renewLoan(
+          borrowingId: 'brw-01',
+          token: 'test-token',
+          extraDays: 7,
+        );
 
-      expect(result['renewCount'], 1);
-    });
+        expect(result['renewCount'], 1);
+      },
+    );
   });
 }

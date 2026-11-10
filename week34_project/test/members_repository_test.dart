@@ -14,16 +14,20 @@ void main() {
     membershipExpiry: DateTime.utc(2027, 10, 28),
   );
 
-  test('findByEmail tìm đúng email, không phân biệt hoa thường', () async {
-    final repository = FakeMembersRepository(members: [member]);
+  // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
+  test(
+    'findByEmail | Email có khoảng trắng và chữ hoa | trả đúng Member, gọi 1 lần',
+    () async {
+      final repository = FakeMembersRepository(members: [member]);
 
-    final result = await repository.findByEmail('  AN@EXAMPLE.COM  ');
+      final result = await repository.findByEmail('  AN@EXAMPLE.COM  ');
 
-    expect(result?.id, 'mem-01');
-    expect(repository.callCount, 1);
-  });
+      expect(result?.id, 'mem-01');
+      expect(repository.callCount, 1);
+    },
+  );
 
-  test('findByEmail trả null khi email không khớp', () async {
+  test('findByEmail | Email không khớp | trả null', () async {
     final repository = FakeMembersRepository(members: [member]);
 
     final result = await repository.findByEmail('other@example.com');

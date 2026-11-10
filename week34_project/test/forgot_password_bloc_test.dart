@@ -6,60 +6,71 @@ import 'package:week34_project/features/auth/bloc/forgot_password_state.dart';
 import 'fake/fake_auth_repository.dart';
 
 void main() {
+  // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
   group('ForgotPasswordBloc', () {
-    test('Submit emits Loading -> Success', () async {
-      final repository = FakeAuthRepository();
-      final bloc = ForgotPasswordBloc(authRepository: repository);
+    test(
+      'SubmitForgotPassword | Repository thành công | Loading -> Success',
+      () async {
+        final repository = FakeAuthRepository();
+        final bloc = ForgotPasswordBloc(authRepository: repository);
 
-      final states = <ForgotPasswordState>[];
-      final subscription = bloc.stream.listen(states.add);
+        final states = <ForgotPasswordState>[];
+        final subscription = bloc.stream.listen(states.add);
 
-      bloc.add(const SubmitForgotPassword('user@example.com'));
+        bloc.add(const SubmitForgotPassword('user@example.com'));
 
-      await bloc.stream.firstWhere((state) => state is ForgotPasswordSuccess);
+        await bloc.stream.firstWhere((state) => state is ForgotPasswordSuccess);
 
-      expect(states, [
-        isA<ForgotPasswordLoading>(),
-        isA<ForgotPasswordSuccess>(),
-      ]);
-      expect(repository.forgotPasswordCallCount, 1);
+        expect(states, [
+          isA<ForgotPasswordLoading>(),
+          isA<ForgotPasswordSuccess>(),
+        ]);
+        expect(repository.forgotPasswordCallCount, 1);
 
-      await subscription.cancel();
-      await bloc.close();
-    });
+        await subscription.cancel();
+        await bloc.close();
+      },
+    );
 
-    test('Submit emits Loading -> Failure', () async {
-      final repository = FakeAuthRepository()..shouldFailForgotPassword = true;
+    test(
+      'SubmitForgotPassword | Repository ném lỗi | Loading -> Failure',
+      () async {
+        final repository = FakeAuthRepository()
+          ..shouldFailForgotPassword = true;
 
-      final bloc = ForgotPasswordBloc(authRepository: repository);
+        final bloc = ForgotPasswordBloc(authRepository: repository);
 
-      final states = <ForgotPasswordState>[];
-      final subscription = bloc.stream.listen(states.add);
+        final states = <ForgotPasswordState>[];
+        final subscription = bloc.stream.listen(states.add);
 
-      bloc.add(const SubmitForgotPassword('user@example.com'));
+        bloc.add(const SubmitForgotPassword('user@example.com'));
 
-      await bloc.stream.firstWhere((state) => state is ForgotPasswordFailure);
+        await bloc.stream.firstWhere((state) => state is ForgotPasswordFailure);
 
-      expect(states, [
-        isA<ForgotPasswordLoading>(),
-        isA<ForgotPasswordFailure>(),
-      ]);
-      expect(repository.forgotPasswordCallCount, 1);
+        expect(states, [
+          isA<ForgotPasswordLoading>(),
+          isA<ForgotPasswordFailure>(),
+        ]);
+        expect(repository.forgotPasswordCallCount, 1);
 
-      await subscription.cancel();
-      await bloc.close();
-    });
-    test('Email rỗng không gọi Repository', () async {
-      final repository = FakeAuthRepository();
-      final bloc = ForgotPasswordBloc(authRepository: repository);
+        await subscription.cancel();
+        await bloc.close();
+      },
+    );
+    test(
+      'SubmitForgotPassword | Email chỉ có khoảng trắng | Failure, không gọi Repository',
+      () async {
+        final repository = FakeAuthRepository();
+        final bloc = ForgotPasswordBloc(authRepository: repository);
 
-      bloc.add(const SubmitForgotPassword('   '));
+        bloc.add(const SubmitForgotPassword('   '));
 
-      await bloc.stream.firstWhere((state) => state is ForgotPasswordFailure);
+        await bloc.stream.firstWhere((state) => state is ForgotPasswordFailure);
 
-      expect(repository.forgotPasswordCallCount, 0);
+        expect(repository.forgotPasswordCallCount, 0);
 
-      await bloc.close();
-    });
+        await bloc.close();
+      },
+    );
   });
 }

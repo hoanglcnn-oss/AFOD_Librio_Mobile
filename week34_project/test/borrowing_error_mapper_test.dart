@@ -6,7 +6,8 @@ import 'package:week34_project/features/borrowings/data/borrowing_error_mapper.d
 void main() {
   final requestOptions = RequestOptions(path: '/borrowings');
 
-  test('HTTP 400 trả thông báo lỗi nghiệp vụ', () {
+  // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
+  test('BorrowingErrorMapper | HTTP 400 | trả thông báo lỗi nghiệp vụ', () {
     final error = DioException(
       requestOptions: requestOptions,
       response: Response(requestOptions: requestOptions, statusCode: 400),
@@ -18,14 +19,17 @@ void main() {
     expect(message, contains('Không đủ điều kiện'));
   });
 
-  test('Connection timeout cảnh báo kiểm tra phiếu mượn', () {
-    final error = DioException(
-      requestOptions: requestOptions,
-      type: DioExceptionType.connectionTimeout,
-    );
+  test(
+    'BorrowingErrorMapper | Connection timeout | cảnh báo kiểm tra trạng thái phiếu mượn',
+    () {
+      final error = DioException(
+        requestOptions: requestOptions,
+        type: DioExceptionType.connectionTimeout,
+      );
 
-    final message = getBorrowingErrorMessage(error);
+      final message = getBorrowingErrorMessage(error);
 
-    expect(message, contains('kiểm tra phiếu mượn'));
-  });
+      expect(message, contains('kiểm tra phiếu mượn'));
+    },
+  );
 }

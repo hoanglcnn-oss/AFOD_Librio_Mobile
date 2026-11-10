@@ -16,37 +16,44 @@ void main() {
   );
 
   group('MemberResolver', () {
-    test('Có memberId: dùng trực tiếp, không gọi API', () async {
-      final repository = FakeMembersRepository();
+    // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
+    test(
+      'resolve | Role MEMBER và có memberId | trả ID trực tiếp, không gọi Repository',
+      () async {
+        final repository = FakeMembersRepository();
 
-      final resolver = MemberResolver(membersRepository: repository);
+        final resolver = MemberResolver(membersRepository: repository);
 
-      final result = await resolver.resolve(
-        memberId: 'mem-01',
-        email: 'an@example.com',
-        role: 'MEMBER',
-      );
+        final result = await resolver.resolve(
+          memberId: 'mem-01',
+          email: 'an@example.com',
+          role: 'MEMBER',
+        );
 
-      expect(result, 'mem-01');
-      expect(repository.callCount, 0);
-    });
+        expect(result, 'mem-01');
+        expect(repository.callCount, 0);
+      },
+    );
 
-    test('Thiếu memberId: tìm bằng email', () async {
-      final repository = FakeMembersRepository(members: [sampleMember]);
+    test(
+      'resolve | Role MEMBER thiếu memberId | tìm bằng email, trả đúng ID',
+      () async {
+        final repository = FakeMembersRepository(members: [sampleMember]);
 
-      final resolver = MemberResolver(membersRepository: repository);
+        final resolver = MemberResolver(membersRepository: repository);
 
-      final result = await resolver.resolve(
-        memberId: null,
-        email: 'AN@EXAMPLE.COM',
-        role: 'MEMBER',
-      );
+        final result = await resolver.resolve(
+          memberId: null,
+          email: 'AN@EXAMPLE.COM',
+          role: 'MEMBER',
+        );
 
-      expect(result, 'mem-01');
-      expect(repository.callCount, 1);
-    });
+        expect(result, 'mem-01');
+        expect(repository.callCount, 1);
+      },
+    );
 
-    test('Không tìm thấy Member: trả null', () async {
+    test('resolve | Không tìm thấy Member | trả null', () async {
       final resolver = MemberResolver(
         membersRepository: FakeMembersRepository(),
       );
@@ -60,34 +67,40 @@ void main() {
       expect(result, isNull);
     });
 
-    test('Admin không được resolve Member', () async {
-      final repository = FakeMembersRepository(members: [sampleMember]);
+    test(
+      'resolve | Role ADMIN dù có memberId | trả null, không gọi Repository',
+      () async {
+        final repository = FakeMembersRepository(members: [sampleMember]);
 
-      final resolver = MemberResolver(membersRepository: repository);
+        final resolver = MemberResolver(membersRepository: repository);
 
-      final result = await resolver.resolve(
-        memberId: 'mem-01',
-        email: 'an@example.com',
-        role: 'ADMIN',
-      );
-
-      expect(result, isNull);
-      expect(repository.callCount, 0);
-    });
-
-    test('Repository lỗi: không tự tạo Member ID', () async {
-      final resolver = MemberResolver(
-        membersRepository: FakeMembersRepository(shouldFail: true),
-      );
-
-      await expectLater(
-        resolver.resolve(
-          memberId: null,
+        final result = await resolver.resolve(
+          memberId: 'mem-01',
           email: 'an@example.com',
-          role: 'MEMBER',
-        ),
-        throwsException,
-      );
-    });
+          role: 'ADMIN',
+        );
+
+        expect(result, isNull);
+        expect(repository.callCount, 0);
+      },
+    );
+
+    test(
+      'resolve | Repository ném lỗi | truyền exception lên tầng gọi',
+      () async {
+        final resolver = MemberResolver(
+          membersRepository: FakeMembersRepository(shouldFail: true),
+        );
+
+        await expectLater(
+          resolver.resolve(
+            memberId: null,
+            email: 'an@example.com',
+            role: 'MEMBER',
+          ),
+          throwsException,
+        );
+      },
+    );
   });
 }
