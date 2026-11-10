@@ -30,4 +30,3 @@ class MembersRemoteDataSourceImpl implements MembersRemoteDataSource {
     return response.data as Map<String, dynamic>;
   }
 }
-

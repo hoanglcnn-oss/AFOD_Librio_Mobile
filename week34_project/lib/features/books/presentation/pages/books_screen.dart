@@ -12,8 +12,13 @@ import 'books_detail_screen.dart';
 
 class BooksScreen extends StatefulWidget {
   final BooksRepository repository;
+  final VoidCallback? onBorrowSucceeded;
 
-  const BooksScreen({super.key, required this.repository});
+  const BooksScreen({
+    super.key,
+    required this.repository,
+    this.onBorrowSucceeded,
+  });
 
   @override
   State<BooksScreen> createState() => _BooksScreenState();
@@ -129,6 +134,8 @@ class _BooksScreenState extends State<BooksScreen> {
 
               if (borrowed == true) {
                 context.read<BooksBloc>().add(const LoadBooks());
+                // Báo cho MainScreen rằng có phiếu mượn mới.
+                widget.onBorrowSucceeded?.call();
               }
             },
           );

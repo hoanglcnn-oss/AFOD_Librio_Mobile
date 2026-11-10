@@ -22,6 +22,11 @@ class HomeBottomNavBar extends StatelessWidget {
           label: 'Sách',
         ),
         NavigationDestination(
+          icon: Icon(Icons.bookmark_border),
+          selectedIcon: Icon(Icons.bookmark),
+          label: 'Đang mượn',
+        ),
+        NavigationDestination(
           icon: Icon(Icons.person_outline),
           selectedIcon: Icon(Icons.person),
           label: 'Tài khoản',
