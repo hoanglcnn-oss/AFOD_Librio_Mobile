@@ -12,7 +12,8 @@ class FakeBorrowingRepository implements BorrowingRepository {
   bool shouldFailRenew = false;
   int renewCallCount = 0;
   int lastExtraDays = 0;
-
+  bool shouldFailCreateSlip = false;
+  int createSlipCallCount = 0;
   // Cho phép tạo các trường hợp test khác nhau.
   String fakeBorrowingStatus = 'BORROWED';
   int fakeRenewCount = 0;
@@ -46,6 +47,11 @@ class FakeBorrowingRepository implements BorrowingRepository {
   Future<BorrowingSlip> createBorrowingSlip(
     CreateBorrowingSlipRequest request,
   ) async {
+    createSlipCallCount++;
+
+    if (shouldFailCreateSlip) {
+      throw Exception('Không thể tạo phiếu mượn');
+    }
     return BorrowingSlip(
       id: 'slip-01',
       slipNumber: 'SLIP-2026-0001',

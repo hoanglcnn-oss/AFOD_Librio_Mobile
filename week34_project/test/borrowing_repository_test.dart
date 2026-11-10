@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:week34_project/features/borrowings/data/api_borrowing_repository.dart';
 import 'package:week34_project/features/borrowings/data/models/create_borrowing_request.dart';
+import 'package:week34_project/features/borrowings/data/models/create_borrowing_slip_request.dart';
 
 import 'fake/fake_token_storage.dart';
 
@@ -405,6 +406,202 @@ void main() {
       for (final days in [0, 15]) {
         await expectLater(
           repository.renewLoan(borrowingId: 'brw-01', extraDays: days),
+          throwsA(isA<ArgumentError>()),
+        );
+      }
+
+      expect(requestCount, 0);
+    },
+  );
+
+  test(
+    'createBorrowingSlip | Có JWT và 2 sách hợp lệ | POST API, parse BorrowingSlip',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'POST');
+            expect(options.path, '/borrowing-slips');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+
+            final body = options.data as Map<String, dynamic>;
+            expect(body['memberId'], 'mem-01');
+            expect((body['items'] as List).length, 2);
+            expect(body['expectedReturnDays'], 14);
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 201,
+                data: {
+                  'id': 'slip-01',
+                  'slipNumber': 'SLIP-2026-0001',
+                  'memberId': 'mem-01',
+                  'status': 'PENDING_APPROVAL',
+                  'dueDate': '2026-11-24T08:00:00Z',
+                  'items': [
+                    {
+                      'id': 'item-01',
+                      'bookId': 'book-01',
+                      'bookTitle': 'Clean Code',
+                      'quantity': 1,
+                      'status': 'PENDING',
+                    },
+                    {
+                      'id': 'item-02',
+                      'bookId': 'book-02',
+                      'bookTitle': 'Flutter Basics',
+                      'quantity': 2,
+                      'status': 'PENDING',
+                    },
+                  ],
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      const request = CreateBorrowingSlipRequest(
+        memberId: 'mem-01',
+        items: [
+          BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1),
+          BorrowingSlipItemRequest(bookId: 'book-02', quantity: 2),
+        ],
+      );
+
+      final result = await repository.createBorrowingSlip(request);
+
+      expect(result.id, 'slip-01');
+      expect(result.status, 'PENDING_APPROVAL');
+      expect(result.items.length, 2);
+      expect(result.items[0].bookTitle, 'Clean Code');
+      expect(result.items[1].quantity, 2);
+    },
+  );
+
+  test(
+    'createBorrowingSlip | Thiếu JWT | throw StateError, không gửi request',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+
+      var requestCount = 0;
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            requestCount++;
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                message: 'Không được gửi request',
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      const request = CreateBorrowingSlipRequest(
+        memberId: 'mem-01',
+        items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
+      );
+
+      await expectLater(
+        repository.createBorrowingSlip(request),
+        throwsA(isA<StateError>()),
+      );
+
+      expect(requestCount, 0);
+    },
+  );
+
+  test(
+    'createBorrowingSlip | Request không hợp lệ | throw ArgumentError, không gửi request',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      var requestCount = 0;
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            requestCount++;
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                message: 'Không được gửi request',
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      const invalidRequests = [
+        // Không có memberId
+        CreateBorrowingSlipRequest(
+          memberId: '   ',
+          items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
+        ),
+
+        // Danh sách sách rỗng
+        CreateBorrowingSlipRequest(memberId: 'mem-01', items: []),
+
+        // Số ngày mượn ngoài khoảng 1-30
+        CreateBorrowingSlipRequest(
+          memberId: 'mem-01',
+          items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
+          expectedReturnDays: 0,
+        ),
+
+        CreateBorrowingSlipRequest(
+          memberId: 'mem-01',
+          items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
+          expectedReturnDays: 31,
+        ),
+
+        // bookId rỗng
+        CreateBorrowingSlipRequest(
+          memberId: 'mem-01',
+          items: [BorrowingSlipItemRequest(bookId: '  ', quantity: 1)],
+        ),
+
+        // Quantity ngoài khoảng 1-5
+        CreateBorrowingSlipRequest(
+          memberId: 'mem-01',
+          items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 0)],
+        ),
+
+        CreateBorrowingSlipRequest(
+          memberId: 'mem-01',
+          items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 6)],
+        ),
+      ];
+
+      for (final request in invalidRequests) {
+        await expectLater(
+          repository.createBorrowingSlip(request),
           throwsA(isA<ArgumentError>()),
         );
       }
