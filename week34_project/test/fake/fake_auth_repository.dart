@@ -3,6 +3,9 @@ import 'package:week34_project/features/auth/data/models/auth_response.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 
 class FakeAuthRepository implements AuthRepository {
+  bool shouldFailForgotPassword = false;
+  int forgotPasswordCallCount = 0;
+
   @override
   Future<AuthResponse> login(String email, String password) async {
     await Future.delayed(const Duration(seconds: 1));
@@ -49,8 +52,10 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<String> forgotPassword(String email) async {
-    if (email.trim().isEmpty) {
-      throw ArgumentError('Email không được để trống');
+    forgotPasswordCallCount++;
+
+    if (shouldFailForgotPassword) {
+      throw Exception('Giả lập lỗi gửi yêu cầu');
     }
 
     return 'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.';
