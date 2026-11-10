@@ -5,7 +5,9 @@ import 'datasources/borrowings_remote_data_source.dart';
 import 'borrowing_repository.dart';
 import 'models/borrowing.dart';
 import 'models/borrowings_page.dart';
+import 'models/borrowing_slip.dart';
 import 'models/create_borrowing_request.dart';
+import 'models/create_borrowing_slip_request.dart';
 
 class ApiBorrowingRepository implements BorrowingRepository {
   final BorrowingsRemoteDataSource _remoteDataSource;
@@ -33,6 +35,44 @@ class ApiBorrowingRepository implements BorrowingRepository {
     );
 
     return Borrowing.fromJson(data);
+  }
+
+  @override
+  Future<BorrowingSlip> createBorrowingSlip(
+    CreateBorrowingSlipRequest request,
+  ) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (request.memberId.trim().isEmpty) {
+      throw ArgumentError('Mã độc giả không được để trống');
+    }
+
+    if (request.items.isEmpty) {
+      throw ArgumentError('Phiếu mượn phải có ít nhất một cuốn sách');
+    }
+
+    if (request.expectedReturnDays < 1 || request.expectedReturnDays > 30) {
+      throw ArgumentError('Thời hạn mượn phải từ 1 đến 30 ngày');
+    }
+
+    for (final item in request.items) {
+      if (item.bookId.trim().isEmpty ||
+          item.quantity < 1 ||
+          item.quantity > 5) {
+        throw ArgumentError('Thông tin sách mượn không hợp lệ');
+      }
+    }
+
+    final data = await _remoteDataSource.createBorrowingSlip(
+      data: request.toJson(),
+      token: token,
+    );
+
+    return BorrowingSlip.fromJson(data);
   }
 
   @override

@@ -15,7 +15,6 @@ class BorrowingSlipItem {
 
   factory BorrowingSlipItem.fromJson(Map<String, dynamic> json) {
     return BorrowingSlipItem(
-      // TODO 1: Map các trường từ json.
       id: json['id'] as String,
       bookId: json['bookId'] as String,
       bookTitle: json['bookTitle'] as String,
@@ -44,20 +43,19 @@ class BorrowingSlip {
 
   factory BorrowingSlip.fromJson(Map<String, dynamic> json) {
     return BorrowingSlip(
-      // TODO 2: Parse id, slipNumber, memberId, status.
       id: json['id'] as String,
       slipNumber: json['slipNumber'] as String,
       memberId: json['memberId'] as String,
       status: json['status'] as String,
 
-      // TODO 3: DateTime.parse(...) cho dueDate.
       dueDate: DateTime.parse(json['dueDate'] as String),
 
-      // TODO 4:
-      // Parse json['items'] thành List<BorrowingSlipItem>.
-      items: (json['items'] as List<dynamic>?)
-              ?.map((item) =>
-                  BorrowingSlipItem.fromJson(item as Map<String, dynamic>))
+      items:
+          (json['items'] as List<dynamic>?)
+              ?.map(
+                (item) =>
+                    BorrowingSlipItem.fromJson(item as Map<String, dynamic>),
+              )
               .toList() ??
           const [],
     );

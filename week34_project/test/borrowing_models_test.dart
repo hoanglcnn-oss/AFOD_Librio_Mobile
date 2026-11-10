@@ -67,7 +67,7 @@ void main() {
       'id': 'slip-01',
       'slipNumber': 'SLIP-2026-001',
       'memberId': 'mem-01',
-      'status': 'ACTIVE',
+      'status': 'PENDING_APPROVAL',
       'dueDate': '2026-11-20T10:00:00.000Z',
       'items': [
         {
@@ -85,7 +85,7 @@ void main() {
     expect(slip.id, 'slip-01');
     expect(slip.slipNumber, 'SLIP-2026-001');
     expect(slip.memberId, 'mem-01');
-    expect(slip.status, 'ACTIVE');
+    expect(slip.status, 'PENDING_APPROVAL');
     expect(slip.dueDate.day, 20);
     expect(slip.items.length, 1);
 

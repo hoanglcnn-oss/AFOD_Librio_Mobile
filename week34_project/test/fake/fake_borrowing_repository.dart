@@ -2,6 +2,8 @@ import 'package:week34_project/features/borrowings/data/borrowing_repository.dar
 import 'package:week34_project/features/borrowings/data/models/borrowing.dart';
 import 'package:week34_project/features/borrowings/data/models/create_borrowing_request.dart';
 import 'package:week34_project/features/borrowings/data/models/borrowings_page.dart';
+import 'package:week34_project/features/borrowings/data/models/borrowing_slip.dart';
+import 'package:week34_project/features/borrowings/data/models/create_borrowing_slip_request.dart';
 
 class FakeBorrowingRepository implements BorrowingRepository {
   bool shouldFail;
@@ -37,6 +39,29 @@ class FakeBorrowingRepository implements BorrowingRepository {
         29,
       ).add(Duration(days: request.durationDays)),
       status: 'BORROWED',
+    );
+  }
+
+  @override
+  Future<BorrowingSlip> createBorrowingSlip(
+    CreateBorrowingSlipRequest request,
+  ) async {
+    return BorrowingSlip(
+      id: 'slip-01',
+      slipNumber: 'SLIP-2026-0001',
+      memberId: request.memberId,
+      status: 'PENDING_APPROVAL',
+      dueDate: DateTime.now().add(Duration(days: request.expectedReturnDays)),
+      items: [
+        for (var i = 0; i < request.items.length; i++)
+          BorrowingSlipItem(
+            id: 'item-$i',
+            bookId: request.items[i].bookId,
+            bookTitle: 'Sách kiểm thử',
+            quantity: request.items[i].quantity,
+            status: 'PENDING',
+          ),
+      ],
     );
   }
 
