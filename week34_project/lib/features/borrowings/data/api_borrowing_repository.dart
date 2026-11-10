@@ -73,4 +73,34 @@ class ApiBorrowingRepository implements BorrowingRepository {
 
     return Borrowing.fromJson(data);
   }
+
+  @override
+  Future<Borrowing> renewLoan({
+    required String borrowingId,
+    int extraDays = 7,
+    String? notes,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (extraDays < 1 || extraDays > 14) {
+      throw ArgumentError.value(
+        extraDays,
+        'extraDays',
+        'Số ngày gia hạn phải từ 1 đến 14',
+      );
+    }
+
+    final data = await _remoteDataSource.renewLoan(
+      borrowingId: borrowingId,
+      token: token,
+      extraDays: extraDays,
+      notes: notes,
+    );
+
+    return Borrowing.fromJson(data);
+  }
 }

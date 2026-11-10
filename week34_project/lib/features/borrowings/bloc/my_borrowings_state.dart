@@ -73,3 +73,38 @@ class MyBorrowingsReturnFailure extends MyBorrowingsState {
   @override
   List<Object?> get props => [borrowingsPage, message];
 }
+
+class MyBorrowingsRenewing extends MyBorrowingsState {
+  final BorrowingsPage borrowingsPage;
+  final String borrowingId;
+
+  const MyBorrowingsRenewing({
+    required this.borrowingsPage,
+    required this.borrowingId,
+  });
+
+  @override
+  List<Object?> get props => [borrowingsPage, borrowingId];
+}
+
+class MyBorrowingsRenewSuccess extends MyBorrowingsState {
+  final BorrowingsPage borrowingsPage;
+
+  const MyBorrowingsRenewSuccess(this.borrowingsPage);
+
+  @override
+  List<Object?> get props => [borrowingsPage];
+}
+
+class MyBorrowingsRenewFailure extends MyBorrowingsState {
+  final BorrowingsPage borrowingsPage;
+  final String message;
+
+  const MyBorrowingsRenewFailure({
+    required this.borrowingsPage,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [borrowingsPage, message];
+}

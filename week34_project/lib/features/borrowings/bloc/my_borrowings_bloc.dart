@@ -11,6 +11,7 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
     : super(const MyBorrowingsInitial()) {
     on<LoadMyBorrowings>(_onLoadMyBorrowings);
     on<ReturnBookRequested>(_onReturnBookRequested);
+    on<RenewBorrowingRequested>(_onRenewBorrowingRequested);
   }
 
   Future<void> _onLoadMyBorrowings(
@@ -68,6 +69,67 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
     } catch (error) {
       emit(
         MyBorrowingsReturnFailure(
+          borrowingsPage: page,
+          message: error.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onRenewBorrowingRequested(
+    RenewBorrowingRequested event,
+    Emitter<MyBorrowingsState> emit,
+  ) async {
+    final currentState = state;
+
+    final page = switch (currentState) {
+      MyBorrowingsLoaded s => s.borrowingsPage,
+      MyBorrowingsRenewFailure s => s.borrowingsPage,
+      MyBorrowingsReturnFailure s => s.borrowingsPage,
+      _ => null,
+    };
+
+    if (page == null) return;
+
+    // Tìm phiếu mượn tương ứng.
+    final matches = page.borrowings.where(
+      (borrowing) => borrowing.id == event.borrowingId,
+    );
+
+    if (matches.isEmpty) return;
+
+    final borrowing = matches.first;
+
+    // Chặn trường hợp không đủ điều kiện gia hạn.
+    if (borrowing.status != 'BORROWED' ||
+        borrowing.renewCount >= 2 ||
+        DateTime.now().isAfter(borrowing.dueDate)) {
+      emit(
+        MyBorrowingsRenewFailure(
+          borrowingsPage: page,
+          message: 'Phiếu mượn không đủ điều kiện gia hạn',
+        ),
+      );
+      return;
+    }
+
+    emit(
+      MyBorrowingsRenewing(
+        borrowingsPage: page,
+        borrowingId: event.borrowingId,
+      ),
+    );
+
+    try {
+      await borrowingRepository.renewLoan(
+        borrowingId: event.borrowingId,
+        extraDays: event.extraDays,
+      );
+
+      emit(MyBorrowingsRenewSuccess(page));
+    } catch (error) {
+      emit(
+        MyBorrowingsRenewFailure(
           borrowingsPage: page,
           message: error.toString(),
         ),

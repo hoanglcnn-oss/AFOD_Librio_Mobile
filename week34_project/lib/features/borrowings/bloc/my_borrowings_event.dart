@@ -24,3 +24,16 @@ class ReturnBookRequested extends MyBorrowingsEvent {
   @override
   List<Object?> get props => [borrowingId];
 }
+
+class RenewBorrowingRequested extends MyBorrowingsEvent {
+  final String borrowingId;
+  final int extraDays;
+
+  const RenewBorrowingRequested({
+    required this.borrowingId,
+    this.extraDays = 7,
+  });
+
+  @override
+  List<Object?> get props => [borrowingId, extraDays];
+}

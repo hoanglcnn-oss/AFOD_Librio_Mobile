@@ -84,4 +84,13 @@ class FakeBorrowingRepository implements BorrowingRepository {
       status: 'RETURNED',
     );
   }
+
+  @override
+  Future<Borrowing> renewLoan({
+    required String borrowingId,
+    int extraDays = 7,
+    String? notes,
+  }) async {
+    throw UnimplementedError();
+  }
 }

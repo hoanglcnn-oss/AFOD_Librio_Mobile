@@ -19,6 +19,12 @@ abstract class BorrowingsRemoteDataSource {
     required String token,
     Map<String, dynamic> data = const {},
   });
+  Future<Map<String, dynamic>> renewLoan({
+    required String borrowingId,
+    required String token,
+    required int extraDays,
+    String? notes,
+  });
 }
 
 class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
@@ -64,6 +70,25 @@ class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
     final response = await _dio.post(
       '${ApiConstants.borrowings}/$borrowingId/return',
       data: data,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> renewLoan({
+    required String borrowingId,
+    required String token,
+    required int extraDays,
+    String? notes,
+  }) async {
+    final response = await _dio.post(
+      '${ApiConstants.borrowings}/$borrowingId/renew',
+      data: {
+        'extraDays': extraDays,
+        if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
+      },
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

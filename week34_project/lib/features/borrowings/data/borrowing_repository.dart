@@ -10,4 +10,9 @@ abstract class BorrowingRepository {
     int limit = 10,
   });
   Future<Borrowing> returnBook({required String borrowingId});
+  Future<Borrowing> renewLoan({
+    required String borrowingId,
+    int extraDays = 7,
+    String? notes,
+  });
 }
