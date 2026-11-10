@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:week34_project/features/borrowings/data/models/borrowing.dart';
+import 'package:week34_project/features/borrowings/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowings/data/models/create_borrowing_request.dart';
 
 void main() {
@@ -59,5 +60,40 @@ void main() {
     expect(borrowing.returnDate, isNull);
     expect(borrowing.fineAmount, 0);
     expect(borrowing.finePaid, false);
+  });
+
+  test('BorrowingSlip và BorrowingSlipItem parse đúng JSON', () {
+    final json = {
+      'id': 'slip-01',
+      'slipNumber': 'SLIP-2026-001',
+      'memberId': 'mem-01',
+      'status': 'ACTIVE',
+      'dueDate': '2026-11-20T10:00:00.000Z',
+      'items': [
+        {
+          'id': 'item-01',
+          'bookId': 'book-01',
+          'bookTitle': 'Refactoring',
+          'quantity': 2,
+          'status': 'BORROWED',
+        },
+      ],
+    };
+
+    final slip = BorrowingSlip.fromJson(json);
+
+    expect(slip.id, 'slip-01');
+    expect(slip.slipNumber, 'SLIP-2026-001');
+    expect(slip.memberId, 'mem-01');
+    expect(slip.status, 'ACTIVE');
+    expect(slip.dueDate.day, 20);
+    expect(slip.items.length, 1);
+
+    final item = slip.items.first;
+    expect(item.id, 'item-01');
+    expect(item.bookId, 'book-01');
+    expect(item.bookTitle, 'Refactoring');
+    expect(item.quantity, 2);
+    expect(item.status, 'BORROWED');
   });
 }
