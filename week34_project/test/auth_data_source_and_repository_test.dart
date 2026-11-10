@@ -105,7 +105,39 @@ void main() {
         expect(result['accessToken'], 'jwt-reg');
       },
     );
+    test('forgotPassword gửi POST đúng email', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'POST');
+            expect(options.path, '/auth/forgot-password');
+            expect(options.data, {'email': 'user@example.com'});
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'success': true,
+                  'message':
+                      'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.',
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final dataSource = AuthRemoteDataSourceImpl(dio: dio);
+
+      final result = await dataSource.forgotPassword(
+        email: '  USER@EXAMPLE.COM  ',
+      );
+
+      expect(result['success'], true);
+    });
     test('getCurrentUser gửi GET /auth/me kèm Authorization header', () async {
       final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
@@ -170,7 +202,18 @@ void main() {
       expect(response.user.fullName, 'Nguyễn Văn A');
       expect(response.user.role, 'MEMBER');
     });
+    test('forgotPassword trả về thông báo chung', () async {
+      final repository = ApiAuthRepository(
+        remoteDataSource: _FakeAuthRemoteDataSource(),
+      );
 
+      final message = await repository.forgotPassword('user@example.com');
+
+      expect(
+        message,
+        'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.',
+      );
+    });
     test('getCurrentUser parse kết quả sang UserProfile', () async {
       final mockDataSource = _FakeAuthRemoteDataSource(
         userProfileData: {
@@ -217,6 +260,14 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
     required String password,
   }) async {
     return authResponseData!;
+  }
+
+  @override
+  Future<Map<String, dynamic>> forgotPassword({required String email}) async {
+    return {
+      'success': true,
+      'message': 'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.',
+    };
   }
 
   @override

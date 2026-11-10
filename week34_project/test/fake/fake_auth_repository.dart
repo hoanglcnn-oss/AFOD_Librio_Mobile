@@ -48,6 +48,15 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<String> forgotPassword(String email) async {
+    if (email.trim().isEmpty) {
+      throw ArgumentError('Email không được để trống');
+    }
+
+    return 'Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.';
+  }
+
+  @override
   Future<UserProfile> getCurrentUser(String token) async {
     if (token != 'fake_token') {
       throw Exception('Token không hợp lệ');

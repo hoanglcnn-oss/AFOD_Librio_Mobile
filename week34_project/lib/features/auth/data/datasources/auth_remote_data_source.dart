@@ -16,6 +16,8 @@ abstract class AuthRemoteDataSource {
     required String password,
   });
 
+  Future<Map<String, dynamic>> forgotPassword({required String email});
+
   Future<Map<String, dynamic>> getCurrentUser(String token);
 }
 
@@ -52,6 +54,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'email': email,
         'password': password,
       },
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> forgotPassword({required String email}) async {
+    final response = await _dio.post(
+      ApiConstants.forgotPassword,
+      data: {'email': email.trim().toLowerCase()},
     );
 
     return response.data as Map<String, dynamic>;

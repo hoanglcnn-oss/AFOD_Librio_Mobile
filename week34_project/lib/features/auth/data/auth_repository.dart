@@ -10,6 +10,6 @@ abstract class AuthRepository {
     required String email,
     required String password,
   });
-
+  Future<String> forgotPassword(String email);
   Future<UserProfile> getCurrentUser(String token);
 }
