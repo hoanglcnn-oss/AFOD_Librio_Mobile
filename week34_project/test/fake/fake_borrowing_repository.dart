@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:week34_project/features/borrowings/data/borrowing_repository.dart';
 import 'package:week34_project/features/borrowings/data/models/borrowing.dart';
 import 'package:week34_project/features/borrowings/data/models/create_borrowing_request.dart';
@@ -18,6 +19,9 @@ class FakeBorrowingRepository implements BorrowingRepository {
   String fakeBorrowingStatus = 'BORROWED';
   int fakeRenewCount = 0;
   DateTime? fakeDueDate;
+  DioException? createSlipErrorOnce;
+
+  final List<CreateBorrowingSlipRequest> createSlipRequests = [];
   FakeBorrowingRepository({this.shouldFail = false});
 
   @override
@@ -48,6 +52,15 @@ class FakeBorrowingRepository implements BorrowingRepository {
     CreateBorrowingSlipRequest request,
   ) async {
     createSlipCallCount++;
+    createSlipRequests.add(request);
+
+    // Giả lập Backend trả HTTP 400 đúng một lần.
+    final error = createSlipErrorOnce;
+
+    if (error != null) {
+      createSlipErrorOnce = null;
+      throw error;
+    }
 
     if (shouldFailCreateSlip) {
       throw Exception('Không thể tạo phiếu mượn');

@@ -32,4 +32,34 @@ void main() {
       expect(message, contains('kiểm tra phiếu mượn'));
     },
   );
+
+  test(
+    'BorrowingErrorMapper | HTTP 400 vượt hạn mức | hiển thị thông báo Backend',
+    () {
+      final options = RequestOptions(path: '/borrowing-slips');
+
+      const backendMessage =
+          'Vượt quá hạn mức mượn: độc giả đang giữ '
+          '4/5 cuốn, chỉ còn được mượn thêm 1 cuốn '
+          'nhưng yêu cầu 2 cuốn';
+
+      final error = DioException(
+        requestOptions: options,
+        response: Response(
+          requestOptions: options,
+          statusCode: 400,
+          data: {
+            'statusCode': 400,
+            'message': backendMessage,
+            'error': 'Bad Request',
+          },
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final message = getBorrowingErrorMessage(error);
+
+      expect(message, backendMessage);
+    },
+  );
 }

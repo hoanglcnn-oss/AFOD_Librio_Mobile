@@ -13,8 +13,20 @@ String getBorrowingErrorMessage(Object error) {
 
     switch (statusCode) {
       case 400:
+        final data = error.response?.data;
+
+        if (data is Map) {
+          final message = data['message'];
+
+          // Thông báo vượt hạn mức do Backend trả về.
+          if (message is String &&
+              message.startsWith('Vượt quá hạn mức mượn:')) {
+            return message;
+          }
+        }
         return 'Không đủ điều kiện mượn sách. '
             'Vui lòng kiểm tra hạn thẻ, hạn mức hoặc số lượng sách.';
+
       case 401:
         return 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn. '
             'Vui lòng đăng nhập lại.';
