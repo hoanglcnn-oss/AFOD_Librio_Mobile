@@ -282,4 +282,109 @@ void main() {
 
     expect(requestCount, 0);
   });
+  test('renewLoan parse dueDate mới và renewCount', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          expect(options.method, 'POST');
+          expect(options.path, '/borrowings/brw-01/renew');
+          expect(options.headers['Authorization'], 'Bearer test-token');
+          expect(options.data, {'extraDays': 7});
+
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: {
+                'id': 'brw-01',
+                'transactionCode': 'BRW-2026-0001',
+                'memberId': 'mem-01',
+                'memberName': 'Nguyễn Văn An',
+                'bookId': 'book-01',
+                'bookTitle': 'Clean Code',
+                'borrowDate': '2026-11-01T08:00:00Z',
+                'dueDate': '2026-11-22T08:00:00Z',
+                'renewCount': 1,
+                'status': 'BORROWED',
+              },
+            ),
+          );
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    final result = await repository.renewLoan(
+      borrowingId: 'brw-01',
+      extraDays: 7,
+    );
+
+    expect(result.renewCount, 1);
+    expect(result.dueDate, DateTime.utc(2026, 11, 22, 8));
+  });
+  test('renewLoan thiếu JWT không gửi request', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+
+    var requestCount = 0;
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          requestCount++;
+          handler.next(options);
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    await expectLater(
+      repository.renewLoan(borrowingId: 'brw-01'),
+      throwsA(isA<StateError>()),
+    );
+
+    expect(requestCount, 0);
+  });
+  test('renewLoan từ chối extraDays ngoài 1-14', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    var requestCount = 0;
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          requestCount++;
+          handler.next(options);
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    for (final days in [0, 15]) {
+      await expectLater(
+        repository.renewLoan(borrowingId: 'brw-01', extraDays: days),
+        throwsA(isA<ArgumentError>()),
+      );
+    }
+
+    expect(requestCount, 0);
+  });
 }

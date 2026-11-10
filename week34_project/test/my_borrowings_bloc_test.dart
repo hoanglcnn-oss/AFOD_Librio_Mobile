@@ -116,5 +116,76 @@ void main() {
 
       await bloc.close();
     });
+    test('Renew emits Renewing -> RenewSuccess', () async {
+      final repository = FakeBorrowingRepository();
+      final bloc = MyBorrowingsBloc(borrowingRepository: repository);
+
+      bloc.add(const LoadMyBorrowings('mem-01'));
+      await bloc.stream.firstWhere((s) => s is MyBorrowingsLoaded);
+
+      final states = <MyBorrowingsState>[];
+      final subscription = bloc.stream.listen(states.add);
+
+      bloc.add(
+        const RenewBorrowingRequested(borrowingId: 'brw-01', extraDays: 7),
+      );
+
+      await bloc.stream.firstWhere((s) => s is MyBorrowingsRenewSuccess);
+
+      expect(states, [
+        isA<MyBorrowingsRenewing>(),
+        isA<MyBorrowingsRenewSuccess>(),
+      ]);
+      expect(repository.renewCallCount, 1);
+      expect(repository.lastExtraDays, 7);
+      expect(repository.fakeRenewCount, 1);
+
+      await subscription.cancel();
+      await bloc.close();
+    });
+    test('Renew emits Renewing -> RenewFailure', () async {
+      final repository = FakeBorrowingRepository()..shouldFailRenew = true;
+
+      final bloc = MyBorrowingsBloc(borrowingRepository: repository);
+
+      bloc.add(const LoadMyBorrowings('mem-01'));
+      await bloc.stream.firstWhere((s) => s is MyBorrowingsLoaded);
+
+      final states = <MyBorrowingsState>[];
+      final subscription = bloc.stream.listen(states.add);
+
+      bloc.add(
+        const RenewBorrowingRequested(borrowingId: 'brw-01', extraDays: 7),
+      );
+
+      await bloc.stream.firstWhere((s) => s is MyBorrowingsRenewFailure);
+
+      expect(states[0], isA<MyBorrowingsRenewing>());
+      expect(states[1], isA<MyBorrowingsRenewFailure>());
+      expect(repository.renewCallCount, 1);
+      expect(repository.fakeRenewCount, 0);
+
+      await subscription.cancel();
+      await bloc.close();
+    });
+    test('RenewCount = 2 thì không gọi Repository', () async {
+      final repository = FakeBorrowingRepository()..fakeRenewCount = 2;
+
+      final bloc = MyBorrowingsBloc(borrowingRepository: repository);
+
+      bloc.add(const LoadMyBorrowings('mem-01'));
+      await bloc.stream.firstWhere((s) => s is MyBorrowingsLoaded);
+
+      bloc.add(
+        const RenewBorrowingRequested(borrowingId: 'brw-01', extraDays: 7),
+      );
+
+      await bloc.stream.firstWhere((s) => s is MyBorrowingsRenewFailure);
+
+      expect(repository.renewCallCount, 0);
+      expect(bloc.state, isA<MyBorrowingsRenewFailure>());
+
+      await bloc.close();
+    });
   });
 }

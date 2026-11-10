@@ -152,5 +152,41 @@ void main() {
 
       expect(result['status'], 'RETURNED');
     });
+    test('renewLoan gửi POST đúng path, JWT và extraDays', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'POST');
+            expect(options.path, '/borrowings/brw-01/renew');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+            expect(options.data, {'extraDays': 7});
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'id': 'brw-01',
+                  'dueDate': '2026-11-21T08:00:00Z',
+                  'renewCount': 1,
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
+
+      final result = await dataSource.renewLoan(
+        borrowingId: 'brw-01',
+        token: 'test-token',
+        extraDays: 7,
+      );
+
+      expect(result['renewCount'], 1);
+    });
   });
 }

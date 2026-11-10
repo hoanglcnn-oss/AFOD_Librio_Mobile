@@ -7,6 +7,14 @@ class FakeBorrowingRepository implements BorrowingRepository {
   bool shouldFail;
   bool shouldFailReturn = false;
   int returnCallCount = 0;
+  bool shouldFailRenew = false;
+  int renewCallCount = 0;
+  int lastExtraDays = 0;
+
+  // Cho phép tạo các trường hợp test khác nhau.
+  String fakeBorrowingStatus = 'BORROWED';
+  int fakeRenewCount = 0;
+  DateTime? fakeDueDate;
   FakeBorrowingRepository({this.shouldFail = false});
 
   @override
@@ -50,8 +58,9 @@ class FakeBorrowingRepository implements BorrowingRepository {
       bookId: 'book-01',
       bookTitle: 'Clean Code',
       borrowDate: DateTime.utc(2026, 10, 29),
-      dueDate: DateTime.utc(2026, 11, 12),
-      status: 'BORROWED',
+      dueDate: fakeDueDate ?? DateTime.now().add(const Duration(days: 14)),
+      status: fakeBorrowingStatus,
+      renewCount: fakeRenewCount,
     );
 
     return BorrowingsPage(
@@ -91,6 +100,32 @@ class FakeBorrowingRepository implements BorrowingRepository {
     int extraDays = 7,
     String? notes,
   }) async {
-    throw UnimplementedError();
+    renewCallCount++;
+    lastExtraDays = extraDays;
+
+    if (shouldFailRenew) {
+      throw Exception('Không thể gia hạn sách');
+    }
+
+    final oldDueDate =
+        fakeDueDate ?? DateTime.now().add(const Duration(days: 14));
+
+    final newDueDate = oldDueDate.add(Duration(days: extraDays));
+
+    fakeDueDate = newDueDate;
+    fakeRenewCount++;
+
+    return Borrowing(
+      id: borrowingId,
+      transactionCode: 'BRW-2026-0001',
+      memberId: 'mem-01',
+      memberName: 'Nguyễn Văn An',
+      bookId: 'book-01',
+      bookTitle: 'Clean Code',
+      borrowDate: DateTime.utc(2026, 11, 1),
+      dueDate: newDueDate,
+      status: 'BORROWED',
+      renewCount: fakeRenewCount,
+    );
   }
 }
