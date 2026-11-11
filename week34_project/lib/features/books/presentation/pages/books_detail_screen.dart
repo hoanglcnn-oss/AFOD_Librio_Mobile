@@ -142,6 +142,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
                         if (borrowed == true) {
                           Navigator.of(context).pop(true);
+                        } else {
+                          // Có thể tồn kho đã thay đổi trong lúc xác nhận.
+                          // Lấy lại chi tiết sách từ Backend khi quay về.
+                          _retry();
                         }
                       },
                 child: const Text('Mượn sách'),

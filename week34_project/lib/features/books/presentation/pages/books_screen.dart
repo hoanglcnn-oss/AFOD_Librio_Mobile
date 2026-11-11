@@ -230,9 +230,18 @@ class _BooksScreenState extends State<BooksScreen> {
 
               if (!context.mounted) return;
 
-              if (borrowed == true) {
+              // Đồng bộ lại danh sách từ Backend sau khi xem chi tiết,
+              // kể cả khi yêu cầu mượn thất bại.
+              final keyword = _searchController.text.trim();
+
+              if (keyword.isEmpty) {
                 context.read<BooksBloc>().add(const LoadBooks());
-                // Báo cho MainScreen rằng có phiếu mượn mới.
+              } else {
+                context.read<BooksBloc>().add(SearchBooks(keyword));
+              }
+
+              // Chỉ báo có lượt mượn mới nếu API thực sự thành công.
+              if (borrowed == true) {
                 widget.onBorrowSucceeded?.call();
               }
             },
