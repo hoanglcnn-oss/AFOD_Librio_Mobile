@@ -29,7 +29,12 @@ class FakeBorrowingRepository implements BorrowingRepository {
   DioException? returnSlipError;
   int paySlipFineCallCount = 0;
   DioException? paySlipFineError;
+  int approveSlipCallCount = 0;
+  int rejectSlipCallCount = 0;
+  String? lastRejectionReason;
 
+  DioException? approveSlipError;
+  DioException? rejectSlipError;
   final List<CreateBorrowingRequest> borrowRequests = [];
   final List<CreateBorrowingSlipRequest> createSlipRequests = [];
 
@@ -166,6 +171,94 @@ class FakeBorrowingRepository implements BorrowingRepository {
           bookTitle: 'Sách kiểm thử',
           quantity: 1,
           status: 'BORROWING',
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<BorrowingSlipsPage> getPendingBorrowingSlips({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    return BorrowingSlipsPage(
+      slips: [
+        BorrowingSlip(
+          id: 'slip-01',
+          slipNumber: 'SLIP-2026-0001',
+          memberId: 'mem-01',
+          status: 'PENDING_APPROVAL',
+          dueDate: DateTime.utc(2026, 11, 25),
+          items: const [
+            BorrowingSlipItem(
+              id: 'item-01',
+              bookId: 'book-01',
+              bookTitle: 'Clean Code',
+              quantity: 2,
+              status: 'PENDING',
+            ),
+          ],
+        ),
+      ],
+      page: page,
+      limit: limit,
+      totalItems: 1,
+      totalPages: 1,
+      hasNextPage: false,
+    );
+  }
+
+  @override
+  Future<BorrowingSlip> approveBorrowingSlip({required String slipId}) async {
+    approveSlipCallCount++;
+
+    if (approveSlipError != null) {
+      throw approveSlipError!;
+    }
+
+    return BorrowingSlip(
+      id: slipId,
+      slipNumber: 'SLIP-2026-0001',
+      memberId: 'mem-01',
+      status: 'BORROWED',
+      dueDate: DateTime.utc(2026, 11, 25),
+      items: const [
+        BorrowingSlipItem(
+          id: 'item-01',
+          bookId: 'book-01',
+          bookTitle: 'Clean Code',
+          quantity: 2,
+          status: 'BORROWING',
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<BorrowingSlip> rejectBorrowingSlip({
+    required String slipId,
+    required String reason,
+  }) async {
+    rejectSlipCallCount++;
+    lastRejectionReason = reason;
+
+    if (rejectSlipError != null) {
+      throw rejectSlipError!;
+    }
+
+    return BorrowingSlip(
+      id: slipId,
+      slipNumber: 'SLIP-2026-0001',
+      memberId: 'mem-01',
+      status: 'REJECTED',
+      dueDate: DateTime.utc(2026, 11, 25),
+      items: const [
+        BorrowingSlipItem(
+          id: 'item-01',
+          bookId: 'book-01',
+          bookTitle: 'Clean Code',
+          quantity: 2,
+          status: 'CANCELLED',
         ),
       ],
     );

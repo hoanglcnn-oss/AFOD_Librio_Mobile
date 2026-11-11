@@ -31,6 +31,23 @@ abstract class BorrowingsRemoteDataSource {
     required String token,
   });
 
+  Future<Map<String, dynamic>> getPendingBorrowingSlips({
+    required String token,
+    int page = 1,
+    int limit = 10,
+  });
+
+  Future<Map<String, dynamic>> approveBorrowingSlip({
+    required String slipId,
+    required String token,
+  });
+
+  Future<Map<String, dynamic>> rejectBorrowingSlip({
+    required String slipId,
+    required String reason,
+    required String token,
+  });
+
   Future<Map<String, dynamic>> returnBook({
     required String borrowingId,
     required String token,
@@ -127,6 +144,53 @@ class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
   }) async {
     final response = await _dio.get(
       '${ApiConstants.borrowingSlips}/$slipId',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getPendingBorrowingSlips({
+    required String token,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await _dio.get(
+      ApiConstants.borrowingSlips,
+      queryParameters: {
+        'status': 'PENDING_APPROVAL',
+        'page': page,
+        'limit': limit,
+      },
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> approveBorrowingSlip({
+    required String slipId,
+    required String token,
+  }) async {
+    final response = await _dio.patch(
+      '${ApiConstants.borrowingSlips}/$slipId/approve',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> rejectBorrowingSlip({
+    required String slipId,
+    required String reason,
+    required String token,
+  }) async {
+    final response = await _dio.patch(
+      '${ApiConstants.borrowingSlips}/$slipId/reject',
+      data: {'reason': reason},
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

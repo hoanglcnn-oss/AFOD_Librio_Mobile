@@ -793,4 +793,169 @@ void main() {
       expect(slip.status, 'COMPLETED');
     },
   );
+
+  test('getPendingBorrowingSlips | Có JWT | GET phiếu chờ duyệt', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          expect(options.method, 'GET');
+          expect(options.path, '/borrowing-slips');
+          expect(options.queryParameters['status'], 'PENDING_APPROVAL');
+          expect(options.queryParameters['page'], 1);
+          expect(options.queryParameters['limit'], 10);
+          expect(options.queryParameters.containsKey('memberId'), false);
+          expect(options.headers['Authorization'], 'Bearer test-token');
+
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: {
+                'data': [
+                  {
+                    'id': 'slip-01',
+                    'slipNumber': 'SLIP-2026-0001',
+                    'memberId': 'mem-01',
+                    'status': 'PENDING_APPROVAL',
+                    'dueDate': '2026-11-25T08:00:00Z',
+                    'items': [
+                      {
+                        'id': 'item-01',
+                        'bookId': 'book-01',
+                        'bookTitle': 'Clean Code',
+                        'quantity': 2,
+                        'status': 'PENDING',
+                      },
+                    ],
+                  },
+                ],
+                'meta': {
+                  'page': 1,
+                  'limit': 10,
+                  'totalItems': 1,
+                  'totalPages': 1,
+                  'hasNextPage': false,
+                },
+              },
+            ),
+          );
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    final page = await repository.getPendingBorrowingSlips();
+
+    expect(page.slips.length, 1);
+    expect(page.slips.first.status, 'PENDING_APPROVAL');
+    expect(page.slips.first.items.first.quantity, 2);
+  });
+
+  test(
+    'approveBorrowingSlip | Phiếu chờ duyệt | PATCH approve, BORROWED',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'PATCH');
+            expect(options.path, '/borrowing-slips/slip-01/approve');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+            expect(options.data, isNull);
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'id': 'slip-01',
+                  'slipNumber': 'SLIP-2026-0001',
+                  'memberId': 'mem-01',
+                  'status': 'BORROWED',
+                  'dueDate': '2026-11-25T08:00:00Z',
+                  'items': [
+                    {
+                      'id': 'item-01',
+                      'bookId': 'book-01',
+                      'bookTitle': 'Clean Code',
+                      'quantity': 2,
+                      'status': 'BORROWING',
+                    },
+                  ],
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final slip = await repository.approveBorrowingSlip(slipId: 'slip-01');
+
+      expect(slip.status, 'BORROWED');
+      expect(slip.items.first.status, 'BORROWING');
+    },
+  );
+
+  test('rejectBorrowingSlip | Có lý do | PATCH reject, REJECTED', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          expect(options.method, 'PATCH');
+          expect(options.path, '/borrowing-slips/slip-01/reject');
+          expect(options.headers['Authorization'], 'Bearer test-token');
+          expect(options.data, {'reason': 'Sách đang được kiểm kê'});
+
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: {
+                'id': 'slip-01',
+                'slipNumber': 'SLIP-2026-0001',
+                'memberId': 'mem-01',
+                'status': 'REJECTED',
+                'dueDate': '2026-11-25T08:00:00Z',
+                'items': [],
+              },
+            ),
+          );
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    final slip = await repository.rejectBorrowingSlip(
+      slipId: 'slip-01',
+      reason: '  Sách đang được kiểm kê  ',
+    );
+
+    expect(slip.status, 'REJECTED');
+  });
 }

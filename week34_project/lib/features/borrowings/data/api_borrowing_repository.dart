@@ -146,6 +146,78 @@ class ApiBorrowingRepository implements BorrowingRepository {
   }
 
   @override
+  Future<BorrowingSlipsPage> getPendingBorrowingSlips({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (page < 1 || limit < 1) {
+      throw ArgumentError('Thông tin phân trang không hợp lệ');
+    }
+
+    final data = await _remoteDataSource.getPendingBorrowingSlips(
+      token: token,
+      page: page,
+      limit: limit,
+    );
+
+    return BorrowingSlipsPage.fromJson(data);
+  }
+
+  @override
+  Future<BorrowingSlip> approveBorrowingSlip({required String slipId}) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (slipId.trim().isEmpty) {
+      throw ArgumentError('Mã phiếu không được để trống');
+    }
+
+    final data = await _remoteDataSource.approveBorrowingSlip(
+      slipId: slipId.trim(),
+      token: token,
+    );
+
+    return BorrowingSlip.fromJson(data);
+  }
+
+  @override
+  Future<BorrowingSlip> rejectBorrowingSlip({
+    required String slipId,
+    required String reason,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (slipId.trim().isEmpty) {
+      throw ArgumentError('Mã phiếu không được để trống');
+    }
+
+    if (reason.trim().isEmpty) {
+      throw ArgumentError('Cần nhập lý do từ chối phiếu');
+    }
+
+    final data = await _remoteDataSource.rejectBorrowingSlip(
+      slipId: slipId.trim(),
+      reason: reason.trim(),
+      token: token,
+    );
+
+    return BorrowingSlip.fromJson(data);
+  }
+
+  @override
   Future<Borrowing> returnBook({required String borrowingId}) async {
     final token = await _tokenStorage.readToken();
 
