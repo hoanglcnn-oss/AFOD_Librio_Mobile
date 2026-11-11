@@ -109,25 +109,36 @@ class _ManageBorrowingSlipsScreenState
     return Column(
       children: [
         // Thanh bộ lọc trạng thái
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-          child: Row(
-            children: _statusFilters.map((filter) {
-              final isSelected = _selectedStatus == filter.value;
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: ChoiceChip(
-                  label: Text(filter.label),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      _onStatusSelected(filter.value);
-                    }
-                  },
-                ),
-              );
-            }).toList(),
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+              ),
+            ),
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+            child: Row(
+              children: _statusFilters.map((filter) {
+                final isSelected = _selectedStatus == filter.value;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ChoiceChip(
+                    visualDensity: VisualDensity.compact,
+                    label: Text(filter.label),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      if (selected) {
+                        _onStatusSelected(filter.value);
+                      }
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
 
@@ -198,24 +209,15 @@ class _ManageBorrowingSlipsScreenState
                               itemBuilder: (context, index) {
                                 final slip = result.slips[index];
 
-                                return Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    BorrowingSlipCard(
-                                      slip: slip,
-                                      showMember: true,
-                                      onTap: () => _openDetail(slip.id),
-                                    ),
-                                    if (slip.status == 'PENDING_APPROVAL')
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          8,
-                                          0,
-                                          8,
-                                          12,
-                                        ),
-                                        child: Wrap(
+                                final isPending =
+                                    slip.status == 'PENDING_APPROVAL';
+
+                                return BorrowingSlipCard(
+                                  slip: slip,
+                                  showMember: true,
+                                  onTap: () => _openDetail(slip.id),
+                                  actions: isPending
+                                      ? Wrap(
                                           alignment: WrapAlignment.end,
                                           spacing: 8,
                                           runSpacing: 8,
@@ -232,13 +234,15 @@ class _ManageBorrowingSlipsScreenState
                                                 slip,
                                                 approve: true,
                                               ),
-                                              icon: const Icon(Icons.check),
+                                              icon: const Icon(
+                                                Icons.check,
+                                                size: 18,
+                                              ),
                                               label: const Text('Duyệt phiếu'),
                                             ),
                                           ],
-                                        ),
-                                      ),
-                                  ],
+                                        )
+                                      : null,
                                 );
                               },
                             ),

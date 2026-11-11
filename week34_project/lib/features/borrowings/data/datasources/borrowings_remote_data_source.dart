@@ -19,6 +19,13 @@ abstract class BorrowingsRemoteDataSource {
     int limit = 10,
   });
 
+  Future<Map<String, dynamic>> getAllBorrowings({
+    required String token,
+    String? status,
+    int page = 1,
+    int limit = 10,
+  });
+
   Future<Map<String, dynamic>> getBorrowingSlips({
     required String memberId,
     required String token,
@@ -122,6 +129,26 @@ class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
     final response = await _dio.get(
       ApiConstants.borrowings,
       queryParameters: {'memberId': memberId, 'page': page, 'limit': limit},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getAllBorrowings({
+    required String token,
+    String? status,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final queryParameters = <String, dynamic>{'page': page, 'limit': limit};
+    if (status != null && status.isNotEmpty) {
+      queryParameters['status'] = status;
+    }
+    final response = await _dio.get(
+      ApiConstants.borrowings,
+      queryParameters: queryParameters,
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

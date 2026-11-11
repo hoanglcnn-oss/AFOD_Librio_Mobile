@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/books_repository.dart';
 import '../../data/models/book.dart';
-import '../../../borrowings/presentation/pages/borrow_confirm_screen.dart';
+import '../../../borrowings/presentation/pages/borrowing_slip_confirm_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final String bookId;
@@ -134,7 +134,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     : () async {
                         final borrowed = await Navigator.of(context).push<bool>(
                           MaterialPageRoute<bool>(
-                            builder: (_) => BorrowConfirmScreen(book: book),
+                            builder: (_) =>
+                                BorrowingSlipConfirmScreen(books: [book]),
                           ),
                         );
 

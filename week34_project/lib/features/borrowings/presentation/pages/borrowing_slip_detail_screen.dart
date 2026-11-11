@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/borrowing_repository.dart';
@@ -150,7 +151,23 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
-                Text('Độc giả: ${slip.memberId}'),
+                Row(
+                  children: [
+                    Expanded(child: Text('Độc giả: ${slip.memberId}')),
+                    IconButton(
+                      icon: const Icon(Icons.copy, size: 18),
+                      tooltip: 'Sao chép mã độc giả',
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: slip.memberId));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Đã sao chép mã độc giả'),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
                 Text(
                   'Trạng thái: '
                   '${BorrowingSlipUiHelper.slipStatus(slip.status)}',

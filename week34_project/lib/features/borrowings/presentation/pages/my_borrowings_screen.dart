@@ -9,11 +9,13 @@ import '../widgets/borrowing_card.dart';
 class MyBorrowingsScreen extends StatelessWidget {
   final String memberId;
   final VoidCallback onReturnSucceeded;
+  final bool allowActions;
 
   const MyBorrowingsScreen({
     super.key,
     required this.memberId,
     required this.onReturnSucceeded,
+    this.allowActions = false,
   });
   Future<void> _confirmReturn(BuildContext context, String borrowingId) async {
     final bloc = context.read<MyBorrowingsBloc>();
@@ -222,10 +224,12 @@ class MyBorrowingsScreen extends StatelessWidget {
                 isBusy: isBusy,
                 isReturning: isCurrentReturn,
                 isRenewing: isCurrentRenew,
-
-                onReturn: () => _confirmReturn(context, borrowing.id),
-
-                onRenew: () => _confirmRenew(context, borrowing.id),
+                onReturn: allowActions
+                    ? () => _confirmReturn(context, borrowing.id)
+                    : null,
+                onRenew: allowActions
+                    ? () => _confirmRenew(context, borrowing.id)
+                    : null,
               );
             },
           );

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/books_repository.dart';
@@ -21,8 +22,22 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
 
       emit(BooksLoaded(booksPage: booksPage));
     } on DioException catch (error) {
+      if (kDebugMode) {
+        debugPrint(
+          '[BooksBloc] DioException while loading books: '
+          'path=${error.requestOptions.path}, '
+          'status=${error.response?.statusCode}, '
+          'data=${error.response?.data}, '
+          'error=${error.error}',
+        );
+      }
       emit(BooksFailure(message: _getErrorMessage(error)));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint(
+          '[BooksBloc] Unexpected error while loading books: $error\n$stackTrace',
+        );
+      }
       emit(const BooksFailure(message: 'Không thể xử lý dữ liệu sách'));
     }
   }
@@ -56,8 +71,22 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
 
       emit(BooksLoaded(booksPage: result));
     } on DioException catch (error) {
+      if (kDebugMode) {
+        debugPrint(
+          '[BooksBloc] DioException while searching books: '
+          'path=${error.requestOptions.path}, '
+          'status=${error.response?.statusCode}, '
+          'data=${error.response?.data}, '
+          'error=${error.error}',
+        );
+      }
       emit(BooksFailure(message: _getErrorMessage(error)));
-    } catch (_) {
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint(
+          '[BooksBloc] Unexpected error while searching books: $error\n$stackTrace',
+        );
+      }
       emit(const BooksFailure(message: 'Không thể tìm kiếm sách'));
     }
   }

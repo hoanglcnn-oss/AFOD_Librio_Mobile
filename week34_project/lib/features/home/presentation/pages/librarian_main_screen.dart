@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../borrowings/data/api_borrowing_repository.dart';
-import '../../../borrowings/presentation/pages/manage_borrowing_slips_screen.dart';
+import '../../../borrowings/presentation/pages/librarian_manage_screen.dart';
 import '../../../borrowings/presentation/pages/pending_borrowing_slips_screen.dart';
 
 class LibrarianMainScreen extends StatefulWidget {
@@ -32,7 +32,7 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
         index: _selectedIndex,
         children: [
           PendingBorrowingSlipsScreen(repository: _borrowingRepository),
-          ManageBorrowingSlipsScreen(repository: _borrowingRepository),
+          LibrarianManageScreen(repository: _borrowingRepository),
           const ProfileScreen(),
         ],
       ),

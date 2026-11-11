@@ -150,36 +150,28 @@ class _PendingBorrowingSlipsScreenState
                         itemBuilder: (context, index) {
                           final slip = result.slips[index];
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              BorrowingSlipCard(
-                                slip: slip,
-                                showMember: true,
-                                onTap: () => _openDetail(slip.id),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
-                                child: Wrap(
-                                  alignment: WrapAlignment.end,
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    OutlinedButton(
-                                      onPressed: () =>
-                                          _processSlip(slip, approve: false),
-                                      child: const Text('Từ chối'),
-                                    ),
-                                    FilledButton.icon(
-                                      onPressed: () =>
-                                          _processSlip(slip, approve: true),
-                                      icon: const Icon(Icons.check),
-                                      label: const Text('Duyệt phiếu'),
-                                    ),
-                                  ],
+                          return BorrowingSlipCard(
+                            slip: slip,
+                            showMember: true,
+                            onTap: () => _openDetail(slip.id),
+                            actions: Wrap(
+                              alignment: WrapAlignment.end,
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                OutlinedButton(
+                                  onPressed: () =>
+                                      _processSlip(slip, approve: false),
+                                  child: const Text('Từ chối'),
                                 ),
-                              ),
-                            ],
+                                FilledButton.icon(
+                                  onPressed: () =>
+                                      _processSlip(slip, approve: true),
+                                  icon: const Icon(Icons.check, size: 18),
+                                  label: const Text('Duyệt phiếu'),
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ),

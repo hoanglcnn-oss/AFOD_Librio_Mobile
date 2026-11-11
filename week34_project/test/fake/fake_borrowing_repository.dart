@@ -39,6 +39,15 @@ class FakeBorrowingRepository implements BorrowingRepository {
   BorrowingSlipsPage Function(int page, int limit)? fakePendingSlipsBuilder;
   DioException? getPendingSlipsError;
 
+  int getAllBorrowingsCallCount = 0;
+  String? lastGetAllBorrowingsStatus;
+  int? lastGetAllBorrowingsPage;
+  bool shouldFailGetAllBorrowings = false;
+  BorrowingsPage? fakeAllBorrowingsPage;
+  BorrowingsPage Function(String? status, int page, int limit)?
+  fakeAllBorrowingsBuilder;
+  DioException? getAllBorrowingsError;
+
   int getAllSlipsCallCount = 0;
   String? lastGetAllSlipsStatus;
   int? lastGetAllSlipsPage;
@@ -145,6 +154,54 @@ class FakeBorrowingRepository implements BorrowingRepository {
       dueDate: fakeDueDate ?? DateTime.now().add(const Duration(days: 14)),
       status: fakeBorrowingStatus,
       renewCount: fakeRenewCount,
+    );
+
+    return BorrowingsPage(
+      borrowings: [borrowing],
+      page: page,
+      limit: limit,
+      totalItems: 1,
+      totalPages: 1,
+      hasNextPage: false,
+    );
+  }
+
+  @override
+  Future<BorrowingsPage> getAllBorrowings({
+    String? status,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    getAllBorrowingsCallCount++;
+    lastGetAllBorrowingsStatus = status;
+    lastGetAllBorrowingsPage = page;
+
+    if (getAllBorrowingsError != null) {
+      throw getAllBorrowingsError!;
+    }
+
+    if (shouldFailGetAllBorrowings) {
+      throw Exception('Không thể tải danh sách mượn đơn lẻ');
+    }
+
+    if (fakeAllBorrowingsBuilder != null) {
+      return fakeAllBorrowingsBuilder!(status, page, limit);
+    }
+
+    if (fakeAllBorrowingsPage != null) {
+      return fakeAllBorrowingsPage!;
+    }
+
+    final borrowing = Borrowing(
+      id: 'brw-01',
+      transactionCode: 'BRW-2026-0001',
+      memberId: 'mem-01',
+      memberName: 'Nguyễn Văn An',
+      bookId: 'book-01',
+      bookTitle: 'Clean Code',
+      borrowDate: DateTime.utc(2026, 10, 29),
+      dueDate: DateTime.utc(2026, 11, 12),
+      status: status ?? 'BORROWED',
     );
 
     return BorrowingsPage(
@@ -358,9 +415,15 @@ class FakeBorrowingRepository implements BorrowingRepository {
     );
   }
 
+  bool? lastReturnFinePaid;
+
   @override
-  Future<Borrowing> returnBook({required String borrowingId}) async {
+  Future<Borrowing> returnBook({
+    required String borrowingId,
+    bool finePaid = false,
+  }) async {
     returnCallCount++;
+    lastReturnFinePaid = finePaid;
 
     if (shouldFailReturn) {
       throw Exception('Không thể trả sách');

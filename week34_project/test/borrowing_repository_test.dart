@@ -1082,4 +1082,124 @@ void main() {
 
     expect(slip.status, 'REJECTED');
   });
+
+  test(
+    'getAllBorrowings | Có JWT và status filter | GET /borrowings với query status và page, parse đúng BorrowingsPage',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'GET');
+            expect(options.path, '/borrowings');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+            expect(options.queryParameters['status'], 'BORROWED');
+            expect(options.queryParameters['page'], 1);
+            expect(options.queryParameters['limit'], 10);
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'data': [
+                    {
+                      'id': 'brw-01',
+                      'transactionCode': 'BRW-2026-0001',
+                      'memberId': 'mem-01',
+                      'memberName': 'Nguyễn Văn An',
+                      'bookId': 'book-01',
+                      'bookTitle': 'Clean Code',
+                      'borrowDate': '2026-10-29T08:00:00.000Z',
+                      'dueDate': '2026-11-12T08:00:00.000Z',
+                      'status': 'BORROWED',
+                    },
+                  ],
+                  'meta': {
+                    'page': 1,
+                    'limit': 10,
+                    'totalItems': 1,
+                    'totalPages': 1,
+                    'hasNextPage': false,
+                  },
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final page = await repository.getAllBorrowings(
+        status: 'BORROWED',
+        page: 1,
+        limit: 10,
+      );
+
+      expect(page.borrowings.length, 1);
+      expect(page.borrowings.first.id, 'brw-01');
+      expect(page.borrowings.first.status, 'BORROWED');
+    },
+  );
+
+  test(
+    'returnBook | Có finePaid true | POST /borrowings/:id/return gửi data finePaid true',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'POST');
+            expect(options.path, '/borrowings/brw-01/return');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+            expect(options.data, {'finePaid': true});
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'id': 'brw-01',
+                  'transactionCode': 'BRW-2026-0001',
+                  'memberId': 'mem-01',
+                  'memberName': 'Nguyễn Văn An',
+                  'bookId': 'book-01',
+                  'bookTitle': 'Clean Code',
+                  'borrowDate': '2026-10-29T08:00:00.000Z',
+                  'dueDate': '2026-11-12T08:00:00.000Z',
+                  'status': 'RETURNED',
+                  'finePaid': true,
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final borrowing = await repository.returnBook(
+        borrowingId: 'brw-01',
+        finePaid: true,
+      );
+
+      expect(borrowing.status, 'RETURNED');
+      expect(borrowing.finePaid, true);
+    },
+  );
 }

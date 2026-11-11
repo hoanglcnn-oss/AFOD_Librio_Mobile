@@ -16,6 +16,12 @@ abstract class BorrowingRepository {
     int limit = 10,
   });
 
+  Future<BorrowingsPage> getAllBorrowings({
+    String? status,
+    int page = 1,
+    int limit = 10,
+  });
+
   Future<BorrowingSlipsPage> getBorrowingSlips({
     required String memberId,
     int page = 1,
@@ -24,7 +30,10 @@ abstract class BorrowingRepository {
 
   Future<BorrowingSlip> getBorrowingSlipById({required String slipId});
 
-  Future<Borrowing> returnBook({required String borrowingId});
+  Future<Borrowing> returnBook({
+    required String borrowingId,
+    bool finePaid = false,
+  });
   Future<Borrowing> renewLoan({
     required String borrowingId,
     int extraDays = 7,

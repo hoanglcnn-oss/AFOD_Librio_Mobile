@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/borrowing.dart';
+import 'borrowing_slip_ui_helper.dart';
 
 class BorrowingCard extends StatelessWidget {
   final Borrowing borrowing;
@@ -9,6 +10,7 @@ class BorrowingCard extends StatelessWidget {
   final bool isReturning;
   final bool isRenewing;
   final bool isBusy;
+  final bool showMember;
 
   const BorrowingCard({
     super.key,
@@ -18,6 +20,7 @@ class BorrowingCard extends StatelessWidget {
     this.isReturning = false,
     this.isRenewing = false,
     this.isBusy = false,
+    this.showMember = false,
   });
   String _formatDate(DateTime date) {
     final local = date.toLocal();
@@ -81,6 +84,26 @@ class BorrowingCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             _InfoRow(label: 'Hạn trả', value: _formatDate(borrowing.dueDate)),
+            if (showMember &&
+                (borrowing.memberName.isNotEmpty ||
+                    borrowing.memberId.isNotEmpty)) ...[
+              const SizedBox(height: 6),
+              _InfoRow(
+                label: 'Độc giả',
+                value: borrowing.memberName.isNotEmpty
+                    ? borrowing.memberName
+                    : BorrowingSlipUiHelper.formatShortId(borrowing.memberId),
+              ),
+            ],
+            if (borrowing.fineAmount != null && borrowing.fineAmount! > 0) ...[
+              const SizedBox(height: 6),
+              _InfoRow(
+                label: 'Tiền phạt',
+                value:
+                    '${BorrowingSlipUiHelper.formatMoney(borrowing.fineAmount!)} '
+                    '(${borrowing.finePaid == true ? 'Đã thu' : 'Chưa thu'})',
+              ),
+            ],
             if (status != 'RETURNED') ...[
               const SizedBox(height: 6),
 
@@ -89,39 +112,46 @@ class BorrowingCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
 
-              const SizedBox(height: 12),
+              if (onReturn != null || (canRenew && onRenew != null)) ...[
+                const SizedBox(height: 12),
 
-              Wrap(
-                alignment: WrapAlignment.end,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (canRenew)
-                    OutlinedButton.icon(
-                      onPressed: isBusy ? null : onRenew,
-                      icon: isRenewing
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.update),
-                      label: Text(isRenewing ? 'Đang gia hạn...' : 'Gia hạn'),
-                    ),
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (canRenew && onRenew != null)
+                      OutlinedButton.icon(
+                        onPressed: isBusy ? null : onRenew,
+                        icon: isRenewing
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.update),
+                        label: Text(isRenewing ? 'Đang gia hạn...' : 'Gia hạn'),
+                      ),
 
-                  OutlinedButton.icon(
-                    onPressed: isBusy ? null : onReturn,
-                    icon: isReturning
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.assignment_turned_in_outlined),
-                    label: Text(isReturning ? 'Đang trả...' : 'Trả sách'),
-                  ),
-                ],
-              ),
+                    if (onReturn != null)
+                      OutlinedButton.icon(
+                        onPressed: isBusy ? null : onReturn,
+                        icon: isReturning
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.assignment_turned_in_outlined),
+                        label: Text(isReturning ? 'Đang trả...' : 'Trả sách'),
+                      ),
+                  ],
+                ),
+              ],
             ],
           ],
         ),
