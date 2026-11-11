@@ -5,6 +5,7 @@ import '../../data/borrowing_repository.dart';
 import '../../data/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
+import '../widgets/slip_decision_dialog.dart';
 import 'borrowing_slip_return_screen.dart';
 import '../../../auth/data/models/app_role.dart';
 import '../../../auth/bloc/auth_bloc.dart';
@@ -86,6 +87,21 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     }
   }
 
+  Future<void> _processSlip(BorrowingSlip slip, {required bool approve}) async {
+    final shouldRefresh = await showSlipDecisionDialog(
+      context,
+      slip: slip,
+      repository: widget.repository,
+      approve: approve,
+    );
+
+    if (!mounted) return;
+
+    if (shouldRefresh == true) {
+      _refresh();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,6 +150,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
+                Text('Độc giả: ${slip.memberId}'),
                 Text(
                   'Trạng thái: '
                   '${BorrowingSlipUiHelper.slipStatus(slip.status)}',
@@ -190,6 +207,28 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                     const Text(
                       'Vui lòng liên hệ thủ thư để thanh toán tiền phạt.',
                     ),
+                ],
+
+                if (canManageSlip && slip.status == 'PENDING_APPROVAL') ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _processSlip(slip, approve: false),
+                          child: const Text('Từ chối'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () => _processSlip(slip, approve: true),
+                          icon: const Icon(Icons.check),
+                          label: const Text('Duyệt phiếu'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
 
                 if (canManageSlip &&

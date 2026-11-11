@@ -861,6 +861,130 @@ void main() {
   });
 
   test(
+    'getAllBorrowingSlips | Không có filter status | GET /borrowing-slips không truyền status và memberId',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'GET');
+            expect(options.path, '/borrowing-slips');
+            expect(options.queryParameters.containsKey('status'), false);
+            expect(options.queryParameters['page'], 1);
+            expect(options.queryParameters['limit'], 10);
+            expect(options.queryParameters.containsKey('memberId'), false);
+            expect(options.headers['Authorization'], 'Bearer test-token');
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'data': [
+                    {
+                      'id': 'slip-01',
+                      'slipNumber': 'SLIP-2026-0001',
+                      'memberId': 'mem-01',
+                      'status': 'BORROWED',
+                      'dueDate': '2026-11-25T08:00:00Z',
+                      'items': [
+                        {
+                          'id': 'item-01',
+                          'bookId': 'book-01',
+                          'bookTitle': 'Clean Code',
+                          'quantity': 1,
+                          'status': 'BORROWING',
+                        },
+                      ],
+                    },
+                  ],
+                  'meta': {
+                    'page': 1,
+                    'limit': 10,
+                    'totalItems': 1,
+                    'totalPages': 1,
+                    'hasNextPage': false,
+                  },
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final page = await repository.getAllBorrowingSlips();
+
+      expect(page.slips.length, 1);
+      expect(page.slips.first.status, 'BORROWED');
+      expect(page.slips.first.memberId, 'mem-01');
+    },
+  );
+
+  test(
+    'getAllBorrowingSlips | Có filter status BORROWED | GET /borrowing-slips có status=BORROWED',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'GET');
+            expect(options.path, '/borrowing-slips');
+            expect(options.queryParameters['status'], 'BORROWED');
+            expect(options.queryParameters['page'], 2);
+            expect(options.queryParameters['limit'], 5);
+            expect(options.queryParameters.containsKey('memberId'), false);
+            expect(options.headers['Authorization'], 'Bearer test-token');
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'data': [],
+                  'meta': {
+                    'page': 2,
+                    'limit': 5,
+                    'totalItems': 0,
+                    'totalPages': 1,
+                    'hasNextPage': false,
+                  },
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final page = await repository.getAllBorrowingSlips(
+        status: 'BORROWED',
+        page: 2,
+        limit: 5,
+      );
+
+      expect(page.slips.isEmpty, true);
+      expect(page.page, 2);
+    },
+  );
+
+  test(
     'approveBorrowingSlip | Phiếu chờ duyệt | PATCH approve, BORROWED',
     () async {
       final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));

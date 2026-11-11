@@ -36,6 +36,12 @@ abstract class BorrowingRepository {
     int limit = 10,
   });
 
+  Future<BorrowingSlipsPage> getAllBorrowingSlips({
+    String? status,
+    int page = 1,
+    int limit = 10,
+  });
+
   Future<BorrowingSlip> approveBorrowingSlip({required String slipId});
 
   Future<BorrowingSlip> rejectBorrowingSlip({

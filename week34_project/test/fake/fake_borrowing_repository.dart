@@ -33,6 +33,23 @@ class FakeBorrowingRepository implements BorrowingRepository {
   int rejectSlipCallCount = 0;
   String? lastRejectionReason;
 
+  int getPendingSlipsCallCount = 0;
+  bool shouldFailGetPendingSlips = false;
+  BorrowingSlipsPage? fakePendingSlipsPage;
+  BorrowingSlipsPage Function(int page, int limit)? fakePendingSlipsBuilder;
+  DioException? getPendingSlipsError;
+
+  int getAllSlipsCallCount = 0;
+  String? lastGetAllSlipsStatus;
+  int? lastGetAllSlipsPage;
+  bool shouldFailGetAllSlips = false;
+  BorrowingSlipsPage? fakeAllSlipsPage;
+  BorrowingSlipsPage Function(String? status, int page, int limit)?
+  fakeAllSlipsBuilder;
+  DioException? getAllSlipsError;
+
+  BorrowingSlip? fakeSlipDetail;
+
   DioException? approveSlipError;
   DioException? rejectSlipError;
   final List<CreateBorrowingRequest> borrowRequests = [];
@@ -158,6 +175,10 @@ class FakeBorrowingRepository implements BorrowingRepository {
 
   @override
   Future<BorrowingSlip> getBorrowingSlipById({required String slipId}) async {
+    if (fakeSlipDetail != null) {
+      return fakeSlipDetail!;
+    }
+
     return BorrowingSlip(
       id: slipId,
       slipNumber: 'SLIP-2026-0001',
@@ -181,6 +202,24 @@ class FakeBorrowingRepository implements BorrowingRepository {
     int page = 1,
     int limit = 10,
   }) async {
+    getPendingSlipsCallCount++;
+
+    if (getPendingSlipsError != null) {
+      throw getPendingSlipsError!;
+    }
+
+    if (shouldFailGetPendingSlips) {
+      throw Exception('Không thể tải phiếu chờ duyệt');
+    }
+
+    if (fakePendingSlipsBuilder != null) {
+      return fakePendingSlipsBuilder!(page, limit);
+    }
+
+    if (fakePendingSlipsPage != null) {
+      return fakePendingSlipsPage!;
+    }
+
     return BorrowingSlipsPage(
       slips: [
         BorrowingSlip(
@@ -203,6 +242,61 @@ class FakeBorrowingRepository implements BorrowingRepository {
       page: page,
       limit: limit,
       totalItems: 1,
+      totalPages: 1,
+      hasNextPage: false,
+    );
+  }
+
+  @override
+  Future<BorrowingSlipsPage> getAllBorrowingSlips({
+    String? status,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    getAllSlipsCallCount++;
+    lastGetAllSlipsStatus = status;
+    lastGetAllSlipsPage = page;
+
+    if (getAllSlipsError != null) {
+      throw getAllSlipsError!;
+    }
+
+    if (shouldFailGetAllSlips) {
+      throw Exception('Không thể tải danh sách phiếu');
+    }
+
+    if (fakeAllSlipsBuilder != null) {
+      return fakeAllSlipsBuilder!(status, page, limit);
+    }
+
+    if (fakeAllSlipsPage != null) {
+      return fakeAllSlipsPage!;
+    }
+
+    final allMockSlips = [
+      BorrowingSlip(
+        id: 'slip-01',
+        slipNumber: 'SLIP-2026-0001',
+        memberId: 'mem-01',
+        status: status ?? 'BORROWED',
+        dueDate: DateTime.utc(2026, 11, 25),
+        items: const [
+          BorrowingSlipItem(
+            id: 'item-01',
+            bookId: 'book-01',
+            bookTitle: 'Clean Code',
+            quantity: 1,
+            status: 'BORROWING',
+          ),
+        ],
+      ),
+    ];
+
+    return BorrowingSlipsPage(
+      slips: allMockSlips,
+      page: page,
+      limit: limit,
+      totalItems: allMockSlips.length,
       totalPages: 1,
       hasNextPage: false,
     );

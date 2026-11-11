@@ -7,12 +7,22 @@ import 'borrowing_slip_ui_helper.dart';
 class BorrowingSlipCard extends StatelessWidget {
   final BorrowingSlip slip;
   final VoidCallback onTap;
+  final bool showMember;
 
-  const BorrowingSlipCard({super.key, required this.slip, required this.onTap});
+  const BorrowingSlipCard({
+    super.key,
+    required this.slip,
+    required this.onTap,
+    this.showMember = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final overdue = BorrowingSlipUiHelper.isOverdue(slip);
+    final totalCopies = slip.items.fold<int>(
+      0,
+      (sum, item) => sum + item.quantity,
+    );
 
     return Card(
       child: ListTile(
@@ -21,6 +31,8 @@ class BorrowingSlipCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (showMember && slip.memberId.isNotEmpty)
+              Text('Độc giả: ${slip.memberId}'),
             Text(
               'Trạng thái: '
               '${BorrowingSlipUiHelper.slipStatus(slip.status)}',
@@ -29,7 +41,11 @@ class BorrowingSlipCard extends StatelessWidget {
               'Hạn trả: '
               '${BorrowingSlipUiHelper.formatDate(slip.dueDate)}',
             ),
-            Text('${slip.items.length} đầu sách'),
+            Text(
+              totalCopies > 0
+                  ? '$totalCopies cuốn (${slip.items.length} đầu sách)'
+                  : '${slip.items.length} đầu sách',
+            ),
             if (overdue)
               Text(
                 'Có sách quá hạn',

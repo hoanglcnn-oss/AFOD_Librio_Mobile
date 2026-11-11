@@ -170,6 +170,32 @@ class ApiBorrowingRepository implements BorrowingRepository {
   }
 
   @override
+  Future<BorrowingSlipsPage> getAllBorrowingSlips({
+    String? status,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (page < 1 || limit < 1) {
+      throw ArgumentError('Thông tin phân trang không hợp lệ');
+    }
+
+    final data = await _remoteDataSource.getAllBorrowingSlips(
+      token: token,
+      status: status,
+      page: page,
+      limit: limit,
+    );
+
+    return BorrowingSlipsPage.fromJson(data);
+  }
+
+  @override
   Future<BorrowingSlip> approveBorrowingSlip({required String slipId}) async {
     final token = await _tokenStorage.readToken();
 

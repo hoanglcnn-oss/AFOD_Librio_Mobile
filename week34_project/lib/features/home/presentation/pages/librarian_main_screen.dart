@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../borrowings/data/api_borrowing_repository.dart';
+import '../../../borrowings/presentation/pages/manage_borrowing_slips_screen.dart';
 import '../../../borrowings/presentation/pages/pending_borrowing_slips_screen.dart';
 
 class LibrarianMainScreen extends StatefulWidget {
@@ -31,7 +32,7 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
         index: _selectedIndex,
         children: [
           PendingBorrowingSlipsScreen(repository: _borrowingRepository),
-          const _ManageSlipsPlaceholder(),
+          ManageBorrowingSlipsScreen(repository: _borrowingRepository),
           const ProfileScreen(),
         ],
       ),
@@ -57,63 +58,6 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
             label: 'Tài khoản',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ManageSlipsPlaceholder extends StatelessWidget {
-  const _ManageSlipsPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _FeaturePlaceholder(
-      icon: Icons.assignment_outlined,
-      title: 'Quản lý phiếu mượn',
-      description:
-          'Tra cứu phiếu, tiếp nhận trả sách '
-          'và ghi nhận tiền phạt.',
-    );
-  }
-}
-
-class _FeaturePlaceholder extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-
-  const _FeaturePlaceholder({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 56,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(description, textAlign: TextAlign.center),
-            ],
-          ),
-        ),
       ),
     );
   }
