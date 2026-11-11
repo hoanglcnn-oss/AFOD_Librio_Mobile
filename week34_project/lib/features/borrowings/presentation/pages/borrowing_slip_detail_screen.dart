@@ -6,6 +6,7 @@ import '../../data/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
 import 'borrowing_slip_return_screen.dart';
+import '../../../auth/data/models/app_role.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
 import 'pay_slip_fine_screen.dart';
@@ -116,8 +117,9 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
               ? authState.user.role.toUpperCase()
               : '';
 
-          final canRecordFinePayment = role == 'ADMIN' || role == 'LIBRARIAN';
-
+          final canManageSlip = AppRole.fromString(
+            role,
+          ).canManageBorrowingSlips;
           return RefreshIndicator(
             onRefresh: () async {
               _refresh();
@@ -178,7 +180,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
 
                 if (BorrowingSlipUiHelper.hasUnpaidFine(slip)) ...[
                   const SizedBox(height: 12),
-                  if (canRecordFinePayment)
+                  if (canManageSlip)
                     FilledButton.icon(
                       onPressed: () => _openPayFine(slip),
                       icon: const Icon(Icons.payments_outlined),
@@ -190,14 +192,15 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                     ),
                 ],
 
-                if ((slip.status == 'BORROWED' ||
+                if (canManageSlip &&
+                    (slip.status == 'BORROWED' ||
                         slip.status == 'PARTIAL_RETURNED') &&
                     slip.items.any((item) => item.remainingQuantity > 0)) ...[
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     onPressed: () => _openReturn(slip),
                     icon: const Icon(Icons.assignment_return),
-                    label: const Text('Trả sách trong phiếu'),
+                    label: const Text('Xác nhận trả sách'),
                   ),
                 ],
 

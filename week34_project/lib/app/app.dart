@@ -7,6 +7,8 @@ import '../features/auth/bloc/auth_event.dart';
 import '../features/auth/bloc/auth_state.dart';
 import '../features/auth/data/api_auth_repository.dart';
 import '../features/auth/presentation/pages/login_screen.dart';
+import '../features/auth/data/models/app_role.dart';
+import '../features/home/presentation/pages/librarian_main_screen.dart';
 import '../features/home/presentation/pages/main_screen.dart';
 import '../core/storage/token_storage.dart';
 
@@ -149,7 +151,45 @@ class _AuthGateState extends State<AuthGate> {
           );
         }
 
-        return _isAuthenticated ? const MainScreen() : const LoginScreen();
+        if (!_isAuthenticated) {
+          return const LoginScreen();
+        }
+
+        if (state is! AuthAuthenticated) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final role = AppRole.fromString(state.user.role);
+
+        return switch (role) {
+          AppRole.member => const MainScreen(),
+          AppRole.librarian || AppRole.admin => const LibrarianMainScreen(),
+          AppRole.unknown => Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Vai trò tài khoản chưa được hỗ trợ.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: () {
+                        context.read<AuthBloc>().add(const LogoutRequested());
+                      },
+                      child: const Text('Đăng xuất'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        };
       },
     );
   }
