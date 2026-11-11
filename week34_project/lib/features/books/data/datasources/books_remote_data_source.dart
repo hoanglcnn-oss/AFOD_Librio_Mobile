@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/storage/token_storage.dart';
 
 abstract class BooksRemoteDataSource {
   Future<Map<String, dynamic>> getBooks({
@@ -17,8 +18,21 @@ abstract class BooksRemoteDataSource {
 
 class BooksRemoteDataSourceImpl implements BooksRemoteDataSource {
   final Dio _dio;
+  final TokenStorage _tokenStorage;
 
-  BooksRemoteDataSourceImpl({Dio? dio}) : _dio = dio ?? DioClient.dio;
+  BooksRemoteDataSourceImpl({Dio? dio, TokenStorage? tokenStorage})
+    : _dio = dio ?? DioClient.dio,
+      _tokenStorage = tokenStorage ?? TokenStorage();
+
+  Future<Options> _authOptions() async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    return Options(headers: {'Authorization': 'Bearer $token'});
+  }
 
   @override
   Future<Map<String, dynamic>> getBooks({
@@ -33,6 +47,7 @@ class BooksRemoteDataSourceImpl implements BooksRemoteDataSource {
         'limit': limit,
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
       },
+      options: await _authOptions(),
     );
 
     return response.data as Map<String, dynamic>;
@@ -42,6 +57,7 @@ class BooksRemoteDataSourceImpl implements BooksRemoteDataSource {
   Future<Map<String, dynamic>> getBookById(String id) async {
     final response = await _dio.get(
       '${ApiConstants.books}/${Uri.encodeComponent(id)}',
+      options: await _authOptions(),
     );
 
     return response.data as Map<String, dynamic>;
@@ -53,6 +69,7 @@ class BooksRemoteDataSourceImpl implements BooksRemoteDataSource {
 
     final response = await _dio.get(
       '${ApiConstants.books}/isbn/${Uri.encodeComponent(normalizedIsbn)}',
+      options: await _authOptions(),
     );
 
     return response.data as Map<String, dynamic>;

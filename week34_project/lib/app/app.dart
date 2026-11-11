@@ -11,6 +11,7 @@ import '../features/auth/data/models/app_role.dart';
 import '../features/home/presentation/pages/librarian_main_screen.dart';
 import '../features/home/presentation/pages/main_screen.dart';
 import '../core/storage/token_storage.dart';
+import '../core/widgets/app_scroll_behaviour.dart';
 
 class DofaApp extends StatelessWidget {
   const DofaApp({super.key});
@@ -23,6 +24,7 @@ class DofaApp extends StatelessWidget {
         tokenStorage: TokenStorage(),
       )..add(const RestoreSessionRequested()),
       child: MaterialApp(
+        scrollBehavior: const AppScrollBehavior(),
         debugShowCheckedModeBanner: false,
         // builder: (context, child) {
         //   return MediaQuery(

@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:week34_project/features/books/data/api_books_repository.dart';
+import 'package:week34_project/features/books/data/datasources/books_remote_data_source.dart';
+
+import 'fake/fake_token_storage.dart';
 
 void main() {
   // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
@@ -17,7 +20,7 @@ void main() {
             expect(options.path, '/books');
             expect(options.queryParameters['page'], 1);
             expect(options.queryParameters['limit'], 10);
-
+            expect(options.headers['Authorization'], 'Bearer test-token');
             handler.resolve(
               Response(
                 requestOptions: options,
@@ -49,9 +52,14 @@ void main() {
           },
         ),
       );
-
-      final repository = ApiBooksRepository(dio: dio);
-
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+      final repository = ApiBooksRepository(
+        remoteDataSource: BooksRemoteDataSourceImpl(
+          dio: dio,
+          tokenStorage: tokenStorage,
+        ),
+      );
       final result = await repository.getBooks(page: 1, limit: 10);
 
       expect(result.page, 1);
