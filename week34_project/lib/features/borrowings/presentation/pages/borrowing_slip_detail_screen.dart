@@ -4,6 +4,7 @@ import '../../data/borrowing_repository.dart';
 import '../../data/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
+import 'borrowing_slip_return_screen.dart';
 
 class BorrowingSlipDetailScreen extends StatefulWidget {
   final String slipId;
@@ -35,6 +36,29 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
 
   void _refresh() {
     setState(_load);
+  }
+
+  Future<void> _openReturn(BorrowingSlip slip) async {
+    final returned = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) => BorrowingSlipReturnScreen(
+          slip: slip,
+          repository: widget.repository,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+
+    // Luôn lấy lại dữ liệu Backend khi quay về,
+    // kể cả khi user thoát mà chưa xác nhận.
+    _refresh();
+
+    if (returned == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã ghi nhận trả sách thành công')),
+      );
+    }
   }
 
   @override
@@ -120,6 +144,18 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                           : Theme.of(context).colorScheme.error,
                     ),
                   ),
+
+                if ((slip.status == 'BORROWED' ||
+                        slip.status == 'PARTIAL_RETURNED') &&
+                    slip.items.any((item) => item.remainingQuantity > 0)) ...[
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () => _openReturn(slip),
+                    icon: const Icon(Icons.assignment_return),
+                    label: const Text('Trả sách trong phiếu'),
+                  ),
+                ],
+
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: _refresh,

@@ -4,6 +4,7 @@ import 'models/borrowing_slip.dart';
 import 'models/borrowing_slips_page.dart';
 import 'models/create_borrowing_request.dart';
 import 'models/create_borrowing_slip_request.dart';
+import 'models/return_slip_items_request.dart';
 
 abstract class BorrowingRepository {
   Future<Borrowing> borrowBook(CreateBorrowingRequest request);
@@ -28,5 +29,10 @@ abstract class BorrowingRepository {
     required String borrowingId,
     int extraDays = 7,
     String? notes,
+  });
+
+  Future<BorrowingSlip> returnSlipItems({
+    required String slipId,
+    required ReturnSlipItemsRequest request,
   });
 }

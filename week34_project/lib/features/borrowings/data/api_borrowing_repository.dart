@@ -9,6 +9,7 @@ import 'models/borrowing_slip.dart';
 import 'models/borrowing_slips_page.dart';
 import 'models/create_borrowing_request.dart';
 import 'models/create_borrowing_slip_request.dart';
+import 'models/return_slip_items_request.dart';
 
 class ApiBorrowingRepository implements BorrowingRepository {
   final BorrowingsRemoteDataSource _remoteDataSource;
@@ -159,6 +160,50 @@ class ApiBorrowingRepository implements BorrowingRepository {
     );
 
     return Borrowing.fromJson(data);
+  }
+
+  @override
+  Future<BorrowingSlip> returnSlipItems({
+    required String slipId,
+    required ReturnSlipItemsRequest request,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (slipId.trim().isEmpty) {
+      throw ArgumentError('Mã phiếu mượn không được để trống');
+    }
+
+    if (request.items.isEmpty) {
+      throw ArgumentError('Cần chọn ít nhất một sách để trả');
+    }
+
+    final ids = <String>{};
+
+    for (final item in request.items) {
+      if (item.itemId.trim().isEmpty || item.quantity < 1) {
+        throw ArgumentError('Thông tin sách trả không hợp lệ');
+      }
+
+      if (!ids.add(item.itemId)) {
+        throw ArgumentError('Một dòng sách không được chọn hai lần');
+      }
+
+      if (!const {'GOOD', 'DAMAGED', 'LOST'}.contains(item.returnCondition)) {
+        throw ArgumentError('Tình trạng sách trả không hợp lệ');
+      }
+    }
+
+    final data = await _remoteDataSource.returnSlipItems(
+      slipId: slipId.trim(),
+      token: token,
+      data: request.toJson(),
+    );
+
+    return BorrowingSlip.fromJson(data);
   }
 
   @override

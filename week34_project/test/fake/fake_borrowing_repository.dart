@@ -6,6 +6,7 @@ import 'package:week34_project/features/borrowings/data/models/borrowings_page.d
 import 'package:week34_project/features/borrowings/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowings/data/models/create_borrowing_slip_request.dart';
 import 'package:week34_project/features/borrowings/data/models/borrowing_slips_page.dart';
+import 'package:week34_project/features/borrowings/data/models/return_slip_items_request.dart';
 
 class FakeBorrowingRepository implements BorrowingRepository {
   bool shouldFail;
@@ -23,6 +24,9 @@ class FakeBorrowingRepository implements BorrowingRepository {
   DioException? createSlipErrorOnce;
   DioException? borrowError;
   int borrowCallCount = 0;
+  int returnSlipCallCount = 0;
+  ReturnSlipItemsRequest? lastReturnSlipRequest;
+  DioException? returnSlipError;
 
   final List<CreateBorrowingRequest> borrowRequests = [];
   final List<CreateBorrowingSlipRequest> createSlipRequests = [];
@@ -183,6 +187,44 @@ class FakeBorrowingRepository implements BorrowingRepository {
       borrowDate: DateTime.utc(2026, 10, 29),
       dueDate: DateTime.utc(2026, 11, 12),
       status: 'RETURNED',
+    );
+  }
+
+  @override
+  Future<BorrowingSlip> returnSlipItems({
+    required String slipId,
+    required ReturnSlipItemsRequest request,
+  }) async {
+    returnSlipCallCount++;
+    lastReturnSlipRequest = request;
+
+    if (returnSlipError != null) {
+      throw returnSlipError!;
+    }
+
+    return BorrowingSlip(
+      id: slipId,
+      slipNumber: 'SLIP-2026-0001',
+      memberId: 'mem-01',
+      status: 'PARTIAL_RETURNED',
+      dueDate: DateTime.utc(2026, 11, 15),
+      items: [
+        const BorrowingSlipItem(
+          id: 'item-A',
+          bookId: 'book-A',
+          bookTitle: 'Sách A',
+          quantity: 1,
+          returnedQuantity: 1,
+          status: 'RETURNED',
+        ),
+        const BorrowingSlipItem(
+          id: 'item-C',
+          bookId: 'book-C',
+          bookTitle: 'Sách C',
+          quantity: 1,
+          status: 'BORROWING',
+        ),
+      ],
     );
   }
 

@@ -10,6 +10,7 @@ import '../../bloc/my_borrowings_bloc.dart';
 import '../../bloc/my_borrowings_event.dart';
 import '../../data/api_borrowing_repository.dart';
 import '../pages/my_borrowings_screen.dart';
+import '../pages/borrowing_slip_list_screen.dart';
 
 class MyBorrowingsTab extends StatefulWidget {
   final VoidCallback onReturnSucceeded;
@@ -72,13 +73,36 @@ class _MyBorrowingsTabState extends State<MyBorrowingsTab> {
           return _buildMessage('Không tìm thấy hồ sơ độc giả.');
         }
 
-        return BlocProvider(
-          create: (_) =>
-              MyBorrowingsBloc(borrowingRepository: ApiBorrowingRepository())
-                ..add(LoadMyBorrowings(memberId)),
-          child: MyBorrowingsScreen(
-            memberId: memberId,
-            onReturnSucceeded: widget.onReturnSucceeded,
+        return DefaultTabController(
+          length: 2,
+          child: Column(
+            children: [
+              const TabBar(
+                tabs: [
+                  Tab(text: 'Mượn lẻ'),
+                  Tab(text: 'Phiếu nhiều sách'),
+                ],
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    BlocProvider(
+                      create: (_) => MyBorrowingsBloc(
+                        borrowingRepository: ApiBorrowingRepository(),
+                      )..add(LoadMyBorrowings(memberId)),
+                      child: MyBorrowingsScreen(
+                        memberId: memberId,
+                        onReturnSucceeded: widget.onReturnSucceeded,
+                      ),
+                    ),
+                    BorrowingSlipsScreen(
+                      memberId: memberId,
+                      repository: ApiBorrowingRepository(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },

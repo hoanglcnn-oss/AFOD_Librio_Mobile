@@ -36,6 +36,13 @@ abstract class BorrowingsRemoteDataSource {
     required String token,
     Map<String, dynamic> data = const {},
   });
+
+  Future<Map<String, dynamic>> returnSlipItems({
+    required String slipId,
+    required Map<String, dynamic> data,
+    required String token,
+  });
+
   Future<Map<String, dynamic>> renewLoan({
     required String borrowingId,
     required String token,
@@ -129,6 +136,21 @@ class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
   }) async {
     final response = await _dio.post(
       '${ApiConstants.borrowings}/$borrowingId/return',
+      data: data,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> returnSlipItems({
+    required String slipId,
+    required Map<String, dynamic> data,
+    required String token,
+  }) async {
+    final response = await _dio.post(
+      '${ApiConstants.borrowingSlips}/$slipId/return-items',
       data: data,
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
