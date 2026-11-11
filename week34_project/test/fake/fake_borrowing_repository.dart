@@ -20,12 +20,23 @@ class FakeBorrowingRepository implements BorrowingRepository {
   int fakeRenewCount = 0;
   DateTime? fakeDueDate;
   DioException? createSlipErrorOnce;
+  DioException? borrowError;
+  int borrowCallCount = 0;
 
+  final List<CreateBorrowingRequest> borrowRequests = [];
   final List<CreateBorrowingSlipRequest> createSlipRequests = [];
+
   FakeBorrowingRepository({this.shouldFail = false});
 
   @override
   Future<Borrowing> borrowBook(CreateBorrowingRequest request) async {
+    borrowCallCount++;
+    borrowRequests.add(request);
+
+    if (borrowError != null) {
+      throw borrowError!;
+    }
+
     if (shouldFail) {
       throw Exception('Không thể mượn sách');
     }

@@ -62,4 +62,101 @@ void main() {
       expect(message, backendMessage);
     },
   );
+
+  test('BorrowingErrorMapper | HTTP 400 hết sách | hiển thị hết hàng', () {
+    final options = RequestOptions(path: '/borrowings');
+
+    final error = DioException(
+      requestOptions: options,
+      response: Response(
+        requestOptions: options,
+        statusCode: 400,
+        data: {
+          'message':
+              'Cuốn sách "Clean Code" hiện tại đã hết bản in sẵn có để mượn',
+        },
+      ),
+      type: DioExceptionType.badResponse,
+    );
+
+    final message = getBorrowingErrorMessage(error);
+
+    expect(message, contains('đã hết'));
+  });
+
+  test(
+    'BorrowingErrorMapper | HTTP 409 tranh bản cuối | hiển thị không đủ sách',
+    () {
+      final options = RequestOptions(path: '/borrowings');
+
+      final error = DioException(
+        requestOptions: options,
+        response: Response(
+          requestOptions: options,
+          statusCode: 409,
+          data: {
+            'message':
+                'Sách "Clean Code" vừa được độc giả khác mượn hết. '
+                'Số lượng khả dụng không còn đủ 1 cuốn, '
+                'giao dịch đã được hủy bỏ',
+          },
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final message = getBorrowingErrorMessage(error);
+
+      expect(message, contains('không còn đủ số lượng'));
+      expect(message, contains('thành viên khác'));
+    },
+  );
+
+  test(
+    'BorrowingErrorMapper | HTTP 409 thiếu tồn kho | hiển thị không đủ sách',
+    () {
+      final options = RequestOptions(path: '/borrowing-slips');
+
+      final error = DioException(
+        requestOptions: options,
+        response: Response(
+          requestOptions: options,
+          statusCode: 409,
+          data: {
+            'message':
+                'Sách "Clean Code" chỉ còn 1 cuốn khả dụng trong kho, '
+                'không đủ số lượng yêu cầu (2)',
+          },
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final message = getBorrowingErrorMessage(error);
+
+      expect(message, contains('không còn đủ số lượng'));
+    },
+  );
+
+  test(
+    'BorrowingErrorMapper | HTTP 409 phiếu đã xử lý | không báo hết sách',
+    () {
+      final options = RequestOptions(path: '/borrowing-slips/slip-01/approve');
+
+      final error = DioException(
+        requestOptions: options,
+        response: Response(
+          requestOptions: options,
+          statusCode: 409,
+          data: {
+            'message': 'DOCUMENT_ALREADY_PROCESSED: Phiếu mượn đã được xử lý',
+          },
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final message = getBorrowingErrorMessage(error);
+
+      expect(message, contains('xung đột'));
+      expect(message, isNot(contains('không còn đủ số lượng')));
+    },
+  );
 }

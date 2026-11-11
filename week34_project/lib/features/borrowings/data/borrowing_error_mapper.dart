@@ -10,32 +10,61 @@ String getBorrowingErrorMessage(Object error) {
     }
 
     final statusCode = error.response?.statusCode;
+    final data = error.response?.data;
+
+    // Đọc thông báo lỗi từ NestJS.
+    String? backendMessage;
+
+    if (data is Map) {
+      final message = data['message'];
+
+      if (message is String) {
+        backendMessage = message;
+      }
+    }
 
     switch (statusCode) {
       case 400:
-        final data = error.response?.data;
-
-        if (data is Map) {
-          final message = data['message'];
-
-          // Thông báo vượt hạn mức do Backend trả về.
-          if (message is String &&
-              message.startsWith('Vượt quá hạn mức mượn:')) {
-            return message;
-          }
+        // Case 2: Vượt giới hạn mượn sách.
+        if (backendMessage != null &&
+            backendMessage.startsWith('Vượt quá hạn mức mượn:')) {
+          return backendMessage;
         }
+
+        // Case 3: Sách đã hết trước khi request được xử lý.
+        if (backendMessage != null &&
+            backendMessage.contains('hết bản in sẵn có')) {
+          return 'Rất tiếc, sách này hiện đã hết. '
+              'Vui lòng tải lại danh sách sách.';
+        }
+
         return 'Không đủ điều kiện mượn sách. '
             'Vui lòng kiểm tra hạn thẻ, hạn mức hoặc số lượng sách.';
 
       case 401:
         return 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn. '
             'Vui lòng đăng nhập lại.';
+
       case 404:
         return 'Không tìm thấy sách hoặc hồ sơ độc giả.';
+
       case 409:
-        return 'Yêu cầu mượn sách bị xung đột.';
+        // Case 3: Tranh chấp bản sách cuối cùng.
+        if (backendMessage != null &&
+            (backendMessage.contains('vừa được độc giả khác mượn hết') ||
+                backendMessage.contains('cuốn khả dụng trong kho'))) {
+          return 'Rất tiếc, sách này không còn đủ số lượng '
+              'để mượn. Có thể sách vừa được thành viên khác mượn. '
+              'Vui lòng tải lại danh sách sách.';
+        }
+
+        // Các xung đột khác không được coi là hết hàng.
+        return 'Yêu cầu mượn sách bị xung đột. '
+            'Vui lòng kiểm tra lại trạng thái.';
+
       case 500:
         return 'Máy chủ đang gặp sự cố.';
+
       default:
         return 'Không thể tạo phiếu mượn sách.';
     }
