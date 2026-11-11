@@ -35,4 +35,6 @@ abstract class BorrowingRepository {
     required String slipId,
     required ReturnSlipItemsRequest request,
   });
+
+  Future<BorrowingSlip> paySlipFine({required String slipId});
 }

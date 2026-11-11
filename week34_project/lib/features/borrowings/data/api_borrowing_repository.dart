@@ -235,4 +235,24 @@ class ApiBorrowingRepository implements BorrowingRepository {
 
     return Borrowing.fromJson(data);
   }
+
+  @override
+  Future<BorrowingSlip> paySlipFine({required String slipId}) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (slipId.trim().isEmpty) {
+      throw ArgumentError('Mã phiếu không được để trống');
+    }
+
+    final data = await _remoteDataSource.paySlipFine(
+      slipId: slipId.trim(),
+      token: token,
+    );
+
+    return BorrowingSlip.fromJson(data);
+  }
 }

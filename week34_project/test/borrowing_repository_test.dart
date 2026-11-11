@@ -742,4 +742,55 @@ void main() {
       expect(slip.items.first.lateFee, 25000);
     },
   );
+
+  test(
+    'paySlipFine | Có JWT và slipId | POST /pay-fine, parse finePaid = true',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'POST');
+            expect(options.path, '/borrowing-slips/slip-01/pay-fine');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+            expect(options.data, isNull);
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'id': 'slip-01',
+                  'slipNumber': 'SLIP-2026-0001',
+                  'memberId': 'mem-01',
+                  'status': 'COMPLETED',
+                  'dueDate': '2026-11-15T08:00:00Z',
+                  'totalFine': 25000,
+                  'finePaid': true,
+                  'finePaidAt': '2026-11-20T08:00:00Z',
+                  'items': [],
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final slip = await repository.paySlipFine(slipId: 'slip-01');
+
+      expect(slip.totalFine, 25000);
+      expect(slip.finePaid, true);
+      expect(slip.finePaidAt, isNotNull);
+      expect(slip.status, 'COMPLETED');
+    },
+  );
 }

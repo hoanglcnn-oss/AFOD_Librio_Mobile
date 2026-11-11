@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/borrowing_repository.dart';
 import '../../data/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
 import 'borrowing_slip_return_screen.dart';
+import '../../../auth/bloc/auth_bloc.dart';
+import '../../../auth/bloc/auth_state.dart';
+import 'pay_slip_fine_screen.dart';
 
 class BorrowingSlipDetailScreen extends StatefulWidget {
   final String slipId;
@@ -61,6 +65,26 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     }
   }
 
+  Future<void> _openPayFine(BorrowingSlip slip) async {
+    final paid = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) =>
+            PaySlipFineScreen(slip: slip, repository: widget.repository),
+      ),
+    );
+
+    if (!mounted) return;
+
+    // Không tin trạng thái cũ; gọi API lại để xác minh.
+    _refresh();
+
+    if (paid == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã ghi nhận thanh toán tiền phạt')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,6 +110,13 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
 
           final slip = snapshot.data!;
           final overdue = BorrowingSlipUiHelper.isOverdue(slip);
+
+          final authState = context.read<AuthBloc>().state;
+          final role = authState is AuthAuthenticated
+              ? authState.user.role.toUpperCase()
+              : '';
+
+          final canRecordFinePayment = role == 'ADMIN' || role == 'LIBRARIAN';
 
           return RefreshIndicator(
             onRefresh: () async {
@@ -144,6 +175,20 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                           : Theme.of(context).colorScheme.error,
                     ),
                   ),
+
+                if (BorrowingSlipUiHelper.hasUnpaidFine(slip)) ...[
+                  const SizedBox(height: 12),
+                  if (canRecordFinePayment)
+                    FilledButton.icon(
+                      onPressed: () => _openPayFine(slip),
+                      icon: const Icon(Icons.payments_outlined),
+                      label: const Text('Ghi nhận đã thu tiền phạt'),
+                    )
+                  else
+                    const Text(
+                      'Vui lòng liên hệ thủ thư để thanh toán tiền phạt.',
+                    ),
+                ],
 
                 if ((slip.status == 'BORROWED' ||
                         slip.status == 'PARTIAL_RETURNED') &&

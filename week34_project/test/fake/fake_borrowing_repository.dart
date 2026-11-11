@@ -27,6 +27,8 @@ class FakeBorrowingRepository implements BorrowingRepository {
   int returnSlipCallCount = 0;
   ReturnSlipItemsRequest? lastReturnSlipRequest;
   DioException? returnSlipError;
+  int paySlipFineCallCount = 0;
+  DioException? paySlipFineError;
 
   final List<CreateBorrowingRequest> borrowRequests = [];
   final List<CreateBorrowingSlipRequest> createSlipRequests = [];
@@ -260,6 +262,27 @@ class FakeBorrowingRepository implements BorrowingRepository {
       dueDate: newDueDate,
       status: 'BORROWED',
       renewCount: fakeRenewCount,
+    );
+  }
+
+  @override
+  Future<BorrowingSlip> paySlipFine({required String slipId}) async {
+    paySlipFineCallCount++;
+
+    if (paySlipFineError != null) {
+      throw paySlipFineError!;
+    }
+
+    return BorrowingSlip(
+      id: slipId,
+      slipNumber: 'SLIP-2026-0001',
+      memberId: 'mem-01',
+      status: 'COMPLETED',
+      dueDate: DateTime.utc(2026, 11, 15),
+      totalFine: 25000,
+      finePaid: true,
+      finePaidAt: DateTime.utc(2026, 11, 20),
+      items: const [],
     );
   }
 }

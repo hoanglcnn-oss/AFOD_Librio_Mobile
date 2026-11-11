@@ -17,6 +17,7 @@ void main() {
     isPaidNow: false,
   );
 
+  // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
   test(
     'ReturnSlipRequested | Trả A và B thành công | Submitting -> Success, PARTIAL_RETURNED',
     () async {
