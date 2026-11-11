@@ -18,6 +18,19 @@ abstract class BorrowingsRemoteDataSource {
     int page = 1,
     int limit = 10,
   });
+
+  Future<Map<String, dynamic>> getBorrowingSlips({
+    required String memberId,
+    required String token,
+    int page = 1,
+    int limit = 10,
+  });
+
+  Future<Map<String, dynamic>> getBorrowingSlipById({
+    required String slipId,
+    required String token,
+  });
+
   Future<Map<String, dynamic>> returnBook({
     required String borrowingId,
     required String token,
@@ -73,6 +86,35 @@ class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
     final response = await _dio.get(
       ApiConstants.borrowings,
       queryParameters: {'memberId': memberId, 'page': page, 'limit': limit},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getBorrowingSlips({
+    required String memberId,
+    required String token,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final response = await _dio.get(
+      ApiConstants.borrowingSlips,
+      queryParameters: {'memberId': memberId, 'page': page, 'limit': limit},
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> getBorrowingSlipById({
+    required String slipId,
+    required String token,
+  }) async {
+    final response = await _dio.get(
+      '${ApiConstants.borrowingSlips}/$slipId',
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

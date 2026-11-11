@@ -609,4 +609,137 @@ void main() {
       expect(requestCount, 0);
     },
   );
+
+  test(
+    'getBorrowingSlips | Có JWT và memberId | GET danh sách phiếu, parse phân trang',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'GET');
+            expect(options.path, '/borrowing-slips');
+            expect(options.queryParameters['memberId'], 'mem-01');
+            expect(options.queryParameters['page'], 1);
+            expect(options.queryParameters['limit'], 10);
+            expect(options.headers['Authorization'], 'Bearer test-token');
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'data': [
+                    {
+                      'id': 'slip-01',
+                      'slipNumber': 'SLIP-2026-0001',
+                      'memberId': 'mem-01',
+                      'status': 'PARTIAL_RETURNED',
+                      'dueDate': '2026-11-15T08:00:00Z',
+                      'totalFine': 0,
+                      'finePaid': true,
+                      'items': [
+                        {
+                          'id': 'item-01',
+                          'bookId': 'book-01',
+                          'bookTitle': 'Sách A',
+                          'quantity': 1,
+                          'returnedQuantity': 1,
+                          'status': 'RETURNED',
+                        },
+                      ],
+                    },
+                  ],
+                  'meta': {
+                    'page': 1,
+                    'limit': 10,
+                    'totalItems': 1,
+                    'totalPages': 1,
+                    'hasNextPage': false,
+                  },
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final result = await repository.getBorrowingSlips(memberId: 'mem-01');
+
+      expect(result.slips.length, 1);
+      expect(result.slips.first.status, 'PARTIAL_RETURNED');
+      expect(result.slips.first.items.first.status, 'RETURNED');
+      expect(result.totalItems, 1);
+      expect(result.hasNextPage, false);
+    },
+  );
+
+  test(
+    'getBorrowingSlipById | Có JWT và slipId | GET chi tiết phiếu, parse tiền phạt',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'GET');
+            expect(options.path, '/borrowing-slips/slip-01');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'id': 'slip-01',
+                  'slipNumber': 'SLIP-2026-0001',
+                  'memberId': 'mem-01',
+                  'status': 'COMPLETED',
+                  'dueDate': '2026-11-15T08:00:00Z',
+                  'totalFine': 25000,
+                  'finePaid': false,
+                  'items': [
+                    {
+                      'id': 'item-C',
+                      'bookId': 'book-C',
+                      'bookTitle': 'Sách C',
+                      'quantity': 1,
+                      'returnedQuantity': 1,
+                      'status': 'RETURNED',
+                      'lateFee': 25000,
+                      'fineAmount': 25000,
+                    },
+                  ],
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final slip = await repository.getBorrowingSlipById(slipId: 'slip-01');
+
+      expect(slip.status, 'COMPLETED');
+      expect(slip.totalFine, 25000);
+      expect(slip.finePaid, false);
+      expect(slip.items.first.lateFee, 25000);
+    },
+  );
 }

@@ -5,6 +5,7 @@ import 'package:week34_project/features/borrowings/data/models/create_borrowing_
 import 'package:week34_project/features/borrowings/data/models/borrowings_page.dart';
 import 'package:week34_project/features/borrowings/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowings/data/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowings/data/models/borrowing_slips_page.dart';
 
 class FakeBorrowingRepository implements BorrowingRepository {
   bool shouldFail;
@@ -125,6 +126,42 @@ class FakeBorrowingRepository implements BorrowingRepository {
       totalItems: 1,
       totalPages: 1,
       hasNextPage: false,
+    );
+  }
+
+  @override
+  Future<BorrowingSlipsPage> getBorrowingSlips({
+    required String memberId,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    return BorrowingSlipsPage(
+      slips: const [],
+      page: page,
+      limit: limit,
+      totalItems: 0,
+      totalPages: 1,
+      hasNextPage: false,
+    );
+  }
+
+  @override
+  Future<BorrowingSlip> getBorrowingSlipById({required String slipId}) async {
+    return BorrowingSlip(
+      id: slipId,
+      slipNumber: 'SLIP-2026-0001',
+      memberId: 'mem-01',
+      status: 'BORROWED',
+      dueDate: DateTime.utc(2026, 11, 15),
+      items: const [
+        BorrowingSlipItem(
+          id: 'item-01',
+          bookId: 'book-01',
+          bookTitle: 'Sách kiểm thử',
+          quantity: 1,
+          status: 'BORROWING',
+        ),
+      ],
     );
   }
 

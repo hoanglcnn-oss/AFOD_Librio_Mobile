@@ -6,6 +6,7 @@ import 'borrowing_repository.dart';
 import 'models/borrowing.dart';
 import 'models/borrowings_page.dart';
 import 'models/borrowing_slip.dart';
+import 'models/borrowing_slips_page.dart';
 import 'models/create_borrowing_request.dart';
 import 'models/create_borrowing_slip_request.dart';
 
@@ -95,6 +96,52 @@ class ApiBorrowingRepository implements BorrowingRepository {
     );
 
     return BorrowingsPage.fromJson(data);
+  }
+
+  @override
+  Future<BorrowingSlipsPage> getBorrowingSlips({
+    required String memberId,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (memberId.trim().isEmpty) {
+      throw ArgumentError('Mã độc giả không được để trống');
+    }
+
+    final data = await _remoteDataSource.getBorrowingSlips(
+      memberId: memberId.trim(),
+      token: token,
+      page: page,
+      limit: limit,
+    );
+
+    return BorrowingSlipsPage.fromJson(data);
+  }
+
+  @override
+  Future<BorrowingSlip> getBorrowingSlipById({required String slipId}) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (slipId.trim().isEmpty) {
+      throw ArgumentError('Mã phiếu mượn không được để trống');
+    }
+
+    final data = await _remoteDataSource.getBorrowingSlipById(
+      slipId: slipId.trim(),
+      token: token,
+    );
+
+    return BorrowingSlip.fromJson(data);
   }
 
   @override

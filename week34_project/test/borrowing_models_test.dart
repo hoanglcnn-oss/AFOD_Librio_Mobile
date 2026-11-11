@@ -109,4 +109,69 @@ void main() {
       expect(item.status, 'BORROWED');
     },
   );
+
+  test(
+    'BorrowingSlip.fromJson | Phiếu đã trả quá hạn | parse đúng trạng thái từng sách và tiền phạt',
+    () {
+      final slip = BorrowingSlip.fromJson({
+        'id': 'slip-01',
+        'slipNumber': 'SLIP-2026-0001',
+        'memberId': 'mem-01',
+        'status': 'COMPLETED',
+        'dueDate': '2026-11-15T08:00:00Z',
+        'borrowDate': '2026-11-01T08:00:00Z',
+        'totalFine': 25000,
+        'finePaid': false,
+        'renewCount': 0,
+        'items': [
+          {
+            'id': 'item-A',
+            'bookId': 'book-A',
+            'bookTitle': 'Sách A',
+            'quantity': 1,
+            'returnedQuantity': 1,
+            'status': 'RETURNED',
+            'returnDate': '2026-11-14T08:00:00Z',
+            'lateFee': 0,
+            'fineAmount': 0,
+          },
+          {
+            'id': 'item-B',
+            'bookId': 'book-B',
+            'bookTitle': 'Sách B',
+            'quantity': 1,
+            'returnedQuantity': 1,
+            'status': 'RETURNED',
+            'returnDate': '2026-11-15T08:00:00Z',
+            'lateFee': 0,
+            'fineAmount': 0,
+          },
+          {
+            'id': 'item-C',
+            'bookId': 'book-C',
+            'bookTitle': 'Sách C',
+            'quantity': 1,
+            'returnedQuantity': 1,
+            'status': 'RETURNED',
+            'returnDate': '2026-11-20T08:00:00Z',
+            'lateFee': 25000,
+            'fineAmount': 25000,
+          },
+        ],
+      });
+
+      expect(slip.status, 'COMPLETED');
+      expect(slip.totalFine, 25000);
+      expect(slip.finePaid, false);
+      expect(slip.items.length, 3);
+
+      expect(slip.items[0].lateFee, 0);
+      expect(slip.items[1].lateFee, 0);
+      expect(slip.items[2].lateFee, 25000);
+
+      expect(slip.items[2].returnedQuantity, 1);
+      expect(slip.items[2].remainingQuantity, 0);
+      expect(slip.items[2].returnDate, isNotNull);
+    },
+  );
 }
