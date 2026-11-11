@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../auth/presentation/pages/profile_screen.dart';
+import '../../../borrowings/data/api_borrowing_repository.dart';
+import '../../../borrowings/presentation/pages/pending_borrowing_slips_screen.dart';
 
 class LibrarianMainScreen extends StatefulWidget {
   const LibrarianMainScreen({super.key});
@@ -13,6 +15,13 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
   int _selectedIndex = 0;
 
   static const _titles = ['Phiếu chờ duyệt', 'Quản lý phiếu mượn', 'Tài khoản'];
+  late final ApiBorrowingRepository _borrowingRepository;
+
+  @override
+  void initState() {
+    super.initState();
+    _borrowingRepository = ApiBorrowingRepository();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +29,10 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
       appBar: AppBar(title: Text(_titles[_selectedIndex])),
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [
-          _PendingSlipsPlaceholder(),
-          _ManageSlipsPlaceholder(),
-          ProfileScreen(),
+        children: [
+          PendingBorrowingSlipsScreen(repository: _borrowingRepository),
+          const _ManageSlipsPlaceholder(),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -49,21 +58,6 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _PendingSlipsPlaceholder extends StatelessWidget {
-  const _PendingSlipsPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _FeaturePlaceholder(
-      icon: Icons.fact_check_outlined,
-      title: 'Phiếu chờ duyệt',
-      description:
-          'Danh sách phiếu PENDING_APPROVAL sẽ được '
-          'tích hợp ở bước tiếp theo.',
     );
   }
 }
