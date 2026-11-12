@@ -17,4 +17,3 @@ class CreateSlipRequested extends BorrowingSlipEvent {
   @override
   List<Object?> get props => [request];
 }
-

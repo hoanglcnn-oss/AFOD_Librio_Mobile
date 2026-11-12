@@ -104,4 +104,3 @@ DateTime? _parseDate(dynamic value) {
   if (value == null) return null;
   return DateTime.parse(value as String);
 }
-

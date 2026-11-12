@@ -40,7 +40,7 @@ class MyBorrowingsFailure extends MyBorrowingsState {
 }
 
 class MyBorrowingsReturning extends MyBorrowingsState {
-  final BorrowingsPage borrowingsPage;
+  final PaginatedBorrowings borrowingsPage;
   final String borrowingId;
 
   const MyBorrowingsReturning({
@@ -53,7 +53,7 @@ class MyBorrowingsReturning extends MyBorrowingsState {
 }
 
 class MyBorrowingsReturnSuccess extends MyBorrowingsState {
-  final BorrowingsPage borrowingsPage;
+  final PaginatedBorrowings borrowingsPage;
 
   const MyBorrowingsReturnSuccess(this.borrowingsPage);
 
@@ -62,7 +62,7 @@ class MyBorrowingsReturnSuccess extends MyBorrowingsState {
 }
 
 class MyBorrowingsReturnFailure extends MyBorrowingsState {
-  final BorrowingsPage borrowingsPage;
+  final PaginatedBorrowings borrowingsPage;
   final String message;
 
   const MyBorrowingsReturnFailure({
@@ -75,7 +75,7 @@ class MyBorrowingsReturnFailure extends MyBorrowingsState {
 }
 
 class MyBorrowingsRenewing extends MyBorrowingsState {
-  final BorrowingsPage borrowingsPage;
+  final PaginatedBorrowings borrowingsPage;
   final String borrowingId;
 
   const MyBorrowingsRenewing({
@@ -88,7 +88,7 @@ class MyBorrowingsRenewing extends MyBorrowingsState {
 }
 
 class MyBorrowingsRenewSuccess extends MyBorrowingsState {
-  final BorrowingsPage borrowingsPage;
+  final PaginatedBorrowings borrowingsPage;
 
   const MyBorrowingsRenewSuccess(this.borrowingsPage);
 
@@ -97,7 +97,7 @@ class MyBorrowingsRenewSuccess extends MyBorrowingsState {
 }
 
 class MyBorrowingsRenewFailure extends MyBorrowingsState {
-  final BorrowingsPage borrowingsPage;
+  final PaginatedBorrowings borrowingsPage;
   final String message;
 
   const MyBorrowingsRenewFailure({

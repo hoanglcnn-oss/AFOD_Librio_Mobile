@@ -675,4 +675,3 @@ void main() {
     expect(slip.status, 'REJECTED');
   });
 }
-

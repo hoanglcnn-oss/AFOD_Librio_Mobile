@@ -5,9 +5,8 @@ import 'package:week34_project/features/books/bloc/books_bloc.dart';
 import 'package:week34_project/features/books/bloc/books_event.dart';
 import 'package:week34_project/features/books/data/api_books_repository.dart';
 import 'package:week34_project/features/books/presentation/pages/books_screen.dart';
-import 'package:week34_project/features/borrowings/presentation/widgets/my_borrowings_tab.dart';
-
 import '../widgets/home_bottom_nav_bar.dart';
+import '../widgets/my_borrowings_tab.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

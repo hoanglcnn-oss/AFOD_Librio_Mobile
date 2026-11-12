@@ -36,4 +36,3 @@ class ReturnSlipItemsRequest {
     if (notes != null && notes!.trim().isNotEmpty) 'notes': notes!.trim(),
   };
 }
-

@@ -105,7 +105,7 @@ void main() {
   );
 
   test(
-    'getBorrowings | Có JWT và memberId | GET /borrowings, parse đúng BorrowingsPage',
+    'getBorrowings | Có JWT và memberId | GET /borrowings, parse đúng PaginatedBorrowings',
     () async {
       final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
@@ -389,7 +389,7 @@ void main() {
   );
 
   test(
-    'getAllBorrowings | Có JWT và status filter | GET /borrowings với query status và page, parse đúng BorrowingsPage',
+    'getAllBorrowings | Có JWT và status filter | GET /borrowings với query status và page, parse đúng PaginatedBorrowings',
     () async {
       final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 

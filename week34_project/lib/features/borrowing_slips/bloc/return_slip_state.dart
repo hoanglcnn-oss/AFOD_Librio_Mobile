@@ -34,4 +34,3 @@ class ReturnSlipFailure extends ReturnSlipState {
   @override
   List<Object?> get props => [message];
 }
-

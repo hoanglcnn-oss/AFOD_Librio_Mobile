@@ -118,7 +118,7 @@ void main() {
     'ManageBorrowingSlipsScreen | Danh sách rỗng | Hiển thị thông báo không có phiếu mượn nào',
     (tester) async {
       final repository = FakeBorrowingRepository();
-      repository.fakeAllSlipsPage = const BorrowingSlipsPage(
+      repository.fakeAllSlipsPage = const PaginatedBorrowingSlips(
         slips: [],
         page: 1,
         limit: 10,
@@ -162,7 +162,7 @@ void main() {
     (tester) async {
       final repository = FakeBorrowingRepository();
       repository.fakeAllSlipsBuilder = (status, page, limit) {
-        return BorrowingSlipsPage(
+        return PaginatedBorrowingSlips(
           slips: [
             BorrowingSlip(
               id: 'slip-$page',
@@ -200,7 +200,7 @@ void main() {
     'ManageBorrowingSlipsScreen | Phiếu PENDING_APPROVAL | Hiển thị Duyệt/Từ chối và gọi approve khi xác nhận',
     (tester) async {
       final repository = FakeBorrowingRepository();
-      repository.fakeAllSlipsPage = BorrowingSlipsPage(
+      repository.fakeAllSlipsPage = PaginatedBorrowingSlips(
         slips: [
           BorrowingSlip(
             id: 'slip-pending-01',

@@ -34,4 +34,3 @@ class BorrowingSlipFailure extends BorrowingSlipState {
   @override
   List<Object?> get props => [message];
 }
-

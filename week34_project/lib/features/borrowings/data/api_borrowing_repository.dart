@@ -15,9 +15,9 @@ class ApiBorrowingRepository implements BorrowingRepository {
     BorrowingsRemoteDataSource? remoteDataSource,
     TokenStorage? tokenStorage,
     Dio? dio,
-  })  : _remoteDataSource =
-            remoteDataSource ?? BorrowingsRemoteDataSourceImpl(dio: dio),
-        _tokenStorage = tokenStorage ?? TokenStorage();
+  }) : _remoteDataSource =
+           remoteDataSource ?? BorrowingsRemoteDataSourceImpl(dio: dio),
+       _tokenStorage = tokenStorage ?? TokenStorage();
 
   @override
   Future<Borrowing> borrowBook(CreateBorrowingRequest request) async {

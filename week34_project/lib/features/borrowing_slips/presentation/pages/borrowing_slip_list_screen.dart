@@ -62,7 +62,7 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<BorrowingSlipsPage>(
+    return FutureBuilder<PaginatedBorrowingSlips>(
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
@@ -142,4 +142,3 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
     );
   }
 }
-

@@ -84,4 +84,3 @@ class BorrowingSlipCard extends StatelessWidget {
     );
   }
 }
-

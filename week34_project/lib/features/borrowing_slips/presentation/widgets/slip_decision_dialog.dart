@@ -168,4 +168,3 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
     );
   }
 }
-

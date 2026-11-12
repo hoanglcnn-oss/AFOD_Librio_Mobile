@@ -102,4 +102,3 @@ class _PaySlipFineContent extends StatelessWidget {
     );
   }
 }
-

@@ -18,4 +18,3 @@ class ReturnSlipRequested extends ReturnSlipEvent {
   @override
   List<Object?> get props => [slipId, request];
 }
-

@@ -211,34 +211,46 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                       Text(
                         'Đang mượn',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '${summary.currentBorrowedCount}/${summary.maxBorrowLimit} cuốn',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimaryContainer,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           Icon(
-                            summary.canBorrow ? Icons.check_circle : Icons.warning_amber_rounded,
+                            summary.canBorrow
+                                ? Icons.check_circle
+                                : Icons.warning_amber_rounded,
                             size: 18,
-                            color: summary.canBorrow ? Colors.green : Colors.orange,
+                            color: summary.canBorrow
+                                ? Colors.green
+                                : Colors.orange,
                           ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               summary.canBorrow
                                   ? 'Được mượn thêm'
-                                  : (summary.reasonIfNotAllowed ?? 'Không đủ điều kiện mượn thêm'),
+                                  : (summary.reasonIfNotAllowed ??
+                                        'Không đủ điều kiện mượn thêm'),
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: summary.canBorrow ? Colors.green.shade800 : Colors.deepOrange.shade900,
+                                color: summary.canBorrow
+                                    ? Colors.green.shade800
+                                    : Colors.deepOrange.shade900,
                               ),
                             ),
                           ),
@@ -260,9 +272,8 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                       title: const Text('Còn được mượn'),
                       trailing: Text(
                         '${summary.remainingBorrowLimit} cuốn',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
                     const Divider(height: 1),
@@ -274,10 +285,13 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                       title: const Text('Sách quá hạn'),
                       trailing: Text(
                         '${summary.overdueCount}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: summary.overdueCount > 0 ? Colors.red : null,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: summary.overdueCount > 0
+                                  ? Colors.red
+                                  : null,
+                            ),
                       ),
                     ),
                     const Divider(height: 1),
@@ -288,11 +302,16 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                       ),
                       title: const Text('Tiền phạt chưa thanh toán'),
                       trailing: Text(
-                        BorrowingSlipUiHelper.formatMoney(summary.unpaidFineAmount),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: summary.unpaidFineAmount > 0 ? Colors.red : null,
+                        BorrowingSlipUiHelper.formatMoney(
+                          summary.unpaidFineAmount,
                         ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: summary.unpaidFineAmount > 0
+                                  ? Colors.red
+                                  : null,
+                            ),
                       ),
                     ),
                   ],
@@ -304,20 +323,31 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.5),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.errorContainer.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.error.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: Theme.of(context).colorScheme.error),
+                      Icon(
+                        Icons.info_outline,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           summary.reasonIfNotAllowed!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onErrorContainer,
+                          ),
                         ),
                       ),
                     ],
@@ -331,4 +361,3 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
     );
   }
 }
-

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:week34_project/features/borrowings/data/models/borrowing.dart';
 import 'package:week34_project/features/borrowings/data/models/paginated_borrowings.dart';
-import 'package:week34_project/features/borrowings/presentation/pages/librarian_manage_screen.dart';
 import 'package:week34_project/features/borrowings/presentation/pages/manage_single_borrowings_screen.dart';
+import 'package:week34_project/features/home/presentation/pages/librarian_manage_screen.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 
@@ -83,7 +83,7 @@ void main() {
     'ManageSingleBorrowingsScreen | Danh sách rỗng | Hiển thị thông báo không có lượt mượn',
     (tester) async {
       final repository = FakeBorrowingRepository();
-      repository.fakeAllBorrowingsPage = const BorrowingsPage(
+      repository.fakeAllBorrowingsPage = const PaginatedBorrowings(
         borrowings: [],
         page: 1,
         limit: 10,
@@ -155,7 +155,7 @@ void main() {
       'manage_single_borrowings_screen | Có nợ phạt và finePaid = false | Hiển thị nút Thu tiền phạt (kể cả RETURNED)',
       (tester) async {
         final repository = FakeBorrowingRepository();
-        repository.fakeAllBorrowingsPage = BorrowingsPage(
+        repository.fakeAllBorrowingsPage = PaginatedBorrowings(
           borrowings: [
             Borrowing(
               id: 'brw-ret-fine',
@@ -192,7 +192,7 @@ void main() {
       'manage_single_borrowings_screen | finePaid = true hoặc không có phạt | Không hiển thị nút Thu tiền phạt',
       (tester) async {
         final repository = FakeBorrowingRepository();
-        repository.fakeAllBorrowingsPage = BorrowingsPage(
+        repository.fakeAllBorrowingsPage = PaginatedBorrowings(
           borrowings: [
             Borrowing(
               id: 'brw-ret-paid',
@@ -229,7 +229,7 @@ void main() {
       'manage_single_borrowings_screen | Hủy dialog | Không gọi API payFine',
       (tester) async {
         final repository = FakeBorrowingRepository();
-        repository.fakeAllBorrowingsPage = BorrowingsPage(
+        repository.fakeAllBorrowingsPage = PaginatedBorrowings(
           borrowings: [
             Borrowing(
               id: 'brw-01',
@@ -275,7 +275,7 @@ void main() {
       'manage_single_borrowings_screen | Xác nhận dialog | Gọi API payFine và hiển thị thông báo thành công',
       (tester) async {
         final repository = FakeBorrowingRepository();
-        repository.fakeAllBorrowingsPage = BorrowingsPage(
+        repository.fakeAllBorrowingsPage = PaginatedBorrowings(
           borrowings: [
             Borrowing(
               id: 'brw-pay-01',
@@ -320,7 +320,7 @@ void main() {
       (tester) async {
         final repository = FakeBorrowingRepository();
         repository.shouldFailPayFine = true;
-        repository.fakeAllBorrowingsPage = BorrowingsPage(
+        repository.fakeAllBorrowingsPage = PaginatedBorrowings(
           borrowings: [
             Borrowing(
               id: 'brw-pay-02',

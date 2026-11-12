@@ -84,7 +84,7 @@ class _PendingBorrowingSlipsScreenState
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<BorrowingSlipsPage>(
+    return FutureBuilder<PaginatedBorrowingSlips>(
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
@@ -207,4 +207,3 @@ class _PendingBorrowingSlipsScreenState
     );
   }
 }
-

@@ -35,4 +35,3 @@ class ApproveSlipFailure extends ApproveSlipState {
   @override
   List<Object?> get props => [message, requiresRefresh];
 }
-

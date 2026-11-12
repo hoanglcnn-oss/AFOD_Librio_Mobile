@@ -29,7 +29,7 @@ class _ManageBorrowingSlipsScreenState
     (label: 'Đã hủy', value: 'CANCELLED'),
   ];
 
-  late Future<BorrowingSlipsPage> _future;
+  late Future<PaginatedBorrowingSlips> _future;
   String? _selectedStatus;
   int _page = 1;
 
@@ -143,7 +143,7 @@ class _ManageBorrowingSlipsScreenState
         ),
 
         Expanded(
-          child: FutureBuilder<BorrowingSlipsPage>(
+          child: FutureBuilder<PaginatedBorrowingSlips>(
             future: _future,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
@@ -281,4 +281,3 @@ class _ManageBorrowingSlipsScreenState
     );
   }
 }
-

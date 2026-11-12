@@ -7,10 +7,10 @@ import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';
 
 import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
-import '../../bloc/my_borrowings_bloc.dart';
-import '../../bloc/my_borrowings_event.dart';
-import '../../data/api_borrowing_repository.dart';
-import '../pages/my_borrowings_screen.dart';
+import '../../../borrowings/bloc/my_borrowings_bloc.dart';
+import '../../../borrowings/bloc/my_borrowings_event.dart';
+import '../../../borrowings/data/api_borrowing_repository.dart';
+import '../../../borrowings/presentation/pages/my_borrowings_screen.dart';
 import '../../../borrowing_slips/presentation/pages/borrowing_slip_list_screen.dart';
 
 class MyBorrowingsTab extends StatefulWidget {

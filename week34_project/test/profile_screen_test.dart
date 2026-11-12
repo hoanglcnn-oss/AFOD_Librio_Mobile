@@ -31,7 +31,9 @@ void main() {
   });
 
   group('ProfileScreen', () {
-    testWidgets('MEMBER | Hiển thị mục Hạn mức & điều kiện mượn', (tester) async {
+    testWidgets('MEMBER | Hiển thị mục Hạn mức & điều kiện mượn', (
+      tester,
+    ) async {
       final user = UserProfile(
         id: 'user-01',
         email: 'member@example.com',
@@ -53,7 +55,9 @@ void main() {
       );
     });
 
-    testWidgets('LIBRARIAN | KHÔNG hiển thị mục Hạn mức & điều kiện mượn', (tester) async {
+    testWidgets('LIBRARIAN | KHÔNG hiển thị mục Hạn mức & điều kiện mượn', (
+      tester,
+    ) async {
       final user = UserProfile(
         id: 'user-02',
         email: 'lib@example.com',
@@ -70,7 +74,9 @@ void main() {
       expect(find.text('Hạn mức & điều kiện mượn'), findsNothing);
     });
 
-    testWidgets('ADMIN | KHÔNG hiển thị mục Hạn mức & điều kiện mượn', (tester) async {
+    testWidgets('ADMIN | KHÔNG hiển thị mục Hạn mức & điều kiện mượn', (
+      tester,
+    ) async {
       final user = UserProfile(
         id: 'user-03',
         email: 'admin@example.com',

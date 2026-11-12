@@ -137,7 +137,9 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
 
               if (_debtSummaryFuture == null || _loadedMemberId != memberId) {
                 _loadedMemberId = memberId;
-                _debtSummaryFuture = widget.membersRepository.getDebtSummary(memberId);
+                _debtSummaryFuture = widget.membersRepository.getDebtSummary(
+                  memberId,
+                );
               }
 
               return FutureBuilder<MemberDebtSummary>(
@@ -167,11 +169,12 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     final isDebtLoading = debtSnapshot.connectionState != ConnectionState.done;
     final isDebtError = debtSnapshot.hasError;
 
-    final isExceedingLimit = debtSummary != null &&
-        totalSelected > debtSummary.remainingBorrowLimit;
+    final isExceedingLimit =
+        debtSummary != null && totalSelected > debtSummary.remainingBorrowLimit;
     final canBorrowCondition = debtSummary != null && debtSummary.canBorrow;
 
-    final canSubmit = !isDebtLoading &&
+    final canSubmit =
+        !isDebtLoading &&
         !isDebtError &&
         debtSummary != null &&
         canBorrowCondition &&
@@ -180,7 +183,8 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     String? notAllowedReason;
     if (debtSummary != null) {
       if (!debtSummary.canBorrow) {
-        notAllowedReason = debtSummary.reasonIfNotAllowed ??
+        notAllowedReason =
+            debtSummary.reasonIfNotAllowed ??
             'Tài khoản hiện không đủ điều kiện mượn sách';
       } else if (isExceedingLimit) {
         notAllowedReason =
@@ -225,7 +229,8 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                           ),
                           Text('${_quantities[book.id]}'),
                           IconButton(
-                            onPressed: submitting ||
+                            onPressed:
+                                submitting ||
                                     _quantities[book.id]! >=
                                         book.copiesAvailable ||
                                     _quantities[book.id]! >= 5
@@ -297,7 +302,9 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
             const SizedBox(height: 24),
 
             FilledButton(
-              onPressed: submitting || !canSubmit ? null : () => _submit(memberId),
+              onPressed: submitting || !canSubmit
+                  ? null
+                  : () => _submit(memberId),
               child: submitting
                   ? const SizedBox(
                       height: 20,
@@ -342,7 +349,9 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
 
     if (isDebtError || debtSummary == null) {
       return Card(
-        color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.errorContainer.withValues(alpha: 0.3),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
@@ -350,7 +359,10 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
+                  Icon(
+                    Icons.error_outline,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
@@ -374,7 +386,9 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
 
     return Card(
       color: canSubmit
-          ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
+          ? Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
           : Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.3),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -386,26 +400,33 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                 Icon(
                   canSubmit ? Icons.verified_outlined : Icons.info_outline,
                   size: 20,
-                  color: canSubmit ? Colors.green : Theme.of(context).colorScheme.error,
+                  color: canSubmit
+                      ? Colors.green
+                      : Theme.of(context).colorScheme.error,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'Hạn mức mượn sách',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            Text('• Đang mượn: ${debtSummary.currentBorrowedCount}/${debtSummary.maxBorrowLimit} cuốn'),
+            Text(
+              '• Đang mượn: ${debtSummary.currentBorrowedCount}/${debtSummary.maxBorrowLimit} cuốn',
+            ),
             Text('• Còn được mượn: ${debtSummary.remainingBorrowLimit} cuốn'),
             Text('• Đang chọn: $totalSelected cuốn'),
             const SizedBox(height: 6),
             if (canSubmit)
               const Text(
                 'Đủ điều kiện gửi phiếu mượn',
-                style: TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.w600,
+                ),
               )
             else
               Text(

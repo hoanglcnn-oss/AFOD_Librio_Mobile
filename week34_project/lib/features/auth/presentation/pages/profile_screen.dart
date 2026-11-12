@@ -74,9 +74,8 @@ class ProfileScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => BorrowingLimitScreen(
-                        memberId: user.memberId,
-                      ),
+                      builder: (_) =>
+                          BorrowingLimitScreen(memberId: user.memberId),
                     ),
                   );
                 },

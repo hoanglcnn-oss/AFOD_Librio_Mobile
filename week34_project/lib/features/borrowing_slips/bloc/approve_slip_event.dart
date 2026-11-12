@@ -25,4 +25,3 @@ class RejectSlipRequested extends ApproveSlipEvent {
   @override
   List<Object?> get props => [slipId, reason];
 }
-

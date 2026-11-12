@@ -66,4 +66,3 @@ class BorrowingSlipUiHelper {
     return slip.totalFine > 0 && !slip.finePaid;
   }
 }
-

@@ -21,7 +21,10 @@ class _FakeMembersRemoteDataSource implements MembersRemoteDataSource {
     int page = 1,
     int limit = 100,
   }) async {
-    return {'data': [], 'meta': {'page': 1, 'totalPages': 1, 'hasNextPage': false}};
+    return {
+      'data': [],
+      'meta': {'page': 1, 'totalPages': 1, 'hasNextPage': false},
+    };
   }
 
   @override
@@ -37,59 +40,63 @@ class _FakeMembersRemoteDataSource implements MembersRemoteDataSource {
       throw errorToThrow!;
     }
 
-    return responseData ?? {
-      'maxBorrowLimit': 5,
-      'currentBorrowedCount': 2,
-      'remainingBorrowLimit': 3,
-      'canBorrow': true,
-      'overdueCount': 0,
-      'unpaidFineAmount': 0,
-    };
+    return responseData ??
+        {
+          'maxBorrowLimit': 5,
+          'currentBorrowedCount': 2,
+          'remainingBorrowLimit': 3,
+          'canBorrow': true,
+          'overdueCount': 0,
+          'unpaidFineAmount': 0,
+        };
   }
 }
 
 void main() {
   group('MembersRemoteDataSourceImpl.getDebtSummary', () {
-    test('Gọi GET /members/:memberId/debt-summary với Authorization header', () async {
-      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    test(
+      'Gọi GET /members/:memberId/debt-summary với Authorization header',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 
-      dio.interceptors.add(
-        InterceptorsWrapper(
-          onRequest: (options, handler) {
-            expect(options.method, 'GET');
-            expect(options.path, '/members/mem-123/debt-summary');
-            expect(options.headers['Authorization'], 'Bearer mock-jwt-token');
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'GET');
+              expect(options.path, '/members/mem-123/debt-summary');
+              expect(options.headers['Authorization'], 'Bearer mock-jwt-token');
 
-            handler.resolve(
-              Response(
-                requestOptions: options,
-                statusCode: 200,
-                data: {
-                  'maxBorrowLimit': 5,
-                  'currentBorrowedCount': 3,
-                  'remainingBorrowLimit': 2,
-                  'canBorrow': true,
-                  'reasonIfNotAllowed': null,
-                  'overdueCount': 0,
-                  'unpaidFineAmount': 0,
-                },
-              ),
-            );
-          },
-        ),
-      );
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'maxBorrowLimit': 5,
+                    'currentBorrowedCount': 3,
+                    'remainingBorrowLimit': 2,
+                    'canBorrow': true,
+                    'reasonIfNotAllowed': null,
+                    'overdueCount': 0,
+                    'unpaidFineAmount': 0,
+                  },
+                ),
+              );
+            },
+          ),
+        );
 
-      final dataSource = MembersRemoteDataSourceImpl(dio: dio);
-      final result = await dataSource.getDebtSummary(
-        memberId: 'mem-123',
-        token: 'mock-jwt-token',
-      );
+        final dataSource = MembersRemoteDataSourceImpl(dio: dio);
+        final result = await dataSource.getDebtSummary(
+          memberId: 'mem-123',
+          token: 'mock-jwt-token',
+        );
 
-      expect(result['maxBorrowLimit'], 5);
-      expect(result['currentBorrowedCount'], 3);
-      expect(result['remainingBorrowLimit'], 2);
-      expect(result['canBorrow'], isTrue);
-    });
+        expect(result['maxBorrowLimit'], 5);
+        expect(result['currentBorrowedCount'], 3);
+        expect(result['remainingBorrowLimit'], 2);
+        expect(result['canBorrow'], isTrue);
+      },
+    );
   });
 
   group('ApiMembersRepository.getDebtSummary', () {
@@ -157,7 +164,9 @@ void main() {
         errorToThrow: DioException(
           requestOptions: RequestOptions(path: '/members/mem-01/debt-summary'),
           response: Response(
-            requestOptions: RequestOptions(path: '/members/mem-01/debt-summary'),
+            requestOptions: RequestOptions(
+              path: '/members/mem-01/debt-summary',
+            ),
             statusCode: 500,
           ),
           type: DioExceptionType.badResponse,
@@ -176,4 +185,3 @@ void main() {
     });
   });
 }
-

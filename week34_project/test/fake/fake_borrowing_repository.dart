@@ -42,16 +42,17 @@ class FakeBorrowingRepository
 
   int getPendingSlipsCallCount = 0;
   bool shouldFailGetPendingSlips = false;
-  BorrowingSlipsPage? fakePendingSlipsPage;
-  BorrowingSlipsPage Function(int page, int limit)? fakePendingSlipsBuilder;
+  PaginatedBorrowingSlips? fakePendingSlipsPage;
+  PaginatedBorrowingSlips Function(int page, int limit)?
+  fakePendingSlipsBuilder;
   DioException? getPendingSlipsError;
 
   int getAllBorrowingsCallCount = 0;
   String? lastGetAllBorrowingsStatus;
   int? lastGetAllBorrowingsPage;
   bool shouldFailGetAllBorrowings = false;
-  BorrowingsPage? fakeAllBorrowingsPage;
-  BorrowingsPage Function(String? status, int page, int limit)?
+  PaginatedBorrowings? fakeAllBorrowingsPage;
+  PaginatedBorrowings Function(String? status, int page, int limit)?
   fakeAllBorrowingsBuilder;
   DioException? getAllBorrowingsError;
 
@@ -59,8 +60,8 @@ class FakeBorrowingRepository
   String? lastGetAllSlipsStatus;
   int? lastGetAllSlipsPage;
   bool shouldFailGetAllSlips = false;
-  BorrowingSlipsPage? fakeAllSlipsPage;
-  BorrowingSlipsPage Function(String? status, int page, int limit)?
+  PaginatedBorrowingSlips? fakeAllSlipsPage;
+  PaginatedBorrowingSlips Function(String? status, int page, int limit)?
   fakeAllSlipsBuilder;
   DioException? getAllSlipsError;
 
@@ -141,7 +142,7 @@ class FakeBorrowingRepository
   }
 
   @override
-  Future<BorrowingsPage> getBorrowings({
+  Future<PaginatedBorrowings> getBorrowings({
     required String memberId,
     int page = 1,
     int limit = 10,
@@ -163,7 +164,7 @@ class FakeBorrowingRepository
       renewCount: fakeRenewCount,
     );
 
-    return BorrowingsPage(
+    return PaginatedBorrowings(
       borrowings: [borrowing],
       page: page,
       limit: limit,
@@ -174,7 +175,7 @@ class FakeBorrowingRepository
   }
 
   @override
-  Future<BorrowingsPage> getAllBorrowings({
+  Future<PaginatedBorrowings> getAllBorrowings({
     String? status,
     int page = 1,
     int limit = 10,
@@ -211,7 +212,7 @@ class FakeBorrowingRepository
       status: status ?? 'BORROWED',
     );
 
-    return BorrowingsPage(
+    return PaginatedBorrowings(
       borrowings: [borrowing],
       page: page,
       limit: limit,
@@ -222,12 +223,12 @@ class FakeBorrowingRepository
   }
 
   @override
-  Future<BorrowingSlipsPage> getBorrowingSlips({
+  Future<PaginatedBorrowingSlips> getBorrowingSlips({
     required String memberId,
     int page = 1,
     int limit = 10,
   }) async {
-    return BorrowingSlipsPage(
+    return PaginatedBorrowingSlips(
       slips: const [],
       page: page,
       limit: limit,
@@ -262,7 +263,7 @@ class FakeBorrowingRepository
   }
 
   @override
-  Future<BorrowingSlipsPage> getPendingBorrowingSlips({
+  Future<PaginatedBorrowingSlips> getPendingBorrowingSlips({
     int page = 1,
     int limit = 10,
   }) async {
@@ -284,7 +285,7 @@ class FakeBorrowingRepository
       return fakePendingSlipsPage!;
     }
 
-    return BorrowingSlipsPage(
+    return PaginatedBorrowingSlips(
       slips: [
         BorrowingSlip(
           id: 'slip-01',
@@ -312,7 +313,7 @@ class FakeBorrowingRepository
   }
 
   @override
-  Future<BorrowingSlipsPage> getAllBorrowingSlips({
+  Future<PaginatedBorrowingSlips> getAllBorrowingSlips({
     String? status,
     int page = 1,
     int limit = 10,
@@ -356,7 +357,7 @@ class FakeBorrowingRepository
       ),
     ];
 
-    return BorrowingSlipsPage(
+    return PaginatedBorrowingSlips(
       slips: allMockSlips,
       page: page,
       limit: limit,

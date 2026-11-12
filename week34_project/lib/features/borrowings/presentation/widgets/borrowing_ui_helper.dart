@@ -12,4 +12,3 @@ class BorrowingUiHelper {
     return '${digits.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')} VNĐ';
   }
 }
-

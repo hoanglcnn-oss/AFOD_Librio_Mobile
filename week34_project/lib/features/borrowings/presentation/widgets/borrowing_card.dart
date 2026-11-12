@@ -140,9 +140,7 @@ class BorrowingCard extends StatelessWidget {
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.update),
                       label: Text(isRenewing ? 'Đang gia hạn...' : 'Gia hạn'),
@@ -154,9 +152,7 @@ class BorrowingCard extends StatelessWidget {
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                              ),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.assignment_turned_in_outlined),
                       label: Text(isReturning ? 'Đang trả...' : 'Trả sách'),

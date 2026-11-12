@@ -39,4 +39,3 @@ abstract class BorrowingSlipsRepository {
 
   Future<BorrowingSlip> paySlipFine({required String slipId});
 }
-

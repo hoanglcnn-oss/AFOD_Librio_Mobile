@@ -19,30 +19,31 @@ void main() {
   }
 
   group('BorrowingLimitScreen', () {
-    testWidgets('Tải thành công | Hiển thị đầy đủ thông tin hạn mức và điều kiện', (
-      tester,
-    ) async {
-      final repository = FakeMembersRepository(
-        fakeDebtSummary: const MemberDebtSummary(
-          maxBorrowLimit: 5,
-          currentBorrowedCount: 3,
-          remainingBorrowLimit: 2,
-          canBorrow: true,
-          overdueCount: 0,
-          unpaidFineAmount: 0,
-        ),
-      );
+    testWidgets(
+      'Tải thành công | Hiển thị đầy đủ thông tin hạn mức và điều kiện',
+      (tester) async {
+        final repository = FakeMembersRepository(
+          fakeDebtSummary: const MemberDebtSummary(
+            maxBorrowLimit: 5,
+            currentBorrowedCount: 3,
+            remainingBorrowLimit: 2,
+            canBorrow: true,
+            overdueCount: 0,
+            unpaidFineAmount: 0,
+          ),
+        );
 
-      await tester.pumpWidget(createApp(repository: repository));
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createApp(repository: repository));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Hạn mức mượn sách'), findsOneWidget);
-      expect(find.text('3/5 cuốn'), findsOneWidget);
-      expect(find.text('Được mượn thêm'), findsOneWidget);
-      expect(find.text('2 cuốn'), findsOneWidget);
-      expect(find.text('0'), findsOneWidget);
-      expect(find.text('0 VNĐ'), findsOneWidget);
-    });
+        expect(find.text('Hạn mức mượn sách'), findsOneWidget);
+        expect(find.text('3/5 cuốn'), findsOneWidget);
+        expect(find.text('Được mượn thêm'), findsOneWidget);
+        expect(find.text('2 cuốn'), findsOneWidget);
+        expect(find.text('0'), findsOneWidget);
+        expect(find.text('0 VNĐ'), findsOneWidget);
+      },
+    );
 
     testWidgets('Không đủ điều kiện mượn | Hiển thị cảnh báo và lý do', (
       tester,
@@ -72,9 +73,7 @@ void main() {
     testWidgets('Tải dữ liệu lỗi | Hiển thị nút Thử lại và tải lại khi bấm', (
       tester,
     ) async {
-      final repository = FakeMembersRepository(
-        shouldFailDebtSummary: true,
-      );
+      final repository = FakeMembersRepository(shouldFailDebtSummary: true);
 
       await tester.pumpWidget(createApp(repository: repository));
       await tester.pumpAndSettle();
@@ -104,4 +103,3 @@ void main() {
     });
   });
 }
-

@@ -26,7 +26,7 @@ class _ManageSingleBorrowingsScreenState
     (label: 'Đã trả', value: 'RETURNED'),
   ];
 
-  late Future<BorrowingsPage> _future;
+  late Future<PaginatedBorrowings> _future;
   String? _selectedStatus;
   int _page = 1;
   String? _processingBorrowingId;
@@ -187,7 +187,9 @@ class _ManageSingleBorrowingsScreenState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Xác nhận đã nhận tiền phạt cho cuốn "${borrowing.bookTitle}"?'),
+              Text(
+                'Xác nhận đã nhận tiền phạt cho cuốn "${borrowing.bookTitle}"?',
+              ),
               const SizedBox(height: 12),
               if (fineText.isNotEmpty)
                 Text(
@@ -286,7 +288,7 @@ class _ManageSingleBorrowingsScreenState
         ),
 
         Expanded(
-          child: FutureBuilder<BorrowingsPage>(
+          child: FutureBuilder<PaginatedBorrowings>(
             future: _future,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {

@@ -32,6 +32,3 @@ class PaginatedBorrowings {
     );
   }
 }
-
-typedef BorrowingsPage = PaginatedBorrowings;
-

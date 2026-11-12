@@ -25,23 +25,28 @@ class MemberDebtSummary extends Equatable {
         : raw;
 
     final maxLimit = json['maxBorrowLimit'] as int? ?? 5;
-    final currentBorrowed = json['currentBorrowedCount'] as int? ??
+    final currentBorrowed =
+        json['currentBorrowedCount'] as int? ??
         json['borrowedCount'] as int? ??
         0;
-    final remaining = json['remainingBorrowLimit'] as int? ??
+    final remaining =
+        json['remainingBorrowLimit'] as int? ??
         (maxLimit - currentBorrowed).clamp(0, maxLimit);
-    final overdue = json['overdueCount'] as int? ??
+    final overdue =
+        json['overdueCount'] as int? ??
         json['overdueBooksCount'] as int? ??
         json['overdue'] as int? ??
         0;
-    final unpaidFine = (json['unpaidFineAmount'] as num?) ??
+    final unpaidFine =
+        (json['unpaidFineAmount'] as num?) ??
         (json['totalUnpaidFine'] as num?) ??
         (json['unpaidFine'] as num?) ??
         0;
-    final canBorrow = json['canBorrow'] as bool? ??
+    final canBorrow =
+        json['canBorrow'] as bool? ??
         (remaining > 0 && overdue == 0 && unpaidFine == 0);
-    final reason = json['reasonIfNotAllowed'] as String? ??
-        json['reason'] as String?;
+    final reason =
+        json['reasonIfNotAllowed'] as String? ?? json['reason'] as String?;
 
     return MemberDebtSummary(
       maxBorrowLimit: maxLimit,
@@ -95,4 +100,3 @@ class MemberDebtSummary extends Equatable {
     unpaidFineAmount,
   ];
 }
-

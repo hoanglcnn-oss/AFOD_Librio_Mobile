@@ -32,6 +32,3 @@ class PaginatedBorrowingSlips {
     );
   }
 }
-
-typedef BorrowingSlipsPage = PaginatedBorrowingSlips;
-

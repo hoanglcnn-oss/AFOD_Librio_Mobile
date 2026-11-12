@@ -50,9 +50,7 @@ void main() {
     });
 
     test('fromJson | Thiếu một số trường | Có giá trị mặc định hợp lý', () {
-      final json = {
-        'currentBorrowedCount': 1,
-      };
+      final json = {'currentBorrowedCount': 1};
 
       final summary = MemberDebtSummary.fromJson(json);
 
@@ -82,4 +80,3 @@ void main() {
     });
   });
 }
-

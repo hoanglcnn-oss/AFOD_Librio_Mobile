@@ -94,7 +94,7 @@ void main() {
     'PendingSlipsScreen | Danh sách rỗng | Hiển thị thông báo không có phiếu chờ duyệt',
     (tester) async {
       final repository = FakeBorrowingRepository();
-      repository.fakePendingSlipsPage = const BorrowingSlipsPage(
+      repository.fakePendingSlipsPage = const PaginatedBorrowingSlips(
         slips: [],
         page: 1,
         limit: 10,
@@ -174,7 +174,7 @@ void main() {
     (tester) async {
       final repository = FakeBorrowingRepository();
       repository.fakePendingSlipsBuilder = (page, limit) {
-        return BorrowingSlipsPage(
+        return PaginatedBorrowingSlips(
           slips: [
             BorrowingSlip(
               id: 'slip-$page',

@@ -274,4 +274,3 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     );
   }
 }
-

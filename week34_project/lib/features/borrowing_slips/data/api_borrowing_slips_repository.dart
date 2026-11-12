@@ -16,9 +16,9 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
     BorrowingSlipsRemoteDataSource? remoteDataSource,
     TokenStorage? tokenStorage,
     Dio? dio,
-  })  : _remoteDataSource =
-            remoteDataSource ?? BorrowingSlipsRemoteDataSourceImpl(dio: dio),
-        _tokenStorage = tokenStorage ?? TokenStorage();
+  }) : _remoteDataSource =
+           remoteDataSource ?? BorrowingSlipsRemoteDataSourceImpl(dio: dio),
+       _tokenStorage = tokenStorage ?? TokenStorage();
 
   @override
   Future<BorrowingSlip> createBorrowingSlip(
@@ -266,4 +266,3 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
     return BorrowingSlip.fromJson(data);
   }
 }
-

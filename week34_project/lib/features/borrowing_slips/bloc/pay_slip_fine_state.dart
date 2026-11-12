@@ -34,4 +34,3 @@ class PaySlipFineFailure extends PaySlipFineState {
   @override
   List<Object?> get props => [message];
 }
-

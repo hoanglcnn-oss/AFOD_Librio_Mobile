@@ -14,9 +14,9 @@ class ApiMembersRepository implements MembersRepository {
     MembersRemoteDataSource? remoteDataSource,
     TokenStorage? tokenStorage,
     Dio? dio,
-  })  : _remoteDataSource =
-            remoteDataSource ?? MembersRemoteDataSourceImpl(dio: dio),
-        _tokenStorage = tokenStorage ?? TokenStorage();
+  }) : _remoteDataSource =
+           remoteDataSource ?? MembersRemoteDataSourceImpl(dio: dio),
+       _tokenStorage = tokenStorage ?? TokenStorage();
 
   @override
   Future<Member?> findByEmail(String email) async {

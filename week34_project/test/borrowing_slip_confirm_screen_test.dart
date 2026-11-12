@@ -91,41 +91,42 @@ void main() {
   });
 
   group('BorrowingSlipConfirmScreen - F1 Hạn mức mượn sách', () {
-    testWidgets('Đủ hạn mức | Hiển thị thông tin rút gọn và nút Gửi phiếu enabled', (
-      tester,
-    ) async {
-      setLargeScreen(tester);
+    testWidgets(
+      'Đủ hạn mức | Hiển thị thông tin rút gọn và nút Gửi phiếu enabled',
+      (tester) async {
+        setLargeScreen(tester);
 
-      membersRepository.fakeDebtSummary = const MemberDebtSummary(
-        maxBorrowLimit: 5,
-        currentBorrowedCount: 2,
-        remainingBorrowLimit: 3,
-        canBorrow: true,
-        overdueCount: 0,
-        unpaidFineAmount: 0,
-      );
+        membersRepository.fakeDebtSummary = const MemberDebtSummary(
+          maxBorrowLimit: 5,
+          currentBorrowedCount: 2,
+          remainingBorrowLimit: 3,
+          canBorrow: true,
+          overdueCount: 0,
+          unpaidFineAmount: 0,
+        );
 
-      await tester.pumpWidget(createApp());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createApp());
+        await tester.pumpAndSettle();
 
-      expect(find.text('Hạn mức mượn sách'), findsOneWidget);
-      expect(find.text('• Đang mượn: 2/5 cuốn'), findsOneWidget);
-      expect(find.text('• Còn được mượn: 3 cuốn'), findsOneWidget);
-      expect(find.text('• Đang chọn: 2 cuốn'), findsOneWidget);
-      expect(find.text('Đủ điều kiện gửi phiếu mượn'), findsOneWidget);
+        expect(find.text('Hạn mức mượn sách'), findsOneWidget);
+        expect(find.text('• Đang mượn: 2/5 cuốn'), findsOneWidget);
+        expect(find.text('• Còn được mượn: 3 cuốn'), findsOneWidget);
+        expect(find.text('• Đang chọn: 2 cuốn'), findsOneWidget);
+        expect(find.text('Đủ điều kiện gửi phiếu mượn'), findsOneWidget);
 
-      final submitButton = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Gửi phiếu mượn'),
-      );
-      expect(submitButton.onPressed, isNotNull);
+        final submitButton = tester.widget<FilledButton>(
+          find.widgetWithText(FilledButton, 'Gửi phiếu mượn'),
+        );
+        expect(submitButton.onPressed, isNotNull);
 
-      // Gửi phiếu
-      await tester.tap(find.widgetWithText(FilledButton, 'Gửi phiếu mượn'));
-      await tester.pumpAndSettle();
+        // Gửi phiếu
+        await tester.tap(find.widgetWithText(FilledButton, 'Gửi phiếu mượn'));
+        await tester.pumpAndSettle();
 
-      expect(borrowingSlipsRepository.createSlipCallCount, 1);
-      expect(find.text('Đã gửi phiếu mượn!'), findsOneWidget);
-    });
+        expect(borrowingSlipsRepository.createSlipCallCount, 1);
+        expect(find.text('Đã gửi phiếu mượn!'), findsOneWidget);
+      },
+    );
 
     testWidgets('Vượt hạn mức | Disable nút gửi và hiển thị lý do cụ thể', (
       tester,
@@ -215,34 +216,36 @@ void main() {
       },
     );
 
-    testWidgets('Tài khoản không đủ điều kiện mượn | Hiển thị lý do và disable nút', (
-      tester,
-    ) async {
-      setLargeScreen(tester);
+    testWidgets(
+      'Tài khoản không đủ điều kiện mượn | Hiển thị lý do và disable nút',
+      (tester) async {
+        setLargeScreen(tester);
 
-      membersRepository.fakeDebtSummary = const MemberDebtSummary(
-        maxBorrowLimit: 5,
-        currentBorrowedCount: 1,
-        remainingBorrowLimit: 4,
-        canBorrow: false,
-        reasonIfNotAllowed: 'Thẻ độc giả đã hết hạn. Vui lòng liên hệ thư viện.',
-        overdueCount: 0,
-        unpaidFineAmount: 0,
-      );
+        membersRepository.fakeDebtSummary = const MemberDebtSummary(
+          maxBorrowLimit: 5,
+          currentBorrowedCount: 1,
+          remainingBorrowLimit: 4,
+          canBorrow: false,
+          reasonIfNotAllowed:
+              'Thẻ độc giả đã hết hạn. Vui lòng liên hệ thư viện.',
+          overdueCount: 0,
+          unpaidFineAmount: 0,
+        );
 
-      await tester.pumpWidget(createApp());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(createApp());
+        await tester.pumpAndSettle();
 
-      expect(
-        find.text('Thẻ độc giả đã hết hạn. Vui lòng liên hệ thư viện.'),
-        findsOneWidget,
-      );
+        expect(
+          find.text('Thẻ độc giả đã hết hạn. Vui lòng liên hệ thư viện.'),
+          findsOneWidget,
+        );
 
-      final submitButton = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Gửi phiếu mượn'),
-      );
-      expect(submitButton.onPressed, isNull);
-    });
+        final submitButton = tester.widget<FilledButton>(
+          find.widgetWithText(FilledButton, 'Gửi phiếu mượn'),
+        );
+        expect(submitButton.onPressed, isNull);
+      },
+    );
 
     testWidgets('Tải hạn mức lỗi | Hiển thị Thử lại và không cho gửi phiếu', (
       tester,
