@@ -37,5 +37,10 @@ abstract class BorrowingSlipsRepository {
     required ReturnSlipItemsRequest request,
   });
 
+  Future<BorrowingSlip> renewSlip({
+    required String slipId,
+    int extraDays = 7,
+  });
+
   Future<BorrowingSlip> paySlipFine({required String slipId});
 }

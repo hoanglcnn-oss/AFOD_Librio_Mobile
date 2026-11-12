@@ -51,6 +51,12 @@ abstract class BorrowingSlipsRemoteDataSource {
     required String token,
   });
 
+  Future<Map<String, dynamic>> renewSlip({
+    required String slipId,
+    required String token,
+    int extraDays = 7,
+  });
+
   Future<Map<String, dynamic>> paySlipFine({
     required String slipId,
     required String token,
@@ -184,6 +190,21 @@ class BorrowingSlipsRemoteDataSourceImpl
     final response = await _dio.post(
       '${ApiConstants.borrowingSlips}/$slipId/return-items',
       data: data,
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> renewSlip({
+    required String slipId,
+    required String token,
+    int extraDays = 7,
+  }) async {
+    final response = await _dio.patch(
+      '${ApiConstants.borrowingSlips}/$slipId/renew',
+      data: {'extraDays': extraDays},
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

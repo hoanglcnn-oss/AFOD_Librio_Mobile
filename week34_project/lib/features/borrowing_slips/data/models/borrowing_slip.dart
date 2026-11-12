@@ -1,3 +1,5 @@
+import '../../../../core/models/renewal_eligibility.dart';
+
 class BorrowingSlipItem {
   final String id;
   final String bookId;
@@ -64,6 +66,7 @@ class BorrowingSlip {
   final bool finePaid;
   final DateTime? finePaidAt;
   final int renewCount;
+  final RenewalEligibility? renewalEligibility;
 
   const BorrowingSlip({
     required this.id,
@@ -80,9 +83,18 @@ class BorrowingSlip {
     this.finePaid = false,
     this.finePaidAt,
     this.renewCount = 0,
+    this.renewalEligibility,
   });
 
-  factory BorrowingSlip.fromJson(Map<String, dynamic> json) {
+  bool get canRenew => renewalEligibility?.canRenew ?? false;
+  String? get renewalReasonCode => renewalEligibility?.reasonCode;
+  String? get renewalMessage => renewalEligibility?.message;
+
+  factory BorrowingSlip.fromJson(Map<String, dynamic> raw) {
+    final json = raw['data'] is Map<String, dynamic>
+        ? raw['data'] as Map<String, dynamic>
+        : raw;
+
     // Backend có thể trả member lồng nhau: json['member']['fullName']
     // hoặc phẳng: json['memberName']
     String? memberName;
@@ -98,6 +110,14 @@ class BorrowingSlip {
     memberName ??= json['memberName'] as String?;
     memberCardNumber ??= json['memberCardNumber'] as String?;
 
+    final renewalJson = json['renewalEligibility'] ?? json['eligibility'];
+    RenewalEligibility? renewalEligibility;
+    if (renewalJson is Map<String, dynamic>) {
+      renewalEligibility = RenewalEligibility.fromJson(renewalJson);
+    } else if (json.containsKey('canRenew')) {
+      renewalEligibility = RenewalEligibility.fromJson(json);
+    }
+
     return BorrowingSlip(
       id: json['id'] as String,
       slipNumber: json['slipNumber'] as String,
@@ -112,6 +132,7 @@ class BorrowingSlip {
       finePaid: json['finePaid'] as bool? ?? false,
       finePaidAt: _parseDate(json['finePaidAt']),
       renewCount: (json['renewCount'] as num?)?.toInt() ?? 0,
+      renewalEligibility: renewalEligibility,
       items: (json['items'] as List<dynamic>? ?? [])
           .map(
             (item) => BorrowingSlipItem.fromJson(item as Map<String, dynamic>),
@@ -120,6 +141,9 @@ class BorrowingSlip {
     );
   }
 }
+
+typedef BorrowingSlipDetail = BorrowingSlip;
+
 
 DateTime? _parseDate(dynamic value) {
   if (value == null) return null;

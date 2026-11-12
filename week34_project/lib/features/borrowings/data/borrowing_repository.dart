@@ -17,6 +17,8 @@ abstract class BorrowingRepository {
     int limit = 10,
   });
 
+  Future<Borrowing> getBorrowingById(String borrowingId);
+
   Future<Borrowing> returnBook({
     required String borrowingId,
     bool finePaid = false,

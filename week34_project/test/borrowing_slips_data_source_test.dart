@@ -105,5 +105,50 @@ void main() {
         }
       },
     );
+
+    test(
+      'renewSlip | Gọi PATCH /borrowing-slips/:id/renew | Đúng body và header JWT',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'PATCH');
+              expect(options.path, '/borrowing-slips/slip-01/renew');
+              expect(options.headers['Authorization'], 'Bearer test-token');
+              expect(options.data, {'extraDays': 7});
+
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'id': 'slip-01',
+                    'slipNumber': 'SLIP-2026-0001',
+                    'memberId': 'mem-01',
+                    'status': 'BORROWED',
+                    'dueDate': '2026-11-25T08:00:00.000Z',
+                    'renewCount': 1,
+                    'items': [],
+                  },
+                ),
+              );
+            },
+          ),
+        );
+
+        final dataSource = BorrowingSlipsRemoteDataSourceImpl(dio: dio);
+
+        final result = await dataSource.renewSlip(
+          slipId: 'slip-01',
+          token: 'test-token',
+          extraDays: 7,
+        );
+
+        expect(result['id'], 'slip-01');
+        expect(result['renewCount'], 1);
+      },
+    );
   });
 }

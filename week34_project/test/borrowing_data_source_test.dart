@@ -239,5 +239,53 @@ void main() {
         expect(result['fineAmount'], 50000);
       },
     );
+
+    test(
+      'getBorrowingById | Có borrowingId | GET /borrowings/:id, đúng JWT và trả về dữ liệu',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'GET');
+              expect(options.path, '/borrowings/brw-01');
+              expect(options.headers['Authorization'], 'Bearer test-token');
+
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'id': 'brw-01',
+                    'transactionCode': 'BRW-2026-0001',
+                    'memberId': 'mem-01',
+                    'memberName': 'Nguyễn Văn An',
+                    'bookId': 'book-01',
+                    'bookTitle': 'Clean Code',
+                    'borrowDate': '2026-10-29T08:00:00.000Z',
+                    'dueDate': '2026-11-12T08:00:00.000Z',
+                    'status': 'BORROWED',
+                    'renewCount': 0,
+                    'canRenew': true,
+                  },
+                ),
+              );
+            },
+          ),
+        );
+
+        final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
+
+        final result = await dataSource.getBorrowingById(
+          borrowingId: 'brw-01',
+          token: 'test-token',
+        );
+
+        expect(result['id'], 'brw-01');
+        expect(result['status'], 'BORROWED');
+        expect(result['canRenew'], isTrue);
+      },
+    );
   });
 }

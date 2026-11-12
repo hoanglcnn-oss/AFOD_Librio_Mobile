@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:week34_project/core/models/renewal_eligibility.dart';
 import 'package:week34_project/features/borrowing_slips/data/borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/create_borrowing_slip_request.dart';
@@ -17,6 +18,17 @@ class FakeBorrowingRepository
   bool shouldFailRenew = false;
   int renewCallCount = 0;
   int lastExtraDays = 0;
+  int getBorrowingByIdCallCount = 0;
+  bool shouldFailGetBorrowingById = false;
+  Borrowing? fakeBorrowingDetail;
+  DioException? getBorrowingByIdError;
+
+  int renewSlipCallCount = 0;
+  bool shouldFailRenewSlip = false;
+  int lastRenewSlipExtraDays = 0;
+  DioException? renewSlipError;
+  BorrowingSlip? fakeRenewSlipResult;
+
   int payFineCallCount = 0;
   bool shouldFailPayFine = false;
   DioException? payFineError;
@@ -577,6 +589,74 @@ class FakeBorrowingRepository
       totalFine: 25000,
       finePaid: true,
       finePaidAt: DateTime.utc(2026, 11, 20),
+      items: const [],
+    );
+  }
+
+  @override
+  Future<Borrowing> getBorrowingById(String borrowingId) async {
+    getBorrowingByIdCallCount++;
+
+    if (getBorrowingByIdError != null) {
+      throw getBorrowingByIdError!;
+    }
+
+    if (shouldFail || shouldFailGetBorrowingById) {
+      throw Exception('Không thể tải chi tiết lượt mượn');
+    }
+
+    return fakeBorrowingDetail ??
+        Borrowing(
+          id: borrowingId,
+          transactionCode: 'BRW-2026-0001',
+          memberId: 'mem-01',
+          memberName: 'Nguyễn Văn An',
+          bookId: 'book-01',
+          bookTitle: 'Clean Code',
+          borrowDate: DateTime.utc(2026, 10, 29),
+          dueDate: fakeDueDate ?? DateTime.utc(2026, 11, 12),
+          status: fakeBorrowingStatus,
+          renewCount: fakeRenewCount,
+          renewalEligibility: const RenewalEligibility(canRenew: true),
+        );
+  }
+
+  @override
+  Future<BorrowingSlip> renewSlip({
+    required String slipId,
+    int extraDays = 7,
+  }) async {
+    renewSlipCallCount++;
+    lastRenewSlipExtraDays = extraDays;
+
+    if (renewSlipError != null) {
+      throw renewSlipError!;
+    }
+
+    if (shouldFail || shouldFailRenewSlip) {
+      throw Exception('Không thể gia hạn phiếu mượn');
+    }
+
+    if (fakeRenewSlipResult != null) {
+      return fakeRenewSlipResult!;
+    }
+
+    final oldDueDate =
+        fakeDueDate ?? DateTime.now().add(const Duration(days: 14));
+    final newDueDate = oldDueDate.add(Duration(days: extraDays));
+    fakeDueDate = newDueDate;
+
+    return BorrowingSlip(
+      id: slipId,
+      slipNumber: 'SLIP-2026-0001',
+      memberId: 'mem-01',
+      status: 'BORROWED',
+      dueDate: newDueDate,
+      renewCount: fakeRenewCount + 1,
+      renewalEligibility: const RenewalEligibility(
+        canRenew: false,
+        reasonCode: 'MAX_RENEWALS_REACHED',
+      ),
       items: const [],
     );
   }

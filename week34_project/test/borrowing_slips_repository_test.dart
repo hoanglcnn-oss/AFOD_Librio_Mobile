@@ -732,4 +732,144 @@ void main() {
       );
     },
   );
+
+  test(
+    'renewSlip | Có JWT và extraDays = 7 | PATCH /borrowing-slips/:id/renew, parse dueDate và renewCount',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            expect(options.method, 'PATCH');
+            expect(options.path, '/borrowing-slips/slip-01/renew');
+            expect(options.headers['Authorization'], 'Bearer test-token');
+            expect(options.data, {'extraDays': 7});
+
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {
+                  'id': 'slip-01',
+                  'slipNumber': 'SLIP-2026-0001',
+                  'memberId': 'mem-01',
+                  'status': 'BORROWED',
+                  'dueDate': '2026-12-02T08:00:00Z',
+                  'renewCount': 1,
+                  'items': [],
+                  'renewalEligibility': {
+                    'canRenew': false,
+                    'reasonCode': 'MAX_RENEWALS_REACHED',
+                    'message': 'Đã đạt giới hạn gia hạn tối đa',
+                  },
+                },
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingSlipsRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      final slip = await repository.renewSlip(slipId: 'slip-01', extraDays: 7);
+
+      expect(slip.id, 'slip-01');
+      expect(slip.renewCount, 1);
+      expect(slip.dueDate, DateTime.parse('2026-12-02T08:00:00Z'));
+      expect(slip.canRenew, isFalse);
+      expect(slip.renewalReasonCode, 'MAX_RENEWALS_REACHED');
+      expect(slip.renewalMessage, 'Đã đạt giới hạn gia hạn tối đa');
+    },
+  );
+
+  test('renewSlip | Thiếu JWT | throw StateError', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+
+    final repository = ApiBorrowingSlipsRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    await expectLater(
+      repository.renewSlip(slipId: 'slip-01'),
+      throwsA(isA<StateError>()),
+    );
+  });
+
+  test('renewSlip | slipId rỗng | throw ArgumentError', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    final repository = ApiBorrowingSlipsRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    expect(() => repository.renewSlip(slipId: '  '), throwsArgumentError);
+  });
+
+  test('renewSlip | extraDays không hợp lệ (< 1 hoặc > 14) | throw ArgumentError', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    final repository = ApiBorrowingSlipsRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    expect(() => repository.renewSlip(slipId: 'slip-01', extraDays: 0), throwsArgumentError);
+    expect(() => repository.renewSlip(slipId: 'slip-01', extraDays: 15), throwsArgumentError);
+  });
+
+  test('getBorrowingSlipById | Parse được eligibility từ backend', () async {
+    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+    final tokenStorage = FakeTokenStorage();
+    await tokenStorage.saveToken('test-token');
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          expect(options.method, 'GET');
+          expect(options.path, '/borrowing-slips/slip-01');
+
+          handler.resolve(
+            Response(
+              requestOptions: options,
+              statusCode: 200,
+              data: {
+                'id': 'slip-01',
+                'slipNumber': 'SLIP-2026-0001',
+                'memberId': 'mem-01',
+                'status': 'BORROWED',
+                'dueDate': '2026-11-25T08:00:00Z',
+                'items': [],
+                'canRenew': true,
+                'reasonCode': null,
+                'message': null,
+              },
+            ),
+          );
+        },
+      ),
+    );
+
+    final repository = ApiBorrowingSlipsRepository(
+      dio: dio,
+      tokenStorage: tokenStorage,
+    );
+
+    final slip = await repository.getBorrowingSlipById(slipId: 'slip-01');
+
+    expect(slip.canRenew, isTrue);
+    expect(slip.renewalReasonCode, isNull);
+  });
 }

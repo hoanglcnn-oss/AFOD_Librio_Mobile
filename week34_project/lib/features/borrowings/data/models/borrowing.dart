@@ -1,3 +1,5 @@
+import '../../../../core/models/renewal_eligibility.dart';
+
 class Borrowing {
   final String id;
   final String transactionCode;
@@ -14,6 +16,7 @@ class Borrowing {
   final DateTime? returnDate;
   final int? fineAmount;
   final bool? finePaid;
+  final RenewalEligibility? renewalEligibility;
 
   const Borrowing({
     required this.id,
@@ -29,14 +32,31 @@ class Borrowing {
     this.returnDate,
     this.fineAmount,
     this.finePaid,
+    this.renewalEligibility,
   });
 
-  factory Borrowing.fromJson(Map<String, dynamic> json) {
+  bool get canRenew => renewalEligibility?.canRenew ?? false;
+  String? get renewalReasonCode => renewalEligibility?.reasonCode;
+  String? get renewalMessage => renewalEligibility?.message;
+
+  factory Borrowing.fromJson(Map<String, dynamic> raw) {
+    final json = raw['data'] is Map<String, dynamic>
+        ? raw['data'] as Map<String, dynamic>
+        : raw;
+
+    final renewalJson = json['renewalEligibility'] ?? json['eligibility'];
+    RenewalEligibility? renewalEligibility;
+    if (renewalJson is Map<String, dynamic>) {
+      renewalEligibility = RenewalEligibility.fromJson(renewalJson);
+    } else if (json.containsKey('canRenew')) {
+      renewalEligibility = RenewalEligibility.fromJson(json);
+    }
+
     return Borrowing(
       id: json['id'] as String,
       transactionCode: json['transactionCode'] as String,
       memberId: json['memberId'] as String,
-      memberName: json['memberName'] as String,
+      memberName: json['memberName'] as String? ?? '',
       bookId: json['bookId'] as String,
       bookTitle: json['bookTitle'] as String,
       borrowDate: DateTime.parse(json['borrowDate'] as String),
@@ -51,6 +71,10 @@ class Borrowing {
 
       fineAmount: (json['fineAmount'] as num?)?.toInt(),
       finePaid: json['finePaid'] as bool?,
+      renewalEligibility: renewalEligibility,
     );
   }
 }
+
+typedef BorrowingDetail = Borrowing;
+

@@ -292,4 +292,36 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
 
     return BorrowingSlip.fromJson(data);
   }
+
+  @override
+  Future<BorrowingSlip> renewSlip({
+    required String slipId,
+    int extraDays = 7,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (slipId.trim().isEmpty) {
+      throw ArgumentError('Mã phiếu không được để trống');
+    }
+
+    if (extraDays < 1 || extraDays > 14) {
+      throw ArgumentError.value(
+        extraDays,
+        'extraDays',
+        'Số ngày gia hạn phải từ 1 đến 14',
+      );
+    }
+
+    final data = await _remoteDataSource.renewSlip(
+      slipId: slipId.trim(),
+      token: token,
+      extraDays: extraDays,
+    );
+
+    return BorrowingSlip.fromJson(data);
+  }
 }

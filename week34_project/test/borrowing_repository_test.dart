@@ -600,5 +600,88 @@ void main() {
 
       expect(() => repository.payFine('  '), throwsArgumentError);
     });
+
+    test(
+      'getBorrowingById | Có JWT và borrowingId | GET /borrowings/:id, parse đúng eligibility',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+        final tokenStorage = FakeTokenStorage();
+        await tokenStorage.saveToken('test-token');
+
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'GET');
+              expect(options.path, '/borrowings/brw-01');
+              expect(options.headers['Authorization'], 'Bearer test-token');
+
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'id': 'brw-01',
+                    'transactionCode': 'BRW-2026-0001',
+                    'memberId': 'mem-01',
+                    'memberName': 'Nguyễn Văn An',
+                    'bookId': 'book-01',
+                    'bookTitle': 'Clean Code',
+                    'borrowDate': '2026-10-29T08:00:00.000Z',
+                    'dueDate': '2026-11-12T08:00:00.000Z',
+                    'status': 'BORROWED',
+                    'renewCount': 1,
+                    'renewalEligibility': {
+                      'canRenew': true,
+                      'reasonCode': null,
+                      'message': 'Đủ điều kiện gia hạn',
+                    },
+                  },
+                ),
+              );
+            },
+          ),
+        );
+
+        final repository = ApiBorrowingRepository(
+          dio: dio,
+          tokenStorage: tokenStorage,
+        );
+
+        final borrowing = await repository.getBorrowingById('brw-01');
+
+        expect(borrowing.id, 'brw-01');
+        expect(borrowing.canRenew, isTrue);
+        expect(borrowing.renewalEligibility?.canRenew, isTrue);
+        expect(borrowing.renewalMessage, 'Đủ điều kiện gia hạn');
+      },
+    );
+
+    test('getBorrowingById | Thiếu JWT | throw StateError', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      await expectLater(
+        repository.getBorrowingById('brw-01'),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('getBorrowingById | borrowingId rỗng | throw ArgumentError', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      expect(() => repository.getBorrowingById('   '), throwsArgumentError);
+    });
   });
 }
