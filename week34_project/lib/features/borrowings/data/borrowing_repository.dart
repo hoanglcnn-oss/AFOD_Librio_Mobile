@@ -27,4 +27,6 @@ abstract class BorrowingRepository {
     int extraDays = 7,
     String? notes,
   });
+
+  Future<Borrowing> payFine(String borrowingId);
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:week34_project/features/borrowings/data/models/borrowing.dart';
 import 'package:week34_project/features/borrowings/data/models/paginated_borrowings.dart';
 import 'package:week34_project/features/borrowings/presentation/pages/librarian_manage_screen.dart';
 import 'package:week34_project/features/borrowings/presentation/pages/manage_single_borrowings_screen.dart';
@@ -148,4 +149,214 @@ void main() {
       expect(find.text('SLIP-2026-0001'), findsOneWidget);
     },
   );
+
+  group('ManageSingleBorrowingsScreen - Thu tiền phạt', () {
+    testWidgets(
+      'manage_single_borrowings_screen | Có nợ phạt và finePaid = false | Hiển thị nút Thu tiền phạt (kể cả RETURNED)',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        repository.fakeAllBorrowingsPage = BorrowingsPage(
+          borrowings: [
+            Borrowing(
+              id: 'brw-ret-fine',
+              transactionCode: 'BRW-2026-0002',
+              memberId: 'mem-01',
+              memberName: 'Nguyễn Văn An',
+              bookId: 'book-01',
+              bookTitle: 'Clean Code',
+              borrowDate: DateTime.utc(2026, 10, 1),
+              dueDate: DateTime.utc(2026, 10, 15),
+              status: 'RETURNED',
+              fineAmount: 50000,
+              finePaid: false,
+            ),
+          ],
+          page: 1,
+          limit: 10,
+          totalItems: 1,
+          totalPages: 1,
+          hasNextPage: false,
+        );
+
+        await tester.pumpWidget(
+          createApp(ManageSingleBorrowingsScreen(repository: repository)),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Thu tiền phạt'), findsOneWidget);
+        expect(find.text('Trả sách'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'manage_single_borrowings_screen | finePaid = true hoặc không có phạt | Không hiển thị nút Thu tiền phạt',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        repository.fakeAllBorrowingsPage = BorrowingsPage(
+          borrowings: [
+            Borrowing(
+              id: 'brw-ret-paid',
+              transactionCode: 'BRW-2026-0003',
+              memberId: 'mem-01',
+              memberName: 'Nguyễn Văn An',
+              bookId: 'book-01',
+              bookTitle: 'Clean Code',
+              borrowDate: DateTime.utc(2026, 10, 1),
+              dueDate: DateTime.utc(2026, 10, 15),
+              status: 'RETURNED',
+              fineAmount: 50000,
+              finePaid: true,
+            ),
+          ],
+          page: 1,
+          limit: 10,
+          totalItems: 1,
+          totalPages: 1,
+          hasNextPage: false,
+        );
+
+        await tester.pumpWidget(
+          createApp(ManageSingleBorrowingsScreen(repository: repository)),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Thu tiền phạt'), findsNothing);
+        expect(find.textContaining('Đã thu'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'manage_single_borrowings_screen | Hủy dialog | Không gọi API payFine',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        repository.fakeAllBorrowingsPage = BorrowingsPage(
+          borrowings: [
+            Borrowing(
+              id: 'brw-01',
+              transactionCode: 'BRW-2026-0001',
+              memberId: 'mem-01',
+              memberName: 'Nguyễn Văn An',
+              bookId: 'book-01',
+              bookTitle: 'Clean Code',
+              borrowDate: DateTime.utc(2026, 10, 1),
+              dueDate: DateTime.utc(2026, 10, 15),
+              status: 'BORROWED',
+              fineAmount: 30000,
+              finePaid: false,
+            ),
+          ],
+          page: 1,
+          limit: 10,
+          totalItems: 1,
+          totalPages: 1,
+          hasNextPage: false,
+        );
+
+        await tester.pumpWidget(
+          createApp(ManageSingleBorrowingsScreen(repository: repository)),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Thu tiền phạt'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Thu tiền phạt'), findsWidgets);
+        expect(find.textContaining('Clean Code'), findsWidgets);
+        expect(find.text('Hủy'), findsOneWidget);
+
+        await tester.tap(find.text('Hủy'));
+        await tester.pumpAndSettle();
+
+        expect(repository.payFineCallCount, 0);
+      },
+    );
+
+    testWidgets(
+      'manage_single_borrowings_screen | Xác nhận dialog | Gọi API payFine và hiển thị thông báo thành công',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        repository.fakeAllBorrowingsPage = BorrowingsPage(
+          borrowings: [
+            Borrowing(
+              id: 'brw-pay-01',
+              transactionCode: 'BRW-2026-0001',
+              memberId: 'mem-01',
+              memberName: 'Nguyễn Văn An',
+              bookId: 'book-01',
+              bookTitle: 'Clean Code',
+              borrowDate: DateTime.utc(2026, 10, 1),
+              dueDate: DateTime.utc(2026, 10, 15),
+              status: 'RETURNED',
+              fineAmount: 40000,
+              finePaid: false,
+            ),
+          ],
+          page: 1,
+          limit: 10,
+          totalItems: 1,
+          totalPages: 1,
+          hasNextPage: false,
+        );
+
+        await tester.pumpWidget(
+          createApp(ManageSingleBorrowingsScreen(repository: repository)),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Thu tiền phạt'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.widgetWithText(FilledButton, 'Xác nhận đã thu'));
+        await tester.pumpAndSettle();
+
+        expect(repository.payFineCallCount, 1);
+        expect(repository.lastPayFineBorrowingId, 'brw-pay-01');
+        expect(find.text('Đã thu tiền phạt thành công'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'manage_single_borrowings_screen | API payFine thất bại | Hiển thị SnackBar lỗi và giữ nguyên trạng thái',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        repository.shouldFailPayFine = true;
+        repository.fakeAllBorrowingsPage = BorrowingsPage(
+          borrowings: [
+            Borrowing(
+              id: 'brw-pay-02',
+              transactionCode: 'BRW-2026-0001',
+              memberId: 'mem-01',
+              memberName: 'Nguyễn Văn An',
+              bookId: 'book-01',
+              bookTitle: 'Clean Code',
+              borrowDate: DateTime.utc(2026, 10, 1),
+              dueDate: DateTime.utc(2026, 10, 15),
+              status: 'RETURNED',
+              fineAmount: 40000,
+              finePaid: false,
+            ),
+          ],
+          page: 1,
+          limit: 10,
+          totalItems: 1,
+          totalPages: 1,
+          hasNextPage: false,
+        );
+
+        await tester.pumpWidget(
+          createApp(ManageSingleBorrowingsScreen(repository: repository)),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Thu tiền phạt'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.widgetWithText(FilledButton, 'Xác nhận đã thu'));
+        await tester.pumpAndSettle();
+
+        expect(repository.payFineCallCount, 1);
+        expect(find.text('Đã xảy ra lỗi khi thu tiền phạt'), findsOneWidget);
+      },
+    );
+  });
 }

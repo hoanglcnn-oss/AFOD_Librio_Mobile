@@ -7,8 +7,10 @@ class BorrowingCard extends StatelessWidget {
   final Borrowing borrowing;
   final VoidCallback? onReturn;
   final VoidCallback? onRenew;
+  final VoidCallback? onPayFine;
   final bool isReturning;
   final bool isRenewing;
+  final bool isPayingFine;
   final bool isBusy;
   final bool showMember;
 
@@ -17,8 +19,10 @@ class BorrowingCard extends StatelessWidget {
     required this.borrowing,
     this.onReturn,
     this.onRenew,
+    this.onPayFine,
     this.isReturning = false,
     this.isRenewing = false,
+    this.isPayingFine = false,
     this.isBusy = false,
     this.showMember = false,
   });
@@ -27,6 +31,17 @@ class BorrowingCard extends StatelessWidget {
     return '${local.day.toString().padLeft(2, '0')}/'
         '${local.month.toString().padLeft(2, '0')}/'
         '${local.year}';
+  }
+
+  bool get _hasUnpaidFine =>
+      (borrowing.fineAmount != null && borrowing.fineAmount! > 0) &&
+      (borrowing.finePaid != true);
+
+  bool _hasActions({required String status, required bool canRenew}) {
+    final showReturn = status != 'RETURNED' && onReturn != null;
+    final showRenew = status != 'RETURNED' && canRenew && onRenew != null;
+    final showPayFine = _hasUnpaidFine && onPayFine != null;
+    return showReturn || showRenew || showPayFine;
   }
 
   @override
@@ -106,52 +121,65 @@ class BorrowingCard extends StatelessWidget {
             ],
             if (status != 'RETURNED') ...[
               const SizedBox(height: 6),
-
               Text(
                 'Đã gia hạn: ${borrowing.renewCount}/2 lần',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-
-              if (onReturn != null || (canRenew && onRenew != null)) ...[
-                const SizedBox(height: 12),
-
-                Wrap(
-                  alignment: WrapAlignment.end,
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    if (canRenew && onRenew != null)
-                      OutlinedButton.icon(
-                        onPressed: isBusy ? null : onRenew,
-                        icon: isRenewing
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.update),
-                        label: Text(isRenewing ? 'Đang gia hạn...' : 'Gia hạn'),
+            ],
+            if (_hasActions(status: status, canRenew: canRenew)) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (canRenew && onRenew != null && status != 'RETURNED')
+                    OutlinedButton.icon(
+                      onPressed: isBusy ? null : onRenew,
+                      icon: isRenewing
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.update),
+                      label: Text(isRenewing ? 'Đang gia hạn...' : 'Gia hạn'),
+                    ),
+                  if (onReturn != null && status != 'RETURNED')
+                    OutlinedButton.icon(
+                      onPressed: isBusy ? null : onReturn,
+                      icon: isReturning
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.assignment_turned_in_outlined),
+                      label: Text(isReturning ? 'Đang trả...' : 'Trả sách'),
+                    ),
+                  if (_hasUnpaidFine && onPayFine != null)
+                    FilledButton.icon(
+                      onPressed: isBusy ? null : onPayFine,
+                      icon: isPayingFine
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.payments_outlined),
+                      label: Text(
+                        isPayingFine ? 'Đang thu...' : 'Thu tiền phạt',
                       ),
-
-                    if (onReturn != null)
-                      OutlinedButton.icon(
-                        onPressed: isBusy ? null : onReturn,
-                        icon: isReturning
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.assignment_turned_in_outlined),
-                        label: Text(isReturning ? 'Đang trả...' : 'Trả sách'),
-                      ),
-                  ],
-                ),
-              ],
+                    ),
+                ],
+              ),
             ],
           ],
         ),

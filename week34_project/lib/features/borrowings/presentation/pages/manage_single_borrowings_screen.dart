@@ -171,6 +171,82 @@ class _ManageSingleBorrowingsScreenState
     }
   }
 
+  Future<void> _confirmPayFine(Borrowing borrowing) async {
+    if (_processingBorrowingId != null) return;
+
+    final fineText = borrowing.fineAmount != null
+        ? BorrowingUiHelper.formatMoney(borrowing.fineAmount!)
+        : '';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Thu tiền phạt'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Xác nhận đã nhận tiền phạt cho cuốn "${borrowing.bookTitle}"?'),
+              const SizedBox(height: 12),
+              if (fineText.isNotEmpty)
+                Text(
+                  'Số tiền cần thu: $fineText',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Hủy'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Xác nhận đã thu'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() {
+      _processingBorrowingId = borrowing.id;
+    });
+
+    try {
+      await widget.repository.payFine(borrowing.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã thu tiền phạt thành công')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        final message = e is DioException
+            ? (e.response?.data is Map &&
+                      (e.response!.data as Map)['message'] != null)
+                  ? (e.response!.data as Map)['message'].toString()
+                  : 'Không thể thu tiền phạt'
+            : 'Đã xảy ra lỗi khi thu tiền phạt';
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _processingBorrowingId = null;
+        });
+        await _refresh();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -280,14 +356,22 @@ class _ManageSingleBorrowingsScreenState
                                 final canReturn =
                                     borrowing.status == 'BORROWED' ||
                                     borrowing.status == 'OVERDUE';
+                                final hasUnpaidFine =
+                                    (borrowing.fineAmount != null &&
+                                        borrowing.fineAmount! > 0) &&
+                                    (borrowing.finePaid != true);
 
                                 return BorrowingCard(
                                   borrowing: borrowing,
                                   showMember: true,
-                                  isBusy: isBusy,
-                                  isReturning: isBusy,
+                                  isBusy: _processingBorrowingId != null,
+                                  isReturning: isBusy && canReturn,
+                                  isPayingFine: isBusy && hasUnpaidFine,
                                   onReturn: canReturn
                                       ? () => _confirmReturn(borrowing)
+                                      : null,
+                                  onPayFine: hasUnpaidFine
+                                      ? () => _confirmPayFine(borrowing)
                                       : null,
                                   onRenew: null,
                                 );

@@ -198,5 +198,46 @@ void main() {
         expect(result['renewCount'], 1);
       },
     );
+
+    test(
+      'payFine | Có borrowingId | POST /borrowings/:id/pay-fine, đúng JWT và parse response',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'POST');
+              expect(options.path, '/borrowings/brw-01/pay-fine');
+              expect(options.headers['Authorization'], 'Bearer test-token');
+
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'id': 'brw-01',
+                    'status': 'RETURNED',
+                    'fineAmount': 50000,
+                    'finePaid': true,
+                  },
+                ),
+              );
+            },
+          ),
+        );
+
+        final dataSource = BorrowingsRemoteDataSourceImpl(dio: dio);
+
+        final result = await dataSource.payFine(
+          borrowingId: 'brw-01',
+          token: 'test-token',
+        );
+
+        expect(result['id'], 'brw-01');
+        expect(result['finePaid'], true);
+        expect(result['fineAmount'], 50000);
+      },
+    );
   });
 }

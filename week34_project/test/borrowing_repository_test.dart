@@ -507,4 +507,98 @@ void main() {
       expect(borrowing.finePaid, true);
     },
   );
+
+  group('payFine', () {
+    test(
+      'payFine | Có JWT và borrowingId hợp lệ | POST /borrowings/:id/pay-fine, parse đúng Borrowing',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+        final tokenStorage = FakeTokenStorage();
+        await tokenStorage.saveToken('test-token');
+
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'POST');
+              expect(options.path, '/borrowings/brw-01/pay-fine');
+              expect(options.headers['Authorization'], 'Bearer test-token');
+
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'id': 'brw-01',
+                    'transactionCode': 'BRW-2026-0001',
+                    'memberId': 'mem-01',
+                    'memberName': 'Nguyễn Văn An',
+                    'bookId': 'book-01',
+                    'bookTitle': 'Clean Code',
+                    'borrowDate': '2026-10-29T08:00:00.000Z',
+                    'dueDate': '2026-11-12T08:00:00.000Z',
+                    'status': 'RETURNED',
+                    'fineAmount': 50000,
+                    'finePaid': true,
+                    'finePaidAt': '2026-11-20T10:00:00.000Z',
+                  },
+                ),
+              );
+            },
+          ),
+        );
+
+        final repository = ApiBorrowingRepository(
+          dio: dio,
+          tokenStorage: tokenStorage,
+        );
+
+        final borrowing = await repository.payFine('brw-01');
+
+        expect(borrowing.id, 'brw-01');
+        expect(borrowing.finePaid, true);
+        expect(borrowing.fineAmount, 50000);
+        expect(borrowing.status, 'RETURNED');
+      },
+    );
+
+    test('payFine | Thiếu JWT | throw StateError, không gửi request', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+
+      var requestSent = false;
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            requestSent = true;
+            handler.next(options);
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      await expectLater(
+        repository.payFine('brw-01'),
+        throwsA(isA<StateError>()),
+      );
+      expect(requestSent, false);
+    });
+
+    test('payFine | borrowingId rỗng | throw ArgumentError', () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      final repository = ApiBorrowingRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      expect(() => repository.payFine('  '), throwsArgumentError);
+    });
+  });
 }

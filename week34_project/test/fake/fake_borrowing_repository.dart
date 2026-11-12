@@ -17,6 +17,11 @@ class FakeBorrowingRepository
   bool shouldFailRenew = false;
   int renewCallCount = 0;
   int lastExtraDays = 0;
+  int payFineCallCount = 0;
+  bool shouldFailPayFine = false;
+  DioException? payFineError;
+  String? lastPayFineBorrowingId;
+  Borrowing? fakePayFineResult;
   bool shouldFailCreateSlip = false;
   int createSlipCallCount = 0;
   // Cho phép tạo các trường hợp test khác nhau.
@@ -514,6 +519,38 @@ class FakeBorrowingRepository
       dueDate: newDueDate,
       status: 'BORROWED',
       renewCount: fakeRenewCount,
+    );
+  }
+
+  @override
+  Future<Borrowing> payFine(String borrowingId) async {
+    payFineCallCount++;
+    lastPayFineBorrowingId = borrowingId;
+
+    if (payFineError != null) {
+      throw payFineError!;
+    }
+
+    if (shouldFailPayFine) {
+      throw Exception('Không thể thu tiền phạt');
+    }
+
+    if (fakePayFineResult != null) {
+      return fakePayFineResult!;
+    }
+
+    return Borrowing(
+      id: borrowingId,
+      transactionCode: 'BRW-2026-0001',
+      memberId: 'mem-01',
+      memberName: 'Nguyễn Văn An',
+      bookId: 'book-01',
+      bookTitle: 'Clean Code',
+      borrowDate: DateTime.utc(2026, 10, 29),
+      dueDate: DateTime.utc(2026, 11, 12),
+      status: 'RETURNED',
+      fineAmount: 50000,
+      finePaid: true,
     );
   }
 

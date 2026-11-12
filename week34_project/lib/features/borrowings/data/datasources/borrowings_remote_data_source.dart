@@ -35,6 +35,11 @@ abstract class BorrowingsRemoteDataSource {
     required int extraDays,
     String? notes,
   });
+
+  Future<Map<String, dynamic>> payFine({
+    required String borrowingId,
+    required String token,
+  });
 }
 
 class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
@@ -119,6 +124,19 @@ class BorrowingsRemoteDataSourceImpl implements BorrowingsRemoteDataSource {
         'extraDays': extraDays,
         if (notes != null && notes.trim().isNotEmpty) 'notes': notes.trim(),
       },
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> payFine({
+    required String borrowingId,
+    required String token,
+  }) async {
+    final response = await _dio.post(
+      '${ApiConstants.borrowings}/$borrowingId/pay-fine',
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 
