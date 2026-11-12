@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/errors/renewal_error_mapper.dart';
 import '../../data/models/borrowing.dart';
 import 'borrowing_ui_helper.dart';
 
@@ -26,6 +27,7 @@ class BorrowingCard extends StatelessWidget {
     this.isBusy = false,
     this.showMember = false,
   });
+
   String _formatDate(DateTime date) {
     final local = date.toLocal();
     return '${local.day.toString().padLeft(2, '0')}/'
@@ -37,9 +39,9 @@ class BorrowingCard extends StatelessWidget {
       (borrowing.fineAmount != null && borrowing.fineAmount! > 0) &&
       (borrowing.finePaid != true);
 
-  bool _hasActions({required String status, required bool canRenew}) {
+  bool _hasActions({required String status}) {
     final showReturn = status != 'RETURNED' && onReturn != null;
-    final showRenew = status != 'RETURNED' && canRenew && onRenew != null;
+    final showRenew = status != 'RETURNED' && onRenew != null;
     final showPayFine = _hasUnpaidFine && onPayFine != null;
     return showReturn || showRenew || showPayFine;
   }
@@ -47,10 +49,6 @@ class BorrowingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = borrowing.status;
-    final canRenew =
-        status == 'BORROWED' &&
-        borrowing.renewCount < 2 &&
-        !DateTime.now().isAfter(borrowing.dueDate);
     final statusLabel = switch (status) {
       'BORROWED' => 'Đang mượn',
       'OVERDUE' => 'Quá hạn',
@@ -122,20 +120,35 @@ class BorrowingCard extends StatelessWidget {
             if (status != 'RETURNED') ...[
               const SizedBox(height: 6),
               Text(
-                'Đã gia hạn: ${borrowing.renewCount}/2 lần',
+                'Đã gia hạn: ${borrowing.renewCount} lần',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
-            if (_hasActions(status: status, canRenew: canRenew)) ...[
+            if (status != 'RETURNED' && borrowing.canRenew == false) ...[
+              const SizedBox(height: 6),
+              Text(
+                borrowing.renewalMessage ??
+                    mapRenewalReasonCode(borrowing.renewalReasonCode) ??
+                    'Không đủ điều kiện gia hạn',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.error,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+            ],
+            if (_hasActions(status: status)) ...[
               const SizedBox(height: 12),
               Wrap(
                 alignment: WrapAlignment.end,
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  if (canRenew && onRenew != null && status != 'RETURNED')
+                  if (onRenew != null && status != 'RETURNED')
                     OutlinedButton.icon(
-                      onPressed: isBusy ? null : onRenew,
+                      onPressed:
+                          (isBusy || borrowing.canRenew == false)
+                              ? null
+                              : onRenew,
                       icon: isRenewing
                           ? const SizedBox(
                               width: 16,
@@ -143,7 +156,13 @@ class BorrowingCard extends StatelessWidget {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : const Icon(Icons.update),
-                      label: Text(isRenewing ? 'Đang gia hạn...' : 'Gia hạn'),
+                      label: Text(
+                        isRenewing
+                            ? 'Đang gia hạn...'
+                            : (borrowing.canRenew == null
+                                ? 'Kiểm tra gia hạn'
+                                : 'Gia hạn'),
+                      ),
                     ),
                   if (onReturn != null && status != 'RETURNED')
                     OutlinedButton.icon(

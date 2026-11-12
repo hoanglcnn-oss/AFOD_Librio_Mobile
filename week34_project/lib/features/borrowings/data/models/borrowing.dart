@@ -35,9 +35,43 @@ class Borrowing {
     this.renewalEligibility,
   });
 
-  bool get canRenew => renewalEligibility?.canRenew ?? false;
+  bool? get canRenew => renewalEligibility?.canRenew;
   String? get renewalReasonCode => renewalEligibility?.reasonCode;
   String? get renewalMessage => renewalEligibility?.message;
+
+  Borrowing copyWith({
+    String? id,
+    String? transactionCode,
+    String? memberId,
+    String? memberName,
+    String? bookId,
+    String? bookTitle,
+    DateTime? borrowDate,
+    DateTime? dueDate,
+    String? status,
+    int? renewCount,
+    DateTime? returnDate,
+    int? fineAmount,
+    bool? finePaid,
+    RenewalEligibility? renewalEligibility,
+  }) {
+    return Borrowing(
+      id: id ?? this.id,
+      transactionCode: transactionCode ?? this.transactionCode,
+      memberId: memberId ?? this.memberId,
+      memberName: memberName ?? this.memberName,
+      bookId: bookId ?? this.bookId,
+      bookTitle: bookTitle ?? this.bookTitle,
+      borrowDate: borrowDate ?? this.borrowDate,
+      dueDate: dueDate ?? this.dueDate,
+      status: status ?? this.status,
+      renewCount: renewCount ?? this.renewCount,
+      returnDate: returnDate ?? this.returnDate,
+      fineAmount: fineAmount ?? this.fineAmount,
+      finePaid: finePaid ?? this.finePaid,
+      renewalEligibility: renewalEligibility ?? this.renewalEligibility,
+    );
+  }
 
   factory Borrowing.fromJson(Map<String, dynamic> raw) {
     final json = raw['data'] is Map<String, dynamic>

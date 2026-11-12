@@ -82,7 +82,7 @@ class MyBorrowingsScreen extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  const Text('Mỗi phiếu được gia hạn tối đa 2 lần.'),
+                  const Text('Điều kiện gia hạn sẽ được hệ thống kiểm tra tự động.'),
                 ],
               ),
               actions: [

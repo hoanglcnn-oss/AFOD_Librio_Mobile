@@ -63,6 +63,101 @@ void main() {
       expect(message, contains('extraDays must be an integer'));
     });
 
+    test('Không hiển thị trực tiếp "Conflict", mapping theo reasonCode khi message kỹ thuật', () {
+      final error = DioException(
+        requestOptions: RequestOptions(path: '/borrowings/1/renew'),
+        response: Response(
+          requestOptions: RequestOptions(path: '/borrowings/1/renew'),
+          statusCode: 409,
+          data: {
+            'message': 'Conflict',
+            'reasonCode': 'ACTIVE_RESERVATION',
+          },
+        ),
+      );
+
+      final message = getRenewalErrorMessage(error);
+      expect(message, 'Sách đang có người đặt trước, không thể gia hạn.');
+      expect(message, isNot(contains('Conflict')));
+    });
+
+    test('Không hiển thị trực tiếp "Forbidden", fallback HTTP 403 khi không có reasonCode', () {
+      final error = DioException(
+        requestOptions: RequestOptions(path: '/borrowings/1/renew'),
+        response: Response(
+          requestOptions: RequestOptions(path: '/borrowings/1/renew'),
+          statusCode: 403,
+          data: {'error': 'Forbidden'},
+        ),
+      );
+
+      final message = getRenewalErrorMessage(error);
+      expect(message, 'Bạn không có quyền gia hạn hoặc sách không đủ điều kiện gia hạn.');
+      expect(message, isNot(contains('Forbidden')));
+    });
+
+    group('Ánh xạ các mã reasonCode nghiệp vụ', () {
+      test('ACTIVE_RESERVATION -> Sách đang có người đặt trước', () {
+        expect(
+          mapRenewalReasonCode('ACTIVE_RESERVATION'),
+          'Sách đang có người đặt trước, không thể gia hạn.',
+        );
+      });
+
+      test('MAX_RENEWALS_REACHED -> Đã đạt giới hạn số lần gia hạn', () {
+        expect(
+          mapRenewalReasonCode('MAX_RENEWALS_REACHED'),
+          'Đã đạt giới hạn số lần gia hạn cho phép.',
+        );
+      });
+
+      test('OVERDUE -> Sách đã quá hạn mượn', () {
+        expect(
+          mapRenewalReasonCode('OVERDUE'),
+          'Sách đã quá hạn mượn, không thể gia hạn.',
+        );
+      });
+
+      test('INVALID_STATUS -> Trạng thái mượn sách không hợp lệ', () {
+        expect(
+          mapRenewalReasonCode('INVALID_STATUS'),
+          'Trạng thái mượn sách không hợp lệ để gia hạn.',
+        );
+      });
+
+      test('OUTSIDE_RENEWAL_WINDOW -> Chưa đến hoặc đã qua khoảng thời gian được phép', () {
+        expect(
+          mapRenewalReasonCode('OUTSIDE_RENEWAL_WINDOW'),
+          'Chưa đến hoặc đã qua khoảng thời gian được phép gia hạn.',
+        );
+      });
+
+      test('NOT_OWNER -> Bạn không phải người mượn cuốn sách này', () {
+        expect(
+          mapRenewalReasonCode('NOT_OWNER'),
+          'Bạn không phải người mượn cuốn sách này.',
+        );
+      });
+
+      test('Lấy reasonCode từ data.code hoặc data.details.reasonCode', () {
+        final errorNested = DioException(
+          requestOptions: RequestOptions(path: '/borrowings/1/renew'),
+          response: Response(
+            requestOptions: RequestOptions(path: '/borrowings/1/renew'),
+            statusCode: 400,
+            data: {
+              'details': {'reasonCode': 'OVERDUE'},
+            },
+          ),
+        );
+
+        expect(
+          getRenewalErrorMessage(errorNested),
+          'Sách đã quá hạn mượn, không thể gia hạn.',
+        );
+      });
+    });
+
     test('Fallback HTTP 400 khi không có backend message', () {
       final error = DioException(
         requestOptions: RequestOptions(path: '/borrowings/1/renew'),
@@ -165,4 +260,3 @@ void main() {
     });
   });
 }
-

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:week34_project/core/models/renewal_eligibility.dart';
 import 'package:week34_project/features/borrowing_slips/data/borrowing_slips_repository.dart';
@@ -18,6 +19,9 @@ class FakeBorrowingRepository
   bool shouldFailRenew = false;
   int renewCallCount = 0;
   int lastExtraDays = 0;
+  Completer<void>? renewCompleter;
+  DioException? renewLoanError;
+  Borrowing? fakeRenewBorrowingResult;
   int getBorrowingByIdCallCount = 0;
   bool shouldFailGetBorrowingById = false;
   Borrowing? fakeBorrowingDetail;
@@ -514,8 +518,20 @@ class FakeBorrowingRepository
     renewCallCount++;
     lastExtraDays = extraDays;
 
+    if (renewCompleter != null) {
+      await renewCompleter!.future;
+    }
+
+    if (renewLoanError != null) {
+      throw renewLoanError!;
+    }
+
     if (shouldFailRenew) {
       throw Exception('Không thể gia hạn sách');
+    }
+
+    if (fakeRenewBorrowingResult != null) {
+      return fakeRenewBorrowingResult!;
     }
 
     final oldDueDate =
@@ -537,6 +553,7 @@ class FakeBorrowingRepository
       dueDate: newDueDate,
       status: 'BORROWED',
       renewCount: fakeRenewCount,
+      renewalEligibility: const RenewalEligibility(canRenew: true),
     );
   }
 

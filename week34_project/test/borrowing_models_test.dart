@@ -69,8 +69,95 @@ void main() {
       expect(borrowing.returnDate, isNull);
       expect(borrowing.fineAmount, 0);
       expect(borrowing.finePaid, false);
+      expect(borrowing.canRenew, isNull); // Chưa tải eligibility
     },
   );
+
+  group('Borrowing renewal eligibility tri-state', () {
+    test('canRenew == null khi không có trường eligibility trong JSON (danh sách)', () {
+      final borrowing = Borrowing.fromJson({
+        'id': 'brw-01',
+        'transactionCode': 'BRW-2026-0001',
+        'memberId': 'mem-01',
+        'bookId': 'book-01',
+        'bookTitle': 'Clean Code',
+        'borrowDate': '2026-11-01T08:00:00Z',
+        'dueDate': '2026-11-15T08:00:00Z',
+        'status': 'BORROWED',
+      });
+
+      expect(borrowing.renewalEligibility, isNull);
+      expect(borrowing.canRenew, isNull);
+      expect(borrowing.renewalReasonCode, isNull);
+      expect(borrowing.renewalMessage, isNull);
+    });
+
+    test('canRenew == true khi Backend cho phép gia hạn', () {
+      final borrowing = Borrowing.fromJson({
+        'id': 'brw-01',
+        'transactionCode': 'BRW-2026-0001',
+        'memberId': 'mem-01',
+        'bookId': 'book-01',
+        'bookTitle': 'Clean Code',
+        'borrowDate': '2026-11-01T08:00:00Z',
+        'dueDate': '2026-11-15T08:00:00Z',
+        'status': 'BORROWED',
+        'renewalEligibility': {
+          'canRenew': true,
+          'message': 'Đủ điều kiện gia hạn',
+        },
+      });
+
+      expect(borrowing.canRenew, isTrue);
+      expect(borrowing.renewalMessage, 'Đủ điều kiện gia hạn');
+    });
+
+    test('canRenew == false khi Backend từ chối gia hạn kèm reasonCode và message', () {
+      final borrowing = Borrowing.fromJson({
+        'id': 'brw-01',
+        'transactionCode': 'BRW-2026-0001',
+        'memberId': 'mem-01',
+        'bookId': 'book-01',
+        'bookTitle': 'Clean Code',
+        'borrowDate': '2026-11-01T08:00:00Z',
+        'dueDate': '2026-11-15T08:00:00Z',
+        'status': 'BORROWED',
+        'renewalEligibility': {
+          'canRenew': false,
+          'reasonCode': 'ACTIVE_RESERVATION',
+          'message': 'Sách đang có người đặt trước',
+        },
+      });
+
+      expect(borrowing.canRenew, isFalse);
+      expect(borrowing.renewalReasonCode, 'ACTIVE_RESERVATION');
+      expect(borrowing.renewalMessage, 'Sách đang có người đặt trước');
+    });
+
+    test('copyWith cập nhật đúng các trường', () {
+      final original = Borrowing(
+        id: 'brw-01',
+        transactionCode: 'BRW-2026-0001',
+        memberId: 'mem-01',
+        memberName: 'Nguyễn Văn An',
+        bookId: 'book-01',
+        bookTitle: 'Clean Code',
+        borrowDate: DateTime.utc(2026, 11, 1),
+        dueDate: DateTime.utc(2026, 11, 15),
+        status: 'BORROWED',
+      );
+
+      final updated = original.copyWith(
+        status: 'RETURNED',
+        renewCount: 2,
+      );
+
+      expect(updated.id, 'brw-01');
+      expect(updated.status, 'RETURNED');
+      expect(updated.renewCount, 2);
+      expect(updated.bookTitle, 'Clean Code');
+    });
+  });
 
   test(
     'BorrowingSlip.fromJson | Phiếu có 1 dòng sách | parse đúng thông tin phiếu và BorrowingSlipItem',
