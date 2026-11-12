@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
-import '../../../borrowing_slips/data/models/paginated_borrowing_slips.dart';
+import '../../data/borrowing_slips_repository.dart';
+import '../../data/models/paginated_borrowing_slips.dart';
 import '../widgets/borrowing_slip_card.dart';
 import 'borrowing_slip_detail_screen.dart';
 
@@ -142,3 +142,4 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
     );
   }
 }
+

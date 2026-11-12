@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week34_project/features/borrowings/bloc/pay_slip_fine_bloc.dart';
-import 'package:week34_project/features/borrowings/bloc/pay_slip_fine_event.dart';
-import 'package:week34_project/features/borrowings/bloc/pay_slip_fine_state.dart';
+import 'package:week34_project/features/borrowing_slips/bloc/pay_slip_fine_bloc.dart';
+import 'package:week34_project/features/borrowing_slips/bloc/pay_slip_fine_event.dart';
+import 'package:week34_project/features/borrowing_slips/bloc/pay_slip_fine_state.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 

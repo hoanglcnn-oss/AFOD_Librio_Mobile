@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-import '../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../data/models/borrowing_slip.dart';
 
-sealed class ApproveSlipState extends Equatable {
+abstract class ApproveSlipState extends Equatable {
   const ApproveSlipState();
 
   @override
@@ -28,8 +28,6 @@ class ApproveSlipSuccess extends ApproveSlipState {
 
 class ApproveSlipFailure extends ApproveSlipState {
   final String message;
-
-  // true: cần GET lại phiếu trước khi thao tác tiếp
   final bool requiresRefresh;
 
   const ApproveSlipFailure(this.message, {this.requiresRefresh = false});
@@ -37,3 +35,4 @@ class ApproveSlipFailure extends ApproveSlipState {
   @override
   List<Object?> get props => [message, requiresRefresh];
 }
+

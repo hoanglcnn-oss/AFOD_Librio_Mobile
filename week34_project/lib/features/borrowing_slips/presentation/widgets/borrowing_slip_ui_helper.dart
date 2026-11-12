@@ -1,4 +1,4 @@
-import '../../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../../data/models/borrowing_slip.dart';
 
 //format, status, overdue
 class BorrowingSlipUiHelper {
@@ -66,3 +66,4 @@ class BorrowingSlipUiHelper {
     return slip.totalFine > 0 && !slip.finePaid;
   }
 }
+

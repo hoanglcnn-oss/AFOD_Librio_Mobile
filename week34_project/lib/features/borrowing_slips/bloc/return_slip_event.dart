@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-import '../../borrowing_slips/data/models/return_slip_items_request.dart';
+import '../data/models/return_slip_items_request.dart';
 
-sealed class ReturnSlipEvent extends Equatable {
+abstract class ReturnSlipEvent extends Equatable {
   const ReturnSlipEvent();
 
   @override
@@ -18,3 +18,4 @@ class ReturnSlipRequested extends ReturnSlipEvent {
   @override
   List<Object?> get props => [slipId, request];
 }
+

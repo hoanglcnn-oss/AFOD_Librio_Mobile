@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/pay_slip_fine_bloc.dart';
 import '../../bloc/pay_slip_fine_event.dart';
 import '../../bloc/pay_slip_fine_state.dart';
-import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
-import '../../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../../data/borrowing_slips_repository.dart';
+import '../../data/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
 
 class PaySlipFineScreen extends StatelessWidget {
@@ -102,3 +102,4 @@ class _PaySlipFineContent extends StatelessWidget {
     );
   }
 }
+

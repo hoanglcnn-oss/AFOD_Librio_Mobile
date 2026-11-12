@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/approve_slip_bloc.dart';
 import '../../bloc/approve_slip_event.dart';
 import '../../bloc/approve_slip_state.dart';
-import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
-import '../../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../../data/borrowing_slips_repository.dart';
+import '../../data/models/borrowing_slip.dart';
 
 Future<bool?> showSlipDecisionDialog(
   BuildContext context, {
@@ -168,3 +168,4 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
     );
   }
 }
+

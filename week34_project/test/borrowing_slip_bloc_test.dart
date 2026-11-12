@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 
-import 'package:week34_project/features/borrowings/bloc/borrowing_slip_bloc.dart';
-import 'package:week34_project/features/borrowings/bloc/borrowing_slip_event.dart';
-import 'package:week34_project/features/borrowings/bloc/borrowing_slip_state.dart';
+import 'package:week34_project/features/borrowing_slips/bloc/borrowing_slip_bloc.dart';
+import 'package:week34_project/features/borrowing_slips/bloc/borrowing_slip_event.dart';
+import 'package:week34_project/features/borrowing_slips/bloc/borrowing_slip_state.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/create_borrowing_slip_request.dart';
 
 import 'fake/fake_borrowing_repository.dart';
@@ -22,7 +22,7 @@ void main() {
       'CreateSlipRequested | Repository thành công | Submitting -> Success, trạng thái PENDING_APPROVAL',
       () async {
         final repository = FakeBorrowingRepository();
-        final bloc = BorrowingSlipBloc(borrowingRepository: repository);
+        final bloc = BorrowingSlipBloc(borrowingSlipsRepository: repository);
 
         final statesFuture = bloc.stream.take(2).toList();
 
@@ -50,7 +50,7 @@ void main() {
         final repository = FakeBorrowingRepository()
           ..shouldFailCreateSlip = true;
 
-        final bloc = BorrowingSlipBloc(borrowingRepository: repository);
+        final bloc = BorrowingSlipBloc(borrowingSlipsRepository: repository);
 
         final statesFuture = bloc.stream.take(2).toList();
 
@@ -74,7 +74,7 @@ void main() {
       'CreateSlipRequested | Đã Success | bỏ qua event tiếp theo, không gọi lại Repository',
       () async {
         final repository = FakeBorrowingRepository();
-        final bloc = BorrowingSlipBloc(borrowingRepository: repository);
+        final bloc = BorrowingSlipBloc(borrowingSlipsRepository: repository);
 
         final successFuture = bloc.stream.firstWhere(
           (state) => state is BorrowingSlipSuccess,
@@ -123,7 +123,7 @@ void main() {
             type: DioExceptionType.badResponse,
           );
 
-        final bloc = BorrowingSlipBloc(borrowingRepository: repository);
+        final bloc = BorrowingSlipBloc(borrowingSlipsRepository: repository);
 
         // Độc giả đang mượn 4/5, yêu cầu thêm 2 cuốn.
         const invalidRequest = CreateBorrowingSlipRequest(

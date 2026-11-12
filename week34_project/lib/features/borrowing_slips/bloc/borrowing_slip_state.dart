@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../data/models/borrowing_slip.dart';
 
 abstract class BorrowingSlipState extends Equatable {
   const BorrowingSlipState();
@@ -23,7 +23,7 @@ class BorrowingSlipSuccess extends BorrowingSlipState {
   const BorrowingSlipSuccess(this.slip);
 
   @override
-  List<Object?> get props => [slip.id, slip.status];
+  List<Object?> get props => [slip];
 }
 
 class BorrowingSlipFailure extends BorrowingSlipState {
@@ -34,3 +34,4 @@ class BorrowingSlipFailure extends BorrowingSlipState {
   @override
   List<Object?> get props => [message];
 }
+

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/books_repository.dart';
 import '../../data/models/book.dart';
-import '../../../borrowings/presentation/pages/borrowing_slip_confirm_screen.dart';
+import '../../../borrowing_slips/presentation/pages/borrowing_slip_confirm_screen.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final String bookId;

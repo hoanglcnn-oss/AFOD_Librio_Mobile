@@ -128,7 +128,12 @@ void main() {
       final repository = FakeBorrowingRepository();
 
       await tester.pumpWidget(
-        createApp(LibrarianManageScreen(repository: repository)),
+        createApp(
+          LibrarianManageScreen(
+            borrowingRepository: repository,
+            borrowingSlipsRepository: repository,
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 

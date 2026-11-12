@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
-import '../../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../../data/borrowing_slips_repository.dart';
+import '../../data/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
 import '../widgets/slip_decision_dialog.dart';
@@ -274,3 +274,4 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     );
   }
 }
+

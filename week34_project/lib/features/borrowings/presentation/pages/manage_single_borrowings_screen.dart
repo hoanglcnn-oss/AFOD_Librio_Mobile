@@ -5,7 +5,7 @@ import '../../data/borrowing_repository.dart';
 import '../../data/models/borrowing.dart';
 import '../../data/models/paginated_borrowings.dart';
 import '../widgets/borrowing_card.dart';
-import '../widgets/borrowing_slip_ui_helper.dart';
+import '../widgets/borrowing_ui_helper.dart';
 
 class ManageSingleBorrowingsScreen extends StatefulWidget {
   final BorrowingRepository repository;
@@ -107,7 +107,7 @@ class _ManageSingleBorrowingsScreenState
                       },
                       title: Text(
                         hasFine
-                            ? 'Đã thu tiền phạt: ${BorrowingSlipUiHelper.formatMoney(borrowing.fineAmount!)}'
+                            ? 'Đã thu tiền phạt: ${BorrowingUiHelper.formatMoney(borrowing.fineAmount!)}'
                             : 'Đã thu tiền phạt quá hạn',
                         style: const TextStyle(fontSize: 14),
                       ),

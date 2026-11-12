@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../data/models/borrowing_slip.dart';
 
 abstract class PaySlipFineState extends Equatable {
   const PaySlipFineState();
@@ -34,3 +34,4 @@ class PaySlipFineFailure extends PaySlipFineState {
   @override
   List<Object?> get props => [message];
 }
+

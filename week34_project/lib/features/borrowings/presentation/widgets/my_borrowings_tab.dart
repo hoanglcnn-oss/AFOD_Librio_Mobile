@@ -11,7 +11,7 @@ import '../../bloc/my_borrowings_bloc.dart';
 import '../../bloc/my_borrowings_event.dart';
 import '../../data/api_borrowing_repository.dart';
 import '../pages/my_borrowings_screen.dart';
-import '../pages/borrowing_slip_list_screen.dart';
+import '../../../borrowing_slips/presentation/pages/borrowing_slip_list_screen.dart';
 
 class MyBorrowingsTab extends StatefulWidget {
   final VoidCallback onReturnSucceeded;

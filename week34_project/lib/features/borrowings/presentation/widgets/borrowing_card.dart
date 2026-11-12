@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/borrowing.dart';
-import 'borrowing_slip_ui_helper.dart';
+import 'borrowing_ui_helper.dart';
 
 class BorrowingCard extends StatelessWidget {
   final Borrowing borrowing;
@@ -92,7 +92,7 @@ class BorrowingCard extends StatelessWidget {
                 label: 'Độc giả',
                 value: borrowing.memberName.isNotEmpty
                     ? borrowing.memberName
-                    : BorrowingSlipUiHelper.formatShortId(borrowing.memberId),
+                    : BorrowingUiHelper.formatShortId(borrowing.memberId),
               ),
             ],
             if (borrowing.fineAmount != null && borrowing.fineAmount! > 0) ...[
@@ -100,7 +100,7 @@ class BorrowingCard extends StatelessWidget {
               _InfoRow(
                 label: 'Tiền phạt',
                 value:
-                    '${BorrowingSlipUiHelper.formatMoney(borrowing.fineAmount!)} '
+                    '${BorrowingUiHelper.formatMoney(borrowing.fineAmount!)} '
                     '(${borrowing.finePaid == true ? 'Đã thu' : 'Chưa thu'})',
               ),
             ],

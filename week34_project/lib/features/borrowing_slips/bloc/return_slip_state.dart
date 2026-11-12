@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-import '../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../data/models/borrowing_slip.dart';
 
-sealed class ReturnSlipState extends Equatable {
+abstract class ReturnSlipState extends Equatable {
   const ReturnSlipState();
 
   @override
@@ -34,3 +34,4 @@ class ReturnSlipFailure extends ReturnSlipState {
   @override
   List<Object?> get props => [message];
 }
+

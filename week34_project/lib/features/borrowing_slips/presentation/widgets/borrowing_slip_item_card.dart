@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../../data/models/borrowing_slip.dart';
 import 'borrowing_slip_ui_helper.dart';
 
 //card từng sách
@@ -59,3 +59,4 @@ class BorrowingSlipItemCard extends StatelessWidget {
     );
   }
 }
+

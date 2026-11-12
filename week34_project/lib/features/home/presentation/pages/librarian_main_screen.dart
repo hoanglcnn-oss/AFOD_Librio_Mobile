@@ -4,7 +4,7 @@ import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
 import '../../../borrowings/data/api_borrowing_repository.dart';
 import '../../../borrowings/presentation/pages/librarian_manage_screen.dart';
-import '../../../borrowings/presentation/pages/pending_borrowing_slips_screen.dart';
+import '../../../borrowing_slips/presentation/pages/pending_borrowing_slips_screen.dart';
 
 class LibrarianMainScreen extends StatefulWidget {
   const LibrarianMainScreen({super.key});

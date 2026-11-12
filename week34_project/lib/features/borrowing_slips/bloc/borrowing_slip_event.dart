@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../borrowing_slips/data/models/create_borrowing_slip_request.dart';
+import '../data/models/create_borrowing_slip_request.dart';
 
 abstract class BorrowingSlipEvent extends Equatable {
   const BorrowingSlipEvent();
@@ -15,10 +15,6 @@ class CreateSlipRequested extends BorrowingSlipEvent {
   const CreateSlipRequested(this.request);
 
   @override
-  List<Object?> get props => [
-    request.memberId,
-    request.expectedReturnDays,
-    request.notes,
-    ...request.items.expand((item) => [item.bookId, item.quantity]),
-  ];
+  List<Object?> get props => [request];
 }
+

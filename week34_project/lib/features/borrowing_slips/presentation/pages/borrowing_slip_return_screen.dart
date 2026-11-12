@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/return_slip_bloc.dart';
 import '../../bloc/return_slip_event.dart';
 import '../../bloc/return_slip_state.dart';
-import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
-import '../../../borrowing_slips/data/models/borrowing_slip.dart';
-import '../../../borrowing_slips/data/models/return_slip_items_request.dart';
+import '../../data/borrowing_slips_repository.dart';
+import '../../data/models/borrowing_slip.dart';
+import '../../data/models/return_slip_items_request.dart';
 
 class BorrowingSlipReturnScreen extends StatelessWidget {
   final BorrowingSlip slip;
@@ -189,3 +189,4 @@ class _ReturnContentState extends State<_ReturnContent> {
     );
   }
 }
+

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-sealed class ApproveSlipEvent extends Equatable {
+abstract class ApproveSlipEvent extends Equatable {
   const ApproveSlipEvent();
 
   @override
@@ -25,3 +25,4 @@ class RejectSlipRequested extends ApproveSlipEvent {
   @override
   List<Object?> get props => [slipId, reason];
 }
+

@@ -10,8 +10,8 @@ import 'package:week34_project/features/members/data/member_resolver.dart';
 import '../../bloc/borrowing_slip_bloc.dart';
 import '../../bloc/borrowing_slip_event.dart';
 import '../../bloc/borrowing_slip_state.dart';
-import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
-import '../../../borrowing_slips/data/models/create_borrowing_slip_request.dart';
+import '../../data/api_borrowing_slips_repository.dart';
+import '../../data/models/create_borrowing_slip_request.dart';
 
 class BorrowingSlipConfirmScreen extends StatelessWidget {
   final List<Book> books;
@@ -267,3 +267,4 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     );
   }
 }
+
