@@ -188,7 +188,7 @@ class _BooksScreenState extends State<BooksScreen> {
 
     // Loaded
     if (state is BooksLoaded) {
-      final books = state.booksPage.books;
+      final books = state.paginatedBooks.books;
 
       // Empty
       if (books.isEmpty) {

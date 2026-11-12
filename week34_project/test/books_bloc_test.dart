@@ -24,9 +24,9 @@ void main() {
 
       final loaded = states[1] as BooksLoaded;
 
-      expect(loaded.booksPage.books.length, 1);
-      expect(loaded.booksPage.books.first.title, 'Clean Code');
-      expect(loaded.booksPage.hasNextPage, false);
+      expect(loaded.paginatedBooks.books.length, 1);
+      expect(loaded.paginatedBooks.books.first.title, 'Clean Code');
+      expect(loaded.paginatedBooks.hasNextPage, false);
 
       await bloc.close();
     },

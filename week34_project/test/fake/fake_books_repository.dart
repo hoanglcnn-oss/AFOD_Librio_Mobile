@@ -1,15 +1,15 @@
 import 'package:week34_project/features/books/data/books_repository.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
-import 'package:week34_project/features/books/data/models/books_page.dart';
+import 'package:week34_project/features/books/data/models/paginated_books.dart';
 
 class FakeBooksRepository implements BooksRepository {
   @override
-  Future<BooksPage> getBooks({
+  Future<PaginatedBooks> getBooks({
     int page = 1,
     int limit = 10,
     String? search,
   }) async {
-    return BooksPage(
+    return PaginatedBooks(
       page: page,
       totalPages: 1,
       hasNextPage: false,

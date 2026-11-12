@@ -9,7 +9,7 @@ import 'fake/fake_token_storage.dart';
 void main() {
   // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
   test(
-    'getBooks | HTTP GET thành công | trả về BooksPage với dữ liệu sách',
+    'getBooks | HTTP GET thành công | trả về PaginatedBooks với dữ liệu sách',
     () async {
       final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
 

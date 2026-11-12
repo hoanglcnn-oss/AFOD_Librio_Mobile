@@ -18,9 +18,9 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
     emit(const BooksLoading());
 
     try {
-      final booksPage = await booksRepository.getBooks(page: 1, limit: 10);
+      final paginatedBooks = await booksRepository.getBooks(page: 1, limit: 10);
 
-      emit(BooksLoaded(booksPage: booksPage));
+      emit(BooksLoaded(paginatedBooks: paginatedBooks));
     } on DioException catch (error) {
       if (kDebugMode) {
         debugPrint(
@@ -69,7 +69,7 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
         search: event.keyword.trim(),
       );
 
-      emit(BooksLoaded(booksPage: result));
+      emit(BooksLoaded(paginatedBooks: result));
     } on DioException catch (error) {
       if (kDebugMode) {
         debugPrint(

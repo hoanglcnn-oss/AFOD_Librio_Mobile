@@ -144,7 +144,7 @@ void main() {
 
   group('ApiBooksRepository', () {
     test(
-      'getBooks | DataSource trả danh sách sách | parse đúng BooksPage',
+      'getBooks | DataSource trả danh sách sách | parse đúng PaginatedBooks',
       () async {
         final mockDataSource = _FakeBooksRemoteDataSource(
           booksResponse: {

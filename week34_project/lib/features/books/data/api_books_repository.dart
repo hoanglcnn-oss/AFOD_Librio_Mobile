@@ -3,7 +3,7 @@ import 'package:week34_project/features/books/data/models/book.dart';
 
 import 'datasources/books_remote_data_source.dart';
 import 'books_repository.dart';
-import 'models/books_page.dart';
+import 'models/paginated_books.dart';
 
 class ApiBooksRepository implements BooksRepository {
   final BooksRemoteDataSource _remoteDataSource;
@@ -13,7 +13,7 @@ class ApiBooksRepository implements BooksRepository {
           remoteDataSource ?? BooksRemoteDataSourceImpl(dio: dio);
 
   @override
-  Future<BooksPage> getBooks({
+  Future<PaginatedBooks> getBooks({
     int page = 1,
     int limit = 10,
     String? search,
@@ -24,7 +24,7 @@ class ApiBooksRepository implements BooksRepository {
       search: search,
     );
 
-    return BooksPage.fromJson(data);
+    return PaginatedBooks.fromJson(data);
   }
 
   @override
