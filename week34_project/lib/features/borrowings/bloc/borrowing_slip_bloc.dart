@@ -1,17 +1,23 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/borrowing_error_mapper.dart';
-import '../data/borrowing_repository.dart';
+import '../../borrowing_slips/data/borrowing_slips_repository.dart';
 import 'borrowing_slip_event.dart';
 import 'borrowing_slip_state.dart';
 
 class BorrowingSlipBloc extends Bloc<BorrowingSlipEvent, BorrowingSlipState> {
-  final BorrowingRepository borrowingRepository;
+  final BorrowingSlipsRepository borrowingRepository;
+
+  BorrowingSlipsRepository get borrowingSlipsRepository => borrowingRepository;
 
   bool _isSubmitting = false;
 
-  BorrowingSlipBloc({required this.borrowingRepository})
-    : super(const BorrowingSlipInitial()) {
+  BorrowingSlipBloc({
+    BorrowingSlipsRepository? borrowingSlipsRepository,
+    BorrowingSlipsRepository? borrowingRepository,
+  })  : borrowingRepository =
+            borrowingSlipsRepository ?? borrowingRepository!,
+        super(const BorrowingSlipInitial()) {
     on<CreateSlipRequested>(_onCreateSlipRequested);
   }
 

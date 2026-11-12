@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../data/models/return_slip_items_request.dart';
+import '../../borrowing_slips/data/models/return_slip_items_request.dart';
 
 sealed class ReturnSlipEvent extends Equatable {
   const ReturnSlipEvent();

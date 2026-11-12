@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../data/models/create_borrowing_slip_request.dart';
+import '../../borrowing_slips/data/models/create_borrowing_slip_request.dart';
 
 abstract class BorrowingSlipEvent extends Equatable {
   const BorrowingSlipEvent();

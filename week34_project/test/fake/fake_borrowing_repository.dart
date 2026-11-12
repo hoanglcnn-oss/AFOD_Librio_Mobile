@@ -1,14 +1,16 @@
 import 'package:dio/dio.dart';
+import 'package:week34_project/features/borrowing_slips/data/borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
+import 'package:week34_project/features/borrowing_slips/data/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowing_slips/data/models/paginated_borrowing_slips.dart';
+import 'package:week34_project/features/borrowing_slips/data/models/return_slip_items_request.dart';
 import 'package:week34_project/features/borrowings/data/borrowing_repository.dart';
 import 'package:week34_project/features/borrowings/data/models/borrowing.dart';
 import 'package:week34_project/features/borrowings/data/models/create_borrowing_request.dart';
-import 'package:week34_project/features/borrowings/data/models/borrowings_page.dart';
-import 'package:week34_project/features/borrowings/data/models/borrowing_slip.dart';
-import 'package:week34_project/features/borrowings/data/models/create_borrowing_slip_request.dart';
-import 'package:week34_project/features/borrowings/data/models/borrowing_slips_page.dart';
-import 'package:week34_project/features/borrowings/data/models/return_slip_items_request.dart';
+import 'package:week34_project/features/borrowings/data/models/paginated_borrowings.dart';
 
-class FakeBorrowingRepository implements BorrowingRepository {
+class FakeBorrowingRepository
+    implements BorrowingRepository, BorrowingSlipsRepository {
   bool shouldFail;
   bool shouldFailReturn = false;
   int returnCallCount = 0;

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/borrowing_repository.dart';
-import '../../data/models/borrowing_slip.dart';
+import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
+import '../../../borrowing_slips/data/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
 import '../widgets/slip_decision_dialog.dart';
@@ -15,7 +15,7 @@ import 'pay_slip_fine_screen.dart';
 
 class BorrowingSlipDetailScreen extends StatefulWidget {
   final String slipId;
-  final BorrowingRepository repository;
+  final BorrowingSlipsRepository repository;
 
   const BorrowingSlipDetailScreen({
     super.key,

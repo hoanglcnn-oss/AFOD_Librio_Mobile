@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week34_project/features/borrowings/data/models/borrowing_slip.dart';
-import 'package:week34_project/features/borrowings/data/models/borrowing_slips_page.dart';
+import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
+import 'package:week34_project/features/borrowing_slips/data/models/paginated_borrowing_slips.dart';
 import 'package:week34_project/features/borrowings/presentation/pages/pending_borrowing_slips_screen.dart';
 
 import 'fake/fake_borrowing_repository.dart';

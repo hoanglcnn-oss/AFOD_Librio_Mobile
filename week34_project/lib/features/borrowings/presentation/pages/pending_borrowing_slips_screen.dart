@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../data/borrowing_repository.dart';
-import '../../data/models/borrowing_slip.dart';
-import '../../data/models/borrowing_slips_page.dart';
+import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
+import '../../../borrowing_slips/data/models/borrowing_slip.dart';
+import '../../../borrowing_slips/data/models/paginated_borrowing_slips.dart';
 import '../widgets/borrowing_slip_card.dart';
 import '../widgets/slip_decision_dialog.dart';
 import 'borrowing_slip_detail_screen.dart';
 
 class PendingBorrowingSlipsScreen extends StatefulWidget {
-  final BorrowingRepository repository;
+  final BorrowingSlipsRepository repository;
 
   const PendingBorrowingSlipsScreen({super.key, required this.repository});
 
@@ -19,7 +19,7 @@ class PendingBorrowingSlipsScreen extends StatefulWidget {
 
 class _PendingBorrowingSlipsScreenState
     extends State<PendingBorrowingSlipsScreen> {
-  late Future<BorrowingSlipsPage> _future;
+  late Future<PaginatedBorrowingSlips> _future;
   int _page = 1;
 
   @override

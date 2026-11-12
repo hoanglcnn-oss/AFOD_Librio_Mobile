@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week34_project/features/borrowings/data/models/borrowings_page.dart';
+import 'package:week34_project/features/borrowings/data/models/paginated_borrowings.dart';
 import 'package:week34_project/features/borrowings/presentation/pages/librarian_manage_screen.dart';
 import 'package:week34_project/features/borrowings/presentation/pages/manage_single_borrowings_screen.dart';
 

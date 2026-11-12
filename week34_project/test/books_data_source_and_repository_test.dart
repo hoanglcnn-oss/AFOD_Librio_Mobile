@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/books/data/api_books_repository.dart';
 import 'package:week34_project/features/books/data/datasources/books_remote_data_source.dart';
 
+import 'fake/fake_token_storage.dart';
+
 void main() {
   group('BooksRemoteDataSourceImpl', () {
     // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
@@ -47,7 +49,11 @@ void main() {
           ),
         );
 
-        final dataSource = BooksRemoteDataSourceImpl(dio: dio);
+        final tokenStorage = FakeTokenStorage()..savedToken = 'test-token';
+        final dataSource = BooksRemoteDataSourceImpl(
+          dio: dio,
+          tokenStorage: tokenStorage,
+        );
         final result = await dataSource.getBooks(
           page: 2,
           limit: 20,
@@ -93,7 +99,11 @@ void main() {
           ),
         );
 
-        final dataSource = BooksRemoteDataSourceImpl(dio: dio);
+        final tokenStorage = FakeTokenStorage()..savedToken = 'test-token';
+        final dataSource = BooksRemoteDataSourceImpl(
+          dio: dio,
+          tokenStorage: tokenStorage,
+        );
         final result = await dataSource.getBookById('book 123');
 
         expect(result['id'], 'book 123');
@@ -134,7 +144,11 @@ void main() {
           ),
         );
 
-        final dataSource = BooksRemoteDataSourceImpl(dio: dio);
+        final tokenStorage = FakeTokenStorage()..savedToken = 'test-token';
+        final dataSource = BooksRemoteDataSourceImpl(
+          dio: dio,
+          tokenStorage: tokenStorage,
+        );
         final result = await dataSource.getBookByIsbn(' 978-0-13-235088-4 ');
 
         expect(result['isbn'], '9780132350884');
@@ -246,7 +260,13 @@ void main() {
           ),
         );
 
-        final repository = ApiBooksRepository(dio: dio);
+        final tokenStorage = FakeTokenStorage()..savedToken = 'test-token';
+        final repository = ApiBooksRepository(
+          remoteDataSource: BooksRemoteDataSourceImpl(
+            dio: dio,
+            tokenStorage: tokenStorage,
+          ),
+        );
 
         expect(
           () => repository.getBookById('not-found'),

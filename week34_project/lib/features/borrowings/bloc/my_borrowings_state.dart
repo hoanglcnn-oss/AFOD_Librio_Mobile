@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../data/models/borrowings_page.dart';
+import '../data/models/paginated_borrowings.dart';
 
 abstract class MyBorrowingsState extends Equatable {
   const MyBorrowingsState();
@@ -21,7 +21,7 @@ class MyBorrowingsLoading extends MyBorrowingsState {
 
 //API trả về thành công ->	Danh sách phiếu mượn
 class MyBorrowingsLoaded extends MyBorrowingsState {
-  final BorrowingsPage borrowingsPage;
+  final PaginatedBorrowings borrowingsPage;
 
   const MyBorrowingsLoaded(this.borrowingsPage);
 

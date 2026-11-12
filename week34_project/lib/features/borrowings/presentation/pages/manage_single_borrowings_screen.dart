@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/borrowing_repository.dart';
 import '../../data/models/borrowing.dart';
-import '../../data/models/borrowings_page.dart';
+import '../../data/models/paginated_borrowings.dart';
 import '../widgets/borrowing_card.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
 

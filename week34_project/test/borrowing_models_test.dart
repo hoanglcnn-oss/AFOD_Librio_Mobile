@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:week34_project/features/borrowings/data/models/borrowing.dart';
-import 'package:week34_project/features/borrowings/data/models/borrowing_slip.dart';
+import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowings/data/models/create_borrowing_request.dart';
 
 void main() {

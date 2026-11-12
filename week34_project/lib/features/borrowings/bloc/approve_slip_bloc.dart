@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/borrowing_repository.dart';
+import '../../borrowing_slips/data/borrowing_slips_repository.dart';
 import 'approve_slip_event.dart';
 import 'approve_slip_state.dart';
 
 class ApproveSlipBloc extends Bloc<ApproveSlipEvent, ApproveSlipState> {
-  final BorrowingRepository repository;
+  final BorrowingSlipsRepository repository;
 
   bool _isSubmitting = false;
 

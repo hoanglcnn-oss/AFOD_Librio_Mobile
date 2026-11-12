@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:week34_project/features/borrowings/bloc/borrowing_slip_bloc.dart';
 import 'package:week34_project/features/borrowings/bloc/borrowing_slip_event.dart';
 import 'package:week34_project/features/borrowings/bloc/borrowing_slip_state.dart';
-import 'package:week34_project/features/borrowings/data/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowing_slips/data/models/create_borrowing_slip_request.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 

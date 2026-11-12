@@ -1,4 +1,4 @@
-import '../../data/models/borrowing_slip.dart';
+import '../../../borrowing_slips/data/models/borrowing_slip.dart';
 
 //format, status, overdue
 class BorrowingSlipUiHelper {

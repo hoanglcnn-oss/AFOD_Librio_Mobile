@@ -4,13 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/approve_slip_bloc.dart';
 import '../../bloc/approve_slip_event.dart';
 import '../../bloc/approve_slip_state.dart';
-import '../../data/borrowing_repository.dart';
-import '../../data/models/borrowing_slip.dart';
+import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
+import '../../../borrowing_slips/data/models/borrowing_slip.dart';
 
 Future<bool?> showSlipDecisionDialog(
   BuildContext context, {
   required BorrowingSlip slip,
-  required BorrowingRepository repository,
+  required BorrowingSlipsRepository repository,
   required bool approve,
 }) {
   return showDialog<bool>(

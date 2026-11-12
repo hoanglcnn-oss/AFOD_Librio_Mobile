@@ -6,6 +6,7 @@ import '../../../auth/bloc/auth_state.dart';
 import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';
 
+import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
 import '../../bloc/my_borrowings_bloc.dart';
 import '../../bloc/my_borrowings_event.dart';
 import '../../data/api_borrowing_repository.dart';
@@ -97,7 +98,7 @@ class _MyBorrowingsTabState extends State<MyBorrowingsTab> {
                     ),
                     BorrowingSlipsScreen(
                       memberId: memberId,
-                      repository: ApiBorrowingRepository(),
+                      repository: ApiBorrowingSlipsRepository(),
                     ),
                   ],
                 ),

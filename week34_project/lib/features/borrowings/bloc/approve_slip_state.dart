@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../data/models/borrowing_slip.dart';
+import '../../borrowing_slips/data/models/borrowing_slip.dart';
 
 sealed class ApproveSlipState extends Equatable {
   const ApproveSlipState();

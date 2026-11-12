@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../auth/presentation/pages/profile_screen.dart';
+import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
 import '../../../borrowings/data/api_borrowing_repository.dart';
 import '../../../borrowings/presentation/pages/librarian_manage_screen.dart';
 import '../../../borrowings/presentation/pages/pending_borrowing_slips_screen.dart';
@@ -17,11 +18,13 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
 
   static const _titles = ['Phiếu chờ duyệt', 'Quản lý phiếu mượn', 'Tài khoản'];
   late final ApiBorrowingRepository _borrowingRepository;
+  late final ApiBorrowingSlipsRepository _borrowingSlipsRepository;
 
   @override
   void initState() {
     super.initState();
     _borrowingRepository = ApiBorrowingRepository();
+    _borrowingSlipsRepository = ApiBorrowingSlipsRepository();
   }
 
   @override
@@ -31,8 +34,11 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          PendingBorrowingSlipsScreen(repository: _borrowingRepository),
-          LibrarianManageScreen(repository: _borrowingRepository),
+          PendingBorrowingSlipsScreen(repository: _borrowingSlipsRepository),
+          LibrarianManageScreen(
+            borrowingRepository: _borrowingRepository,
+            borrowingSlipsRepository: _borrowingSlipsRepository,
+          ),
           const ProfileScreen(),
         ],
       ),

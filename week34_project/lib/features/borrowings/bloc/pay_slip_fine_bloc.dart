@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/borrowing_repository.dart';
+import '../../borrowing_slips/data/borrowing_slips_repository.dart';
 import 'pay_slip_fine_event.dart';
 import 'pay_slip_fine_state.dart';
 
 class PaySlipFineBloc extends Bloc<PaySlipFineEvent, PaySlipFineState> {
-  final BorrowingRepository repository;
+  final BorrowingSlipsRepository repository;
   bool _isSubmitting = false;
 
   PaySlipFineBloc({required this.repository})

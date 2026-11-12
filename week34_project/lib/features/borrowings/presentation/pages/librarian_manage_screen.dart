@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
 
+import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
+import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
+import '../../data/api_borrowing_repository.dart';
 import '../../data/borrowing_repository.dart';
 import 'manage_borrowing_slips_screen.dart';
 import 'manage_single_borrowings_screen.dart';
 
 class LibrarianManageScreen extends StatelessWidget {
-  final BorrowingRepository repository;
+  final BorrowingRepository borrowingRepository;
+  final BorrowingSlipsRepository borrowingSlipsRepository;
 
-  const LibrarianManageScreen({super.key, required this.repository});
+  LibrarianManageScreen({
+    super.key,
+    dynamic repository,
+    BorrowingRepository? borrowingRepository,
+    BorrowingSlipsRepository? borrowingSlipsRepository,
+  })  : borrowingRepository = borrowingRepository ??
+            (repository is BorrowingRepository
+                ? repository
+                : ApiBorrowingRepository()),
+        borrowingSlipsRepository = borrowingSlipsRepository ??
+            (repository is BorrowingSlipsRepository
+                ? repository
+                : ApiBorrowingSlipsRepository());
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +43,8 @@ class LibrarianManageScreen extends StatelessWidget {
           Expanded(
             child: TabBarView(
               children: [
-                ManageSingleBorrowingsScreen(repository: repository),
-                ManageBorrowingSlipsScreen(repository: repository),
+                ManageSingleBorrowingsScreen(repository: borrowingRepository),
+                ManageBorrowingSlipsScreen(repository: borrowingSlipsRepository),
               ],
             ),
           ),
@@ -37,4 +53,3 @@ class LibrarianManageScreen extends StatelessWidget {
     );
   }
 }
-
