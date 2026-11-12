@@ -14,6 +14,7 @@ void main() {
       home: Scaffold(body: PendingBorrowingSlipsScreen(repository: repository)),
     );
   }
+  // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
 
   testWidgets('PendingSlipsScreen | Có phiếu chờ | Hiển thị Duyệt và Từ chối', (
     tester,

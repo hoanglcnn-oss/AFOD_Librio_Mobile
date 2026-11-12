@@ -20,22 +20,24 @@ String getBorrowingErrorMessage(Object error) {
 
       if (message is String) {
         backendMessage = message;
+      } else if (message is List) {
+        backendMessage = message.whereType<String>().join('\n');
+        if (backendMessage.isEmpty) backendMessage = null;
       }
     }
 
     switch (statusCode) {
       case 400:
-        // Case 2: Vượt giới hạn mượn sách.
-        if (backendMessage != null &&
-            backendMessage.startsWith('Vượt quá hạn mức mượn:')) {
-          return backendMessage;
-        }
-
         // Case 3: Sách đã hết trước khi request được xử lý.
         if (backendMessage != null &&
             backendMessage.contains('hết bản in sẵn có')) {
           return 'Rất tiếc, sách này hiện đã hết. '
               'Vui lòng tải lại danh sách sách.';
+        }
+
+        // Ưu tiên hiển thị lỗi nghiệp vụ cụ thể từ Backend thay vì thông báo chung.
+        if (backendMessage != null && backendMessage.trim().isNotEmpty) {
+          return backendMessage;
         }
 
         return 'Không đủ điều kiện mượn sách. '

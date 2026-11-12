@@ -215,4 +215,19 @@ class _FakeMembersRemoteDataSource implements MembersRemoteDataSource {
       'meta': {'page': page, 'totalPages': page, 'hasNextPage': false},
     };
   }
+
+  @override
+  Future<Map<String, dynamic>> getDebtSummary({
+    required String memberId,
+    required String token,
+  }) async {
+    return {
+      'maxBorrowLimit': 5,
+      'currentBorrowedCount': 0,
+      'remainingBorrowLimit': 5,
+      'canBorrow': true,
+      'overdueCount': 0,
+      'unpaidFineAmount': 0,
+    };
+  }
 }

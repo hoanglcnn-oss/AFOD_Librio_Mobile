@@ -1,15 +1,22 @@
 import 'package:dio/dio.dart';
 
+import '../../../../core/storage/token_storage.dart';
 import 'datasources/members_remote_data_source.dart';
 import 'members_repository.dart';
 import 'models/member.dart';
+import 'models/member_debt_summary.dart';
 
 class ApiMembersRepository implements MembersRepository {
   final MembersRemoteDataSource _remoteDataSource;
+  final TokenStorage _tokenStorage;
 
-  ApiMembersRepository({MembersRemoteDataSource? remoteDataSource, Dio? dio})
-    : _remoteDataSource =
-          remoteDataSource ?? MembersRemoteDataSourceImpl(dio: dio);
+  ApiMembersRepository({
+    MembersRemoteDataSource? remoteDataSource,
+    TokenStorage? tokenStorage,
+    Dio? dio,
+  })  : _remoteDataSource =
+            remoteDataSource ?? MembersRemoteDataSourceImpl(dio: dio),
+        _tokenStorage = tokenStorage ?? TokenStorage();
 
   @override
   Future<Member?> findByEmail(String email) async {
@@ -50,5 +57,25 @@ class ApiMembersRepository implements MembersRepository {
 
       page++;
     }
+  }
+
+  @override
+  Future<MemberDebtSummary> getDebtSummary(String memberId) async {
+    final trimmedId = memberId.trim();
+    if (trimmedId.isEmpty) {
+      throw ArgumentError('Mã độc giả không được để trống');
+    }
+
+    final token = await _tokenStorage.readToken();
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    final json = await _remoteDataSource.getDebtSummary(
+      memberId: trimmedId,
+      token: token,
+    );
+
+    return MemberDebtSummary.fromJson(json);
   }
 }

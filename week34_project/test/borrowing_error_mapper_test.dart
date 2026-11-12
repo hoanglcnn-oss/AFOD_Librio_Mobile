@@ -63,6 +63,34 @@ void main() {
     },
   );
 
+  test(
+    'BorrowingErrorMapper | HTTP 400 lỗi nghiệp vụ khác | ưu tiên hiển thị message từ Backend',
+    () {
+      final options = RequestOptions(path: '/borrowing-slips');
+
+      const customBackendMessage =
+          'Thẻ độc giả đã hết hạn. Vui lòng gia hạn thẻ để tiếp tục mượn sách.';
+
+      final error = DioException(
+        requestOptions: options,
+        response: Response(
+          requestOptions: options,
+          statusCode: 400,
+          data: {
+            'statusCode': 400,
+            'message': customBackendMessage,
+            'error': 'Bad Request',
+          },
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      final message = getBorrowingErrorMessage(error);
+
+      expect(message, customBackendMessage);
+    },
+  );
+
   test('BorrowingErrorMapper | HTTP 400 hết sách | hiển thị hết hàng', () {
     final options = RequestOptions(path: '/borrowings');
 

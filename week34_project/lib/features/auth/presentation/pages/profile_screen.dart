@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:week34_project/features/members/presentation/pages/borrowing_limit_screen.dart';
+
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
 import '../../bloc/auth_state.dart';
@@ -17,6 +19,7 @@ class ProfileScreen extends StatelessWidget {
         }
 
         final user = state.user;
+        final isMember = user.role.toUpperCase() == 'MEMBER';
 
         return ListView(
           padding: const EdgeInsets.all(16),
@@ -58,6 +61,28 @@ class ProfileScreen extends StatelessWidget {
                 user.isActive ? 'Đang hoạt động' : 'Không hoạt động',
               ),
             ),
+
+            if (isMember) ...[
+              const Divider(height: 24),
+              ListTile(
+                leading: const Icon(Icons.menu_book_outlined),
+                title: const Text('Hạn mức & điều kiện mượn'),
+                subtitle: const Text(
+                  'Theo dõi số sách đang mượn và điều kiện mượn thêm',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => BorrowingLimitScreen(
+                        memberId: user.memberId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const Divider(height: 24),
+            ],
 
             const SizedBox(height: 32),
 
