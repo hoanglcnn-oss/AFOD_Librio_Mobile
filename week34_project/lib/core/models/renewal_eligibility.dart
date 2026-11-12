@@ -38,3 +38,4 @@ class RenewalEligibility extends Equatable {
   @override
   List<Object?> get props => [canRenew, reasonCode, message];
 }
+
