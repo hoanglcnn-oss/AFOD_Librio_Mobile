@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/app_toast.dart';
+
 import '../../data/borrowing_repository.dart';
 import '../../data/models/borrowing.dart';
 import '../../data/models/paginated_borrowings.dart';
@@ -144,9 +146,7 @@ class _ManageSingleBorrowingsScreenState
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã ghi nhận trả sách thành công')),
-        );
+        AppToast.success(context, 'Đã ghi nhận trả sách thành công');
       }
     } catch (e) {
       if (mounted) {
@@ -157,9 +157,7 @@ class _ManageSingleBorrowingsScreenState
                   : 'Không thể ghi nhận trả sách'
             : 'Đã xảy ra lỗi khi ghi nhận trả sách';
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        AppToast.error(context, message);
       }
     } finally {
       if (mounted) {
@@ -222,9 +220,7 @@ class _ManageSingleBorrowingsScreenState
       await widget.repository.payFine(borrowing.id);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã thu tiền phạt thành công')),
-        );
+        AppToast.success(context, 'Đã thu tiền phạt thành công');
       }
     } catch (e) {
       if (mounted) {
@@ -235,9 +231,7 @@ class _ManageSingleBorrowingsScreenState
                   : 'Không thể thu tiền phạt'
             : 'Đã xảy ra lỗi khi thu tiền phạt';
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+        AppToast.error(context, message);
       }
     } finally {
       if (mounted) {

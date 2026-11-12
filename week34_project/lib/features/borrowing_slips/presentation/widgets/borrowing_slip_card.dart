@@ -53,9 +53,7 @@ class BorrowingSlipCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (showMember && _resolveMemberDisplay().isNotEmpty)
-                  Text(
-                    'Độc giả: ${_resolveMemberDisplay()}',
-                  ),
+                  Text('Độc giả: ${_resolveMemberDisplay()}'),
                 Text(
                   'Trạng thái: '
                   '${BorrowingSlipUiHelper.slipStatus(slip.status)}',

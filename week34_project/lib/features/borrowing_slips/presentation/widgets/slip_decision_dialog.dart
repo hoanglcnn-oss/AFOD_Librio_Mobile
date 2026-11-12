@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/app_toast.dart';
 import '../../bloc/approve_slip_bloc.dart';
 import '../../bloc/approve_slip_event.dart';
 import '../../bloc/approve_slip_state.dart';
@@ -71,17 +72,13 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
               ? 'Đã duyệt phiếu thành công'
               : 'Đã từ chối phiếu';
 
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(message)));
+          AppToast.success(context, message);
 
           Navigator.of(context).pop(true);
         }
 
         if (state is ApproveSlipFailure && state.requiresRefresh) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          AppToast.error(context, state.message);
 
           // Không thử lại trên dữ liệu cũ.
           // Đóng dialog và yêu cầu GET danh sách mới.

@@ -183,10 +183,7 @@ void main() {
           'id': 'slip-nested',
           'slipNumber': 'SLIP-001',
           'memberId': 'mem-01',
-          'member': {
-            'fullName': 'Nguyễn Văn An',
-            'cardNumber': 'CARD-999',
-          },
+          'member': {'fullName': 'Nguyễn Văn An', 'cardNumber': 'CARD-999'},
           'status': 'PENDING_APPROVAL',
           'dueDate': '2026-11-20T08:00:00Z',
           'items': [],

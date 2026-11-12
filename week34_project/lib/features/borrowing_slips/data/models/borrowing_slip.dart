@@ -91,7 +91,8 @@ class BorrowingSlip {
     if (json['member'] is Map) {
       final memberMap = json['member'] as Map;
       memberName = (memberMap['fullName'] ?? memberMap['name']) as String?;
-      memberCardNumber = (memberMap['cardNumber'] ?? memberMap['card']) as String?;
+      memberCardNumber =
+          (memberMap['cardNumber'] ?? memberMap['card']) as String?;
     }
 
     memberName ??= json['memberName'] as String?;

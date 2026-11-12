@@ -6,6 +6,7 @@ import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/members/data/api_members_repository.dart';
 import 'package:week34_project/features/members/data/member_resolver.dart';
 
+import '../../../../core/widgets/app_toast.dart';
 import '../../bloc/borrowing_bloc.dart';
 import '../../bloc/borrowing_event.dart';
 import '../../bloc/borrowing_state.dart';
@@ -101,9 +102,7 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
         }
 
         if (state is BorrowingFailure) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          AppToast.error(context, state.message);
         }
       },
       child: Scaffold(

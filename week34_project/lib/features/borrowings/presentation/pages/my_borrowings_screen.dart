@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/app_toast.dart';
+
 import '../../bloc/my_borrowings_bloc.dart';
 import '../../bloc/my_borrowings_state.dart';
 import '../../bloc/my_borrowings_event.dart';
@@ -119,9 +121,7 @@ class MyBorrowingsScreen extends StatelessWidget {
 
       listener: (context, state) {
         if (state is MyBorrowingsReturnSuccess) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Trả sách thành công')));
+          AppToast.success(context, 'Trả sách thành công');
 
           // Cập nhật tồn kho ở tab Books.
           onReturnSucceeded();
@@ -131,23 +131,17 @@ class MyBorrowingsScreen extends StatelessWidget {
         }
 
         if (state is MyBorrowingsReturnFailure) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          AppToast.error(context, state.message);
         }
         if (state is MyBorrowingsRenewSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Gia hạn sách thành công')),
-          );
+          AppToast.success(context, 'Gia hạn sách thành công');
 
           // Tải lại từ backend để nhận dueDate và renewCount mới.
           context.read<MyBorrowingsBloc>().add(LoadMyBorrowings(memberId));
         }
 
         if (state is MyBorrowingsRenewFailure) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          AppToast.error(context, state.message);
         }
       },
 

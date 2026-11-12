@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/app_toast.dart';
 import '../../data/borrowing_slips_repository.dart';
 import '../../data/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
@@ -62,9 +63,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     _refresh();
 
     if (returned == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã ghi nhận trả sách thành công')),
-      );
+      AppToast.success(context, 'Đã ghi nhận trả sách thành công');
     }
   }
 
@@ -82,9 +81,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     _refresh();
 
     if (paid == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã ghi nhận thanh toán tiền phạt')),
-      );
+      AppToast.success(context, 'Đã ghi nhận thanh toán tiền phạt');
     }
   }
 
@@ -183,11 +180,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                       tooltip: 'Sao chép mã độc giả',
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: slip.memberId));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Đã sao chép mã độc giả'),
-                          ),
-                        );
+                        AppToast.success(context, 'Đã sao chép mã độc giả');
                       },
                     ),
                   ],

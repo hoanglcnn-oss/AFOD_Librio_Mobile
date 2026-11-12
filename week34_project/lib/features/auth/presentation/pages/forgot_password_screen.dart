@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:week34_project/core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/forgot_password_bloc.dart';
 import 'package:week34_project/features/auth/bloc/forgot_password_event.dart';
 import 'package:week34_project/features/auth/bloc/forgot_password_state.dart';
@@ -66,9 +67,7 @@ class _ForgotPasswordFormState extends State<_ForgotPasswordForm> {
       body: BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
         listener: (context, state) {
           if (state is ForgotPasswordFailure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            AppToast.error(context, state.message);
           }
         },
         builder: (context, state) {

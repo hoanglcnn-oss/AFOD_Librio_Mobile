@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/app_toast.dart';
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
 import '../../bloc/auth_state.dart';
@@ -113,15 +114,11 @@ class _LoginFormState extends State<LoginForm> {
                 if (ModalRoute.of(context)?.isCurrent != true) {
                   return;
                 }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Xin chào ${state.user.fullName}')),
-                );
+                AppToast.success(context, 'Xin chào ${state.user.fullName}');
               }
 
               if (state is AuthFailure) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message)));
+                AppToast.error(context, state.message);
               }
               if (ModalRoute.of(context)?.isCurrent != true) {
                 return;

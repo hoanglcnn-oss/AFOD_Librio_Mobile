@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/app_toast.dart';
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
 import '../../bloc/auth_state.dart';
@@ -167,17 +168,13 @@ class _RegisterFormState extends State<RegisterForm> {
               }
 
               if (state is AuthRegisterSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đăng ký thành công')),
-                );
+                AppToast.success(context, 'Đăng ký thành công');
 
                 Navigator.pop(context);
               }
 
               if (state is AuthFailure) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message)));
+                AppToast.error(context, state.message);
               }
             },
             builder: (context, state) {
