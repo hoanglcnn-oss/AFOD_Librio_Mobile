@@ -259,4 +259,34 @@ void main() {
       expect(find.text('Chi tiết phiếu mượn'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'ManageBorrowingSlipsScreen | Phiếu có memberName | Ưu tiên hiển thị họ tên thay vì ID',
+    (tester) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeAllSlipsPage = PaginatedBorrowingSlips(
+        slips: [
+          BorrowingSlip(
+            id: 'slip-with-name',
+            slipNumber: 'SLIP-NAME-01',
+            memberId: 'mem-99',
+            memberName: 'Nguyễn Văn An',
+            status: 'BORROWED',
+            dueDate: DateTime.utc(2026, 11, 25),
+            items: [],
+          ),
+        ],
+        page: 1,
+        limit: 10,
+        totalItems: 1,
+        totalPages: 1,
+        hasNextPage: false,
+      );
+
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Độc giả: Nguyễn Văn An'), findsOneWidget);
+    },
+  );
 }

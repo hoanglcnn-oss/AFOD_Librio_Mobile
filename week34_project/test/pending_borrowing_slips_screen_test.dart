@@ -207,4 +207,34 @@ void main() {
       expect(repository.getPendingSlipsCallCount, 2);
     },
   );
+
+  testWidgets(
+    'PendingSlipsScreen | Phiếu có memberName | Hiển thị tên độc giả trên thẻ',
+    (tester) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakePendingSlipsPage = PaginatedBorrowingSlips(
+        slips: [
+          BorrowingSlip(
+            id: 'slip-pending-name',
+            slipNumber: 'SLIP-PEND-01',
+            memberId: 'mem-99',
+            memberName: 'Trần Thị Bình',
+            status: 'PENDING_APPROVAL',
+            dueDate: DateTime.utc(2026, 11, 25),
+            items: [],
+          ),
+        ],
+        page: 1,
+        limit: 10,
+        totalItems: 1,
+        totalPages: 1,
+        hasNextPage: false,
+      );
+
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Độc giả: Trần Thị Bình'), findsOneWidget);
+    },
+  );
 }

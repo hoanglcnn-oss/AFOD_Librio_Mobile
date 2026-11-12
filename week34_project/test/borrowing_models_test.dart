@@ -174,4 +174,63 @@ void main() {
       expect(slip.items[2].returnDate, isNotNull);
     },
   );
+
+  group('BorrowingSlip member mapping', () {
+    test(
+      'BorrowingSlip.fromJson | Có member object lồng nhau | parse đúng memberName và memberCardNumber',
+      () {
+        final slip = BorrowingSlip.fromJson({
+          'id': 'slip-nested',
+          'slipNumber': 'SLIP-001',
+          'memberId': 'mem-01',
+          'member': {
+            'fullName': 'Nguyễn Văn An',
+            'cardNumber': 'CARD-999',
+          },
+          'status': 'PENDING_APPROVAL',
+          'dueDate': '2026-11-20T08:00:00Z',
+          'items': [],
+        });
+
+        expect(slip.memberName, 'Nguyễn Văn An');
+        expect(slip.memberCardNumber, 'CARD-999');
+      },
+    );
+
+    test(
+      'BorrowingSlip.fromJson | Có memberName/memberCardNumber phẳng | parse đúng thông tin độc giả',
+      () {
+        final slip = BorrowingSlip.fromJson({
+          'id': 'slip-flat',
+          'slipNumber': 'SLIP-002',
+          'memberId': 'mem-02',
+          'memberName': 'Trần Thị Bình',
+          'memberCardNumber': 'CARD-888',
+          'status': 'BORROWED',
+          'dueDate': '2026-11-20T08:00:00Z',
+          'items': [],
+        });
+
+        expect(slip.memberName, 'Trần Thị Bình');
+        expect(slip.memberCardNumber, 'CARD-888');
+      },
+    );
+
+    test(
+      'BorrowingSlip.fromJson | Không có thông tin member | memberName và memberCardNumber là null',
+      () {
+        final slip = BorrowingSlip.fromJson({
+          'id': 'slip-none',
+          'slipNumber': 'SLIP-003',
+          'memberId': 'mem-03',
+          'status': 'BORROWED',
+          'dueDate': '2026-11-20T08:00:00Z',
+          'items': [],
+        });
+
+        expect(slip.memberName, isNull);
+        expect(slip.memberCardNumber, isNull);
+      },
+    );
+  });
 }

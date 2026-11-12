@@ -18,6 +18,20 @@ class BorrowingSlipCard extends StatelessWidget {
     this.actions,
   });
 
+  String _resolveMemberDisplay() {
+    if (slip.memberName != null && slip.memberName!.trim().isNotEmpty) {
+      return slip.memberName!.trim();
+    }
+    if (slip.memberCardNumber != null &&
+        slip.memberCardNumber!.trim().isNotEmpty) {
+      return slip.memberCardNumber!.trim();
+    }
+    if (slip.memberId.isNotEmpty) {
+      return BorrowingSlipUiHelper.formatShortId(slip.memberId);
+    }
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     final overdue = BorrowingSlipUiHelper.isOverdue(slip);
@@ -38,9 +52,9 @@ class BorrowingSlipCard extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (showMember && slip.memberId.isNotEmpty)
+                if (showMember && _resolveMemberDisplay().isNotEmpty)
                   Text(
-                    'Độc giả: ${BorrowingSlipUiHelper.formatShortId(slip.memberId)}',
+                    'Độc giả: ${_resolveMemberDisplay()}',
                   ),
                 Text(
                   'Trạng thái: '

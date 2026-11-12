@@ -86,6 +86,7 @@ void main() {
 
       expect(find.text('SLIP-2026-0001'), findsOneWidget);
       expect(find.text('Độc giả: mem-01'), findsOneWidget);
+      expect(find.text('Mã độc giả: mem-01'), findsOneWidget);
       expect(find.text('Duyệt phiếu'), findsOneWidget);
       expect(find.text('Từ chối'), findsOneWidget);
     },
@@ -202,6 +203,31 @@ void main() {
         find.text('Vui lòng liên hệ thủ thư để thanh toán tiền phạt.'),
         findsOneWidget,
       );
+    },
+  );
+
+  testWidgets(
+    'BorrowingSlipDetailScreen | Có memberName và memberCardNumber | Hiển thị tên và số thẻ, giữ copy ID',
+    (tester) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeSlipDetail = BorrowingSlip(
+        id: 'slip-with-name',
+        slipNumber: 'SLIP-2026-0002',
+        memberId: 'mem-999',
+        memberName: 'Nguyễn Văn An',
+        memberCardNumber: 'CARD-12345',
+        status: 'BORROWED',
+        dueDate: DateTime.utc(2026, 11, 25),
+        items: [],
+      );
+
+      await tester.pumpWidget(createApp(repository, role: 'LIBRARIAN'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Độc giả: Nguyễn Văn An'), findsOneWidget);
+      expect(find.text('Số thẻ: CARD-12345'), findsOneWidget);
+      expect(find.text('Mã độc giả: mem-999'), findsOneWidget);
+      expect(find.byIcon(Icons.copy), findsOneWidget);
     },
   );
 }

@@ -153,7 +153,31 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(child: Text('Độc giả: ${slip.memberId}')),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Độc giả: ${slip.memberName != null && slip.memberName!.trim().isNotEmpty ? slip.memberName!.trim() : (slip.memberCardNumber != null && slip.memberCardNumber!.trim().isNotEmpty ? slip.memberCardNumber!.trim() : slip.memberId)}',
+                          ),
+                          if (slip.memberName != null &&
+                              slip.memberName!.trim().isNotEmpty &&
+                              slip.memberCardNumber != null &&
+                              slip.memberCardNumber!.trim().isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              'Số thẻ: ${slip.memberCardNumber!.trim()}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                          const SizedBox(height: 2),
+                          Text(
+                            'Mã độc giả: ${slip.memberId}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
                     IconButton(
                       icon: const Icon(Icons.copy, size: 18),
                       tooltip: 'Sao chép mã độc giả',

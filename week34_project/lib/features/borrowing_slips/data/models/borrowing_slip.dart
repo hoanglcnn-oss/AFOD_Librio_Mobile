@@ -52,6 +52,8 @@ class BorrowingSlip {
   final String id;
   final String slipNumber;
   final String memberId;
+  final String? memberName;
+  final String? memberCardNumber;
   final String status;
   final DateTime dueDate;
   final List<BorrowingSlipItem> items;
@@ -67,6 +69,8 @@ class BorrowingSlip {
     required this.id,
     required this.slipNumber,
     required this.memberId,
+    this.memberName,
+    this.memberCardNumber,
     required this.status,
     required this.dueDate,
     required this.items,
@@ -79,10 +83,26 @@ class BorrowingSlip {
   });
 
   factory BorrowingSlip.fromJson(Map<String, dynamic> json) {
+    // Backend có thể trả member lồng nhau: json['member']['fullName']
+    // hoặc phẳng: json['memberName']
+    String? memberName;
+    String? memberCardNumber;
+
+    if (json['member'] is Map) {
+      final memberMap = json['member'] as Map;
+      memberName = (memberMap['fullName'] ?? memberMap['name']) as String?;
+      memberCardNumber = (memberMap['cardNumber'] ?? memberMap['card']) as String?;
+    }
+
+    memberName ??= json['memberName'] as String?;
+    memberCardNumber ??= json['memberCardNumber'] as String?;
+
     return BorrowingSlip(
       id: json['id'] as String,
       slipNumber: json['slipNumber'] as String,
       memberId: json['memberId'] as String,
+      memberName: memberName,
+      memberCardNumber: memberCardNumber,
       status: json['status'] as String,
       dueDate: DateTime.parse(json['dueDate'] as String),
       borrowDate: _parseDate(json['borrowDate']),
