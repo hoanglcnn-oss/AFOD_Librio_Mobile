@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:week34_project/features/borrowing_slips/data/api_borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing_slips/data/borrow_limit_exceeded_exception.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/create_borrowing_slip_request.dart';
 import 'fake/fake_token_storage.dart';
 
@@ -674,4 +675,61 @@ void main() {
 
     expect(slip.status, 'REJECTED');
   });
+
+  test(
+    'approveBorrowingSlip | Lỗi BORROW_LIMIT_EXCEEDED từ Backend | throw BorrowLimitExceededException',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
+
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                response: Response(
+                  requestOptions: options,
+                  statusCode: 409,
+                  data: {
+                    'code': 'BORROW_LIMIT_EXCEEDED',
+                    'message': 'Độc giả đã vượt quá hạn mức mượn sách',
+                    'details': {
+                      'maxBorrowLimit': 5,
+                      'currentBorrowedCount': 5,
+                    },
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+      );
+
+      final repository = ApiBorrowingSlipsRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
+
+      expect(
+        () => repository.approveBorrowingSlip(slipId: 'slip-01'),
+        throwsA(
+          isA<BorrowLimitExceededException>()
+              .having(
+                (e) => e.message,
+                'message',
+                'Độc giả đã vượt quá hạn mức mượn sách',
+              )
+              .having((e) => e.code, 'code', 'BORROW_LIMIT_EXCEEDED')
+              .having(
+                (e) => e.details?['maxBorrowLimit'],
+                'details.maxBorrowLimit',
+                5,
+              ),
+        ),
+      );
+    },
+  );
 }

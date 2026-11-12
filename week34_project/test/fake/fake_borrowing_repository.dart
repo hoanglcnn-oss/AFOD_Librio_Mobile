@@ -68,6 +68,7 @@ class FakeBorrowingRepository
   BorrowingSlip? fakeSlipDetail;
 
   DioException? approveSlipError;
+  Object? approveSlipException;
   DioException? rejectSlipError;
   final List<CreateBorrowingRequest> borrowRequests = [];
   final List<CreateBorrowingSlipRequest> createSlipRequests = [];
@@ -370,6 +371,10 @@ class FakeBorrowingRepository
   @override
   Future<BorrowingSlip> approveBorrowingSlip({required String slipId}) async {
     approveSlipCallCount++;
+
+    if (approveSlipException != null) {
+      throw approveSlipException!;
+    }
 
     if (approveSlipError != null) {
       throw approveSlipError!;

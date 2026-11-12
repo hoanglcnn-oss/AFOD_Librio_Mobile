@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:week34_project/features/borrowing_slips/data/borrow_limit_exceeded_exception.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/paginated_borrowing_slips.dart';
 import 'package:week34_project/features/borrowing_slips/presentation/pages/pending_borrowing_slips_screen.dart';
@@ -235,6 +236,55 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Độc giả: Trần Thị Bình'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'PendingSlipsScreen | Duyệt thất bại do vượt hạn mức | Hiển thị lý do, chi tiết số lượng và không đổi sang BORROWED',
+    (tester) async {
+      final repository = FakeBorrowingRepository();
+      repository.approveSlipException = const BorrowLimitExceededException(
+        message: 'Độc giả đã vượt quá hạn mức mượn sách',
+        code: 'BORROW_LIMIT_EXCEEDED',
+        details: {
+          'maxBorrowLimit': 5,
+          'currentBorrowedCount': 4,
+          'remainingBorrowLimit': 1,
+          'requestQuantity': 2,
+        },
+      );
+
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Duyệt phiếu'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Xác nhận duyệt phiếu'), findsOneWidget);
+
+      await tester.tap(find.text('Xác nhận duyệt'));
+      await tester.pumpAndSettle();
+
+      // Hiển thị dialog cảnh báo vượt hạn mức với chi tiết
+      expect(find.text('Không thể duyệt: Vượt hạn mức'), findsOneWidget);
+      expect(find.text('Độc giả đã vượt quá hạn mức mượn sách'), findsWidgets);
+      expect(find.text('• Hạn mức tối đa: 5 cuốn'), findsOneWidget);
+      expect(find.text('• Đang mượn: 4 cuốn'), findsOneWidget);
+      expect(find.text('• Hạn mức còn lại: 1 cuốn'), findsOneWidget);
+      expect(find.text('• Số lượng yêu cầu: 2 cuốn'), findsOneWidget);
+
+      // Nút đóng xuất hiện thay vì cho phép duyệt tiếp
+      expect(find.text('Đóng'), findsOneWidget);
+      expect(find.text('Xác nhận duyệt'), findsNothing);
+
+      // Đóng dialog
+      await tester.tap(find.text('Đóng'));
+      await tester.pumpAndSettle();
+
+      // UI trên danh sách vẫn giữ nguyên phiếu ở trạng thái PENDING_APPROVAL, không chuyển sang BORROWED
+      expect(find.text('SLIP-2026-0001'), findsOneWidget);
+      expect(find.text('Trạng thái: Chờ duyệt'), findsOneWidget);
+      expect(find.text('Duyệt phiếu'), findsOneWidget);
     },
   );
 }

@@ -35,10 +35,20 @@ class BorrowingSlipCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final overdue = BorrowingSlipUiHelper.isOverdue(slip);
-    final totalCopies = slip.items.fold<int>(
-      0,
-      (sum, item) => sum + item.quantity,
-    );
+    final totalCopies =
+        (slip.status == 'BORROWED' || slip.status == 'PARTIAL_RETURNED')
+            ? slip.items.fold<int>(
+                0,
+                (sum, item) =>
+                    sum +
+                    (item.quantity -
+                        item.returnedQuantity -
+                        item.lostQuantity),
+              )
+            : slip.items.fold<int>(
+                0,
+                (sum, item) => sum + item.quantity,
+              );
 
     return Card(
       clipBehavior: Clip.antiAlias,

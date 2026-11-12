@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
+import 'package:week34_project/features/borrowing_slips/data/borrow_limit_exceeded_exception.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing_slips/presentation/pages/borrowing_slip_detail_screen.dart';
 
@@ -228,6 +229,58 @@ void main() {
       expect(find.text('Số thẻ: CARD-12345'), findsOneWidget);
       expect(find.text('Mã độc giả: mem-999'), findsOneWidget);
       expect(find.byIcon(Icons.copy), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'BorrowingSlipDetailScreen | LIBRARIAN duyệt thất bại do vượt hạn mức | Hiển thị cảnh báo và không đổi trạng thái',
+    (tester) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeSlipDetail = BorrowingSlip(
+        id: 'slip-01',
+        slipNumber: 'SLIP-2026-0001',
+        memberId: 'mem-01',
+        status: 'PENDING_APPROVAL',
+        dueDate: DateTime.utc(2026, 11, 25),
+        items: const [
+          BorrowingSlipItem(
+            id: 'it-1',
+            bookId: 'b-1',
+            bookTitle: 'Clean Code',
+            quantity: 1,
+            status: 'PENDING',
+          ),
+        ],
+      );
+      repository.approveSlipException = const BorrowLimitExceededException(
+        message: 'Độc giả đã vượt quá hạn mức mượn sách',
+        code: 'BORROW_LIMIT_EXCEEDED',
+        details: {
+          'maxBorrowLimit': 5,
+          'currentBorrowedCount': 5,
+        },
+      );
+
+      await tester.pumpWidget(createApp(repository, role: 'LIBRARIAN'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Duyệt phiếu'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Xác nhận duyệt'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Không thể duyệt: Vượt hạn mức'), findsOneWidget);
+      expect(find.text('Độc giả đã vượt quá hạn mức mượn sách'), findsWidgets);
+      expect(find.text('• Hạn mức tối đa: 5 cuốn'), findsOneWidget);
+      expect(find.text('• Đang mượn: 5 cuốn'), findsOneWidget);
+      expect(find.text('Đóng'), findsOneWidget);
+
+      await tester.tap(find.text('Đóng'));
+      await tester.pumpAndSettle();
+
+      // Màn hình chi tiết vẫn giữ trạng thái PENDING_APPROVAL với nút Duyệt phiếu
+      expect(find.text('Duyệt phiếu'), findsOneWidget);
     },
   );
 }

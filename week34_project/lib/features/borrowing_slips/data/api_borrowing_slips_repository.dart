@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:week34_project/core/storage/token_storage.dart';
 
+import 'borrow_limit_exceeded_exception.dart';
 import 'borrowing_slips_repository.dart';
 import 'datasources/borrowing_slips_remote_data_source.dart';
 import 'models/borrowing_slip.dart';
@@ -166,12 +167,38 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
       throw ArgumentError('Mã phiếu không được để trống');
     }
 
-    final data = await _remoteDataSource.approveBorrowingSlip(
-      slipId: slipId.trim(),
-      token: token,
-    );
+    try {
+      final data = await _remoteDataSource.approveBorrowingSlip(
+        slipId: slipId.trim(),
+        token: token,
+      );
 
-    return BorrowingSlip.fromJson(data);
+      return BorrowingSlip.fromJson(data);
+    } on DioException catch (e) {
+      final responseData = e.response?.data;
+      if (responseData is Map) {
+        final code = responseData['code']?.toString() ??
+            responseData['errorCode']?.toString();
+        final message = responseData['message']?.toString() ?? '';
+        final details = responseData['details'] is Map
+            ? Map<String, dynamic>.from(responseData['details'] as Map)
+            : null;
+
+        if (code == 'BORROW_LIMIT_EXCEEDED' ||
+            message.contains('BORROW_LIMIT_EXCEEDED') ||
+            message.toLowerCase().contains('vượt quá hạn mức') ||
+            message.toLowerCase().contains('vượt hạn mức')) {
+          throw BorrowLimitExceededException(
+            message: message.isNotEmpty
+                ? message
+                : 'Độc giả đã vượt quá hạn mức mượn sách cho phép.',
+            code: code ?? 'BORROW_LIMIT_EXCEEDED',
+            details: details,
+          );
+        }
+      }
+      rethrow;
+    }
   }
 
   @override

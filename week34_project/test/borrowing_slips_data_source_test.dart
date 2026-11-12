@@ -55,5 +55,55 @@ void main() {
         expect(result['status'], 'PENDING_APPROVAL');
       },
     );
+
+    test(
+      'approveBorrowingSlip | HTTP 409 BORROW_LIMIT_EXCEEDED | Chuyển DioException lên trên mà không làm mất response/details',
+      () async {
+        final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+
+        dio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              expect(options.method, 'PATCH');
+              expect(options.path, '/borrowing-slips/slip-01/approve');
+              expect(options.headers['Authorization'], 'Bearer test-token');
+
+              handler.reject(
+                DioException(
+                  requestOptions: options,
+                  response: Response(
+                    requestOptions: options,
+                    statusCode: 409,
+                    data: {
+                      'code': 'BORROW_LIMIT_EXCEEDED',
+                      'message': 'Độc giả vượt quá hạn mức mượn sách',
+                      'details': {
+                        'maxBorrowLimit': 5,
+                        'currentBorrowedCount': 5,
+                      },
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+
+        final dataSource = BorrowingSlipsRemoteDataSourceImpl(dio: dio);
+
+        try {
+          await dataSource.approveBorrowingSlip(
+            slipId: 'slip-01',
+            token: 'test-token',
+          );
+          fail('Should throw DioException');
+        } on DioException catch (e) {
+          expect(e.response?.statusCode, 409);
+          final data = e.response?.data as Map;
+          expect(data['code'], 'BORROW_LIMIT_EXCEEDED');
+          expect((data['details'] as Map)['maxBorrowLimit'], 5);
+        }
+      },
+    );
   });
 }

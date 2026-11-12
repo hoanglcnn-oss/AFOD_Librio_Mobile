@@ -291,5 +291,99 @@ void main() {
         isNotNull,
       );
     });
+
+    testWidgets(
+      'Thời hạn mượn tùy chỉnh | Chọn chip 1 ngày hoặc nhập số ngày | Gửi đúng expectedReturnDays',
+      (tester) async {
+        setLargeScreen(tester);
+
+        membersRepository.fakeDebtSummary = const MemberDebtSummary(
+          maxBorrowLimit: 5,
+          currentBorrowedCount: 0,
+          remainingBorrowLimit: 5,
+          canBorrow: true,
+        );
+
+        await tester.pumpWidget(createApp());
+        await tester.pumpAndSettle();
+
+        // Mặc định là 14 ngày
+        expect(find.text('14'), findsOneWidget);
+
+        // Chọn chip 1 ngày để test ngắn ngày
+        await tester.tap(find.widgetWithText(ChoiceChip, '1 ngày'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('1'), findsWidgets);
+
+        // Nhập tùy ý 3 ngày
+        final daysField = find.widgetWithText(TextFormField, 'Số ngày mượn');
+        await tester.enterText(daysField, '3');
+        await tester.pumpAndSettle();
+
+        // Gửi phiếu
+        await tester.tap(find.widgetWithText(FilledButton, 'Gửi phiếu mượn'));
+        await tester.pumpAndSettle();
+
+        expect(borrowingSlipsRepository.createSlipCallCount, 1);
+        expect(
+          borrowingSlipsRepository.createSlipRequests.first.expectedReturnDays,
+          3,
+        );
+      },
+    );
+
+    testWidgets(
+      'Thời hạn mượn không hợp lệ | Nhập 0 hoặc > 30 | Báo lỗi và disable nút gửi',
+      (tester) async {
+        setLargeScreen(tester);
+
+        membersRepository.fakeDebtSummary = const MemberDebtSummary(
+          maxBorrowLimit: 5,
+          currentBorrowedCount: 0,
+          remainingBorrowLimit: 5,
+          canBorrow: true,
+        );
+
+        await tester.pumpWidget(createApp());
+        await tester.pumpAndSettle();
+
+        final daysField = find.widgetWithText(TextFormField, 'Số ngày mượn');
+
+        // Nhập 0 ngày
+        await tester.enterText(daysField, '0');
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Thời hạn mượn phải từ 1 đến 30 ngày'),
+          findsOneWidget,
+        );
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.widgetWithText(FilledButton, 'Gửi phiếu mượn'),
+              )
+              .onPressed,
+          isNull,
+        );
+
+        // Nhập 45 ngày
+        await tester.enterText(daysField, '45');
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text('Thời hạn mượn phải từ 1 đến 30 ngày'),
+          findsOneWidget,
+        );
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.widgetWithText(FilledButton, 'Gửi phiếu mượn'),
+              )
+              .onPressed,
+          isNull,
+        );
+      },
+    );
   });
 }

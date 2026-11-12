@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../data/borrow_limit_exceeded_exception.dart';
 import '../data/borrowing_slips_repository.dart';
 import 'approve_slip_event.dart';
 import 'approve_slip_state.dart';
@@ -69,9 +70,39 @@ class ApproveSlipBloc extends Bloc<ApproveSlipEvent, ApproveSlipState> {
 
         emit(ApproveSlipSuccess(slip));
       }
+    } on BorrowLimitExceededException catch (e) {
+      emit(
+        ApproveSlipLimitExceeded(
+          message: e.message,
+          code: e.code,
+          details: e.details,
+        ),
+      );
     } on DioException catch (error) {
       final statusCode = error.response?.statusCode;
       final data = error.response?.data;
+
+      if (data is Map) {
+        final code = data['code']?.toString() ?? data['errorCode']?.toString();
+        final message = data['message']?.toString() ?? '';
+        if (code == 'BORROW_LIMIT_EXCEEDED' ||
+            message.contains('BORROW_LIMIT_EXCEEDED') ||
+            message.toLowerCase().contains('vượt quá hạn mức') ||
+            message.toLowerCase().contains('vượt hạn mức')) {
+          emit(
+            ApproveSlipLimitExceeded(
+              message: message.isNotEmpty
+                  ? message
+                  : 'Độc giả đã vượt quá hạn mức mượn sách.',
+              code: code,
+              details: data['details'] is Map
+                  ? Map<String, dynamic>.from(data['details'] as Map)
+                  : null,
+            ),
+          );
+          return;
+        }
+      }
 
       String? backendMessage;
 

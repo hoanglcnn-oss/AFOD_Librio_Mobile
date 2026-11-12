@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/borrowing_slips/bloc/approve_slip_bloc.dart';
 import 'package:week34_project/features/borrowing_slips/bloc/approve_slip_event.dart';
 import 'package:week34_project/features/borrowing_slips/bloc/approve_slip_state.dart';
+import 'package:week34_project/features/borrowing_slips/data/borrow_limit_exceeded_exception.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 
@@ -135,6 +136,81 @@ void main() {
 
       expect(failure.requiresRefresh, true);
       expect(failure.message, contains('Chưa xác nhận được kết quả'));
+
+      await bloc.close();
+    },
+  );
+
+  test(
+    'ApproveSlipRequested | Vượt hạn mức (BorrowLimitExceededException) | Emit ApproveSlipLimitExceeded',
+    () async {
+      final repository = FakeBorrowingRepository();
+      repository.approveSlipException = const BorrowLimitExceededException(
+        message: 'Độc giả đã vượt quá hạn mức mượn sách cho phép (đang mượn 5/5).',
+        code: 'BORROW_LIMIT_EXCEEDED',
+        details: {
+          'maxBorrowLimit': 5,
+          'currentBorrowedCount': 5,
+          'remainingBorrowLimit': 0,
+        },
+      );
+
+      final bloc = ApproveSlipBloc(repository: repository);
+      final statesFuture = bloc.stream.take(2).toList();
+
+      bloc.add(const ApproveSlipRequested('slip-01'));
+
+      final states = await statesFuture;
+
+      expect(states[0], isA<ApproveSlipSubmitting>());
+      expect(states[1], isA<ApproveSlipLimitExceeded>());
+
+      final limitState = states[1] as ApproveSlipLimitExceeded;
+      expect(limitState.message, contains('vượt quá hạn mức'));
+      expect(limitState.code, 'BORROW_LIMIT_EXCEEDED');
+      expect(limitState.details?['maxBorrowLimit'], 5);
+      expect(limitState.remediation, contains('trả bớt sách'));
+      expect(repository.approveSlipCallCount, 1);
+
+      await bloc.close();
+    },
+  );
+
+  test(
+    'ApproveSlipRequested | Vượt hạn mức qua DioException 409 | Emit ApproveSlipLimitExceeded',
+    () async {
+      final repository = FakeBorrowingRepository();
+      final options = RequestOptions(path: '/borrowing-slips/slip-01/approve');
+      repository.approveSlipError = DioException(
+        requestOptions: options,
+        response: Response(
+          requestOptions: options,
+          statusCode: 409,
+          data: {
+            'code': 'BORROW_LIMIT_EXCEEDED',
+            'message': 'Độc giả vượt quá hạn mức mượn sách',
+            'details': {
+              'maxBorrowLimit': 5,
+              'currentBorrowedCount': 4,
+              'requestQuantity': 2,
+            },
+          },
+        ),
+      );
+
+      final bloc = ApproveSlipBloc(repository: repository);
+      final statesFuture = bloc.stream.take(2).toList();
+
+      bloc.add(const ApproveSlipRequested('slip-01'));
+
+      final states = await statesFuture;
+
+      expect(states[0], isA<ApproveSlipSubmitting>());
+      expect(states[1], isA<ApproveSlipLimitExceeded>());
+
+      final limitState = states[1] as ApproveSlipLimitExceeded;
+      expect(limitState.code, 'BORROW_LIMIT_EXCEEDED');
+      expect(limitState.details?['requestQuantity'], 2);
 
       await bloc.close();
     },

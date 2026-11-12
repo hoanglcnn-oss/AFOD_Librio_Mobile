@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
@@ -62,6 +63,7 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
   Future<MemberDebtSummary>? _debtSummaryFuture;
   String? _loadedMemberId;
 
+  late final TextEditingController _daysController;
   int _days = 14;
 
   @override
@@ -69,6 +71,13 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     super.initState();
     _quantities = {for (final book in widget.books) book.id: 1};
     _memberIdFuture = _resolveMember();
+    _daysController = TextEditingController(text: '$_days');
+  }
+
+  @override
+  void dispose() {
+    _daysController.dispose();
+    super.dispose();
   }
 
   Future<String?> _resolveMember() async {
@@ -88,7 +97,34 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     });
   }
 
-  void _submit(String memberId) {
+  Future<void> _submit(String memberId) async {
+    // Refresh getDebtSummary() trước khi gửi phiếu để tránh dữ liệu hạn mức cũ
+    try {
+      final freshSummary = await widget.membersRepository.getDebtSummary(
+        memberId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _debtSummaryFuture = Future.value(freshSummary);
+      });
+
+      final totalSelected = _quantities.values.isEmpty
+          ? 0
+          : _quantities.values.reduce((a, b) => a + b);
+
+      if (!freshSummary.canBorrow ||
+          totalSelected > freshSummary.remainingBorrowLimit) {
+        final reason = !freshSummary.canBorrow
+            ? (freshSummary.reasonIfNotAllowed ??
+                  'Tài khoản không đủ điều kiện mượn sách')
+            : 'Số lượng sách chọn ($totalSelected cuốn) vượt quá hạn mức còn lại (${freshSummary.remainingBorrowLimit} cuốn)';
+        AppToast.warning(context, reason);
+        return;
+      }
+    } catch (_) {
+      // Tiếp tục để backend kiểm tra nếu không fetch được
+    }
+
     final request = CreateBorrowingSlipRequest(
       memberId: memberId,
       expectedReturnDays: _days,
@@ -101,6 +137,7 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
       ],
     );
 
+    if (!mounted) return;
     context.read<BorrowingSlipBloc>().add(CreateSlipRequested(request));
   }
 
@@ -173,12 +210,15 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
         debtSummary != null && totalSelected > debtSummary.remainingBorrowLimit;
     final canBorrowCondition = debtSummary != null && debtSummary.canBorrow;
 
+    final isDaysValid = _days >= 1 && _days <= 30;
+
     final canSubmit =
         !isDebtLoading &&
         !isDebtError &&
         debtSummary != null &&
         canBorrowCondition &&
-        !isExceedingLimit;
+        !isExceedingLimit &&
+        isDaysValid;
 
     String? notAllowedReason;
     if (debtSummary != null) {
@@ -233,7 +273,10 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                                 submitting ||
                                     _quantities[book.id]! >=
                                         book.copiesAvailable ||
-                                    _quantities[book.id]! >= 5
+                                    (debtSummary != null &&
+                                        debtSummary.maxBorrowLimit > 0 &&
+                                        _quantities[book.id]! >=
+                                            debtSummary.maxBorrowLimit)
                                 ? null
                                 : () => setState(() {
                                     _quantities[book.id] =
@@ -267,21 +310,47 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
               'Thời hạn mượn',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            DropdownButton<int>(
-              value: _days,
-              isExpanded: true,
-              onChanged: submitting
-                  ? null
-                  : (value) {
-                      if (value != null) {
-                        setState(() => _days = value);
-                      }
-                    },
-              items: const [
-                DropdownMenuItem(value: 7, child: Text('7 ngày')),
-                DropdownMenuItem(value: 14, child: Text('14 ngày')),
-                DropdownMenuItem(value: 30, child: Text('30 ngày')),
-              ],
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _daysController,
+              enabled: !submitting,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Số ngày mượn',
+                hintText: 'Nhập từ 1 đến 30 ngày',
+                suffixText: 'ngày',
+                border: const OutlineInputBorder(),
+                errorText: !isDaysValid
+                    ? 'Thời hạn mượn phải từ 1 đến 30 ngày'
+                    : null,
+              ),
+              onChanged: (value) {
+                final parsed = int.tryParse(value);
+                setState(() {
+                  _days = parsed ?? 0;
+                });
+              },
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [1, 3, 7, 14, 30].map((d) {
+                return ChoiceChip(
+                  label: Text('$d ngày'),
+                  selected: _days == d,
+                  onSelected: submitting
+                      ? null
+                      : (selected) {
+                          if (selected) {
+                            setState(() {
+                              _days = d;
+                              _daysController.text = '$d';
+                            });
+                          }
+                        },
+                );
+              }).toList(),
             ),
 
             const SizedBox(height: 16),
