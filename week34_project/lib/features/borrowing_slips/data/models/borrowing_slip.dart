@@ -86,9 +86,45 @@ class BorrowingSlip {
     this.renewalEligibility,
   });
 
-  bool get canRenew => renewalEligibility?.canRenew ?? false;
+  bool? get canRenew => renewalEligibility?.canRenew;
   String? get renewalReasonCode => renewalEligibility?.reasonCode;
   String? get renewalMessage => renewalEligibility?.message;
+
+  BorrowingSlip copyWith({
+    String? id,
+    String? slipNumber,
+    String? memberId,
+    String? memberName,
+    String? memberCardNumber,
+    String? status,
+    DateTime? dueDate,
+    List<BorrowingSlipItem>? items,
+    DateTime? borrowDate,
+    DateTime? approvedAt,
+    double? totalFine,
+    bool? finePaid,
+    DateTime? finePaidAt,
+    int? renewCount,
+    RenewalEligibility? renewalEligibility,
+  }) {
+    return BorrowingSlip(
+      id: id ?? this.id,
+      slipNumber: slipNumber ?? this.slipNumber,
+      memberId: memberId ?? this.memberId,
+      memberName: memberName ?? this.memberName,
+      memberCardNumber: memberCardNumber ?? this.memberCardNumber,
+      status: status ?? this.status,
+      dueDate: dueDate ?? this.dueDate,
+      items: items ?? this.items,
+      borrowDate: borrowDate ?? this.borrowDate,
+      approvedAt: approvedAt ?? this.approvedAt,
+      totalFine: totalFine ?? this.totalFine,
+      finePaid: finePaid ?? this.finePaid,
+      finePaidAt: finePaidAt ?? this.finePaidAt,
+      renewCount: renewCount ?? this.renewCount,
+      renewalEligibility: renewalEligibility ?? this.renewalEligibility,
+    );
+  }
 
   factory BorrowingSlip.fromJson(Map<String, dynamic> raw) {
     final json = raw['data'] is Map<String, dynamic>

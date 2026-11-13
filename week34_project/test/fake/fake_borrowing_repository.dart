@@ -32,6 +32,7 @@ class FakeBorrowingRepository
   int lastRenewSlipExtraDays = 0;
   DioException? renewSlipError;
   BorrowingSlip? fakeRenewSlipResult;
+  Completer<void>? renewSlipCompleter;
 
   int payFineCallCount = 0;
   bool shouldFailPayFine = false;
@@ -82,6 +83,8 @@ class FakeBorrowingRepository
   DioException? getAllSlipsError;
 
   BorrowingSlip? fakeSlipDetail;
+  BorrowingSlip Function(String slipId)? fakeSlipDetailBuilder;
+  int getBorrowingSlipByIdCallCount = 0;
 
   DioException? approveSlipError;
   Object? approveSlipException;
@@ -257,6 +260,10 @@ class FakeBorrowingRepository
 
   @override
   Future<BorrowingSlip> getBorrowingSlipById({required String slipId}) async {
+    getBorrowingSlipByIdCallCount++;
+    if (fakeSlipDetailBuilder != null) {
+      return fakeSlipDetailBuilder!(slipId);
+    }
     if (fakeSlipDetail != null) {
       return fakeSlipDetail!;
     }
@@ -646,6 +653,10 @@ class FakeBorrowingRepository
     renewSlipCallCount++;
     lastRenewSlipExtraDays = extraDays;
 
+    if (renewSlipCompleter != null) {
+      await renewSlipCompleter!.future;
+    }
+
     if (renewSlipError != null) {
       throw renewSlipError!;
     }
@@ -655,26 +666,35 @@ class FakeBorrowingRepository
     }
 
     if (fakeRenewSlipResult != null) {
+      if (fakeSlipDetail != null) {
+        fakeSlipDetail = fakeRenewSlipResult;
+      }
       return fakeRenewSlipResult!;
     }
 
     final oldDueDate =
-        fakeDueDate ?? DateTime.now().add(const Duration(days: 14));
+        fakeDueDate ?? fakeSlipDetail?.dueDate ?? DateTime.now().add(const Duration(days: 14));
     final newDueDate = oldDueDate.add(Duration(days: extraDays));
     fakeDueDate = newDueDate;
 
-    return BorrowingSlip(
+    final result = BorrowingSlip(
       id: slipId,
-      slipNumber: 'SLIP-2026-0001',
-      memberId: 'mem-01',
-      status: 'BORROWED',
+      slipNumber: fakeSlipDetail?.slipNumber ?? 'SLIP-2026-0001',
+      memberId: fakeSlipDetail?.memberId ?? 'mem-01',
+      memberName: fakeSlipDetail?.memberName,
+      memberCardNumber: fakeSlipDetail?.memberCardNumber,
+      status: fakeSlipDetail?.status ?? 'BORROWED',
       dueDate: newDueDate,
-      renewCount: fakeRenewCount + 1,
+      renewCount: (fakeSlipDetail?.renewCount ?? fakeRenewCount) + 1,
       renewalEligibility: const RenewalEligibility(
         canRenew: false,
         reasonCode: 'MAX_RENEWALS_REACHED',
       ),
-      items: const [],
+      items: fakeSlipDetail?.items ?? const [],
     );
+    if (fakeSlipDetail != null) {
+      fakeSlipDetail = result;
+    }
+    return result;
   }
 }
