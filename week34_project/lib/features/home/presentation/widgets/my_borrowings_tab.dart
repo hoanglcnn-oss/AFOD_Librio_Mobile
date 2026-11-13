@@ -93,6 +93,7 @@ class _MyBorrowingsTabState extends State<MyBorrowingsTab> {
                       )..add(LoadMyBorrowings(memberId)),
                       child: MyBorrowingsScreen(
                         memberId: memberId,
+                        allowActions: true,
                         onReturnSucceeded: widget.onReturnSucceeded,
                       ),
                     ),

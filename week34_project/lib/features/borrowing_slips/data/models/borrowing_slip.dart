@@ -1,4 +1,4 @@
-import '../../../../core/models/renewal_eligibility.dart';
+import '../../../renewal/models/renewal_eligibility.dart';
 
 class BorrowingSlipItem {
   final String id;

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/errors/borrowing_error_mapper.dart';
 import '../data/borrowing_repository.dart';
+import '../errors/borrowing_error_mapper.dart';
 import 'borrowing_event.dart';
 import 'borrowing_state.dart';
 

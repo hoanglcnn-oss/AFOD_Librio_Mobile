@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week34_project/core/models/renewal_eligibility.dart';
+import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
 import 'package:week34_project/features/borrowings/bloc/my_borrowings_bloc.dart';
 import 'package:week34_project/features/borrowings/bloc/my_borrowings_event.dart';
 import 'package:week34_project/features/borrowings/bloc/my_borrowings_state.dart';

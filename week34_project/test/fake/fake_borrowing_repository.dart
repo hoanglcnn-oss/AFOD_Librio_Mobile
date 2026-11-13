@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:week34_project/core/models/renewal_eligibility.dart';
+import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
 import 'package:week34_project/features/borrowing_slips/data/borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/create_borrowing_slip_request.dart';

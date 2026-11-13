@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week34_project/features/borrowing_slips/data/borrow_limit_exceeded_exception.dart';
+import 'package:week34_project/features/borrowing_slips/data/borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/paginated_borrowing_slips.dart';
 import 'package:week34_project/features/borrowing_slips/presentation/pages/pending_borrowing_slips_screen.dart';

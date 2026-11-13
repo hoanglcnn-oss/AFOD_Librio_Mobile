@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/borrow_limit_exceeded_exception.dart';
 import '../data/borrowing_slips_repository.dart';
 import 'approve_slip_event.dart';
 import 'approve_slip_state.dart';

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week34_project/core/errors/borrowing_error_mapper.dart';
+import 'package:week34_project/features/borrowings/errors/borrowing_error_mapper.dart';
 
 void main() {
   final requestOptions = RequestOptions(path: '/borrowings');

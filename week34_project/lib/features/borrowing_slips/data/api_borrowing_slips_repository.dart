@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:week34_project/core/storage/token_storage.dart';
 
-import 'borrow_limit_exceeded_exception.dart';
 import 'borrowing_slips_repository.dart';
 import 'datasources/borrowing_slips_remote_data_source.dart';
 import 'models/borrowing_slip.dart';

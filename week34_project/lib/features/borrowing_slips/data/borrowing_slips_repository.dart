@@ -44,3 +44,19 @@ abstract class BorrowingSlipsRepository {
 
   Future<BorrowingSlip> paySlipFine({required String slipId});
 }
+
+/// Ngoại lệ ném ra khi duyệt phiếu mượn nhưng độc giả vượt quá hạn mức cho phép
+class BorrowLimitExceededException implements Exception {
+  final String message;
+  final String? code;
+  final Map<String, dynamic>? details;
+
+  const BorrowLimitExceededException({
+    required this.message,
+    this.code,
+    this.details,
+  });
+
+  @override
+  String toString() => message;
+}

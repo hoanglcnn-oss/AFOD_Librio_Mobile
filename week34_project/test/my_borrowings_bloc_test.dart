@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/core/models/renewal_eligibility.dart';
+import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
 import 'package:week34_project/features/borrowings/bloc/my_borrowings_bloc.dart';
 import 'package:week34_project/features/borrowings/bloc/my_borrowings_event.dart';
 import 'package:week34_project/features/borrowings/bloc/my_borrowings_state.dart';
@@ -264,6 +264,47 @@ void main() {
       );
 
       test(
+        'canRenew == null | Không gọi renewLoan, emit RenewFailure thông báo chưa xác định',
+        () async {
+          final repository = FakeBorrowingRepository();
+          // Detail trả về canRenew == null (không có renewalEligibility)
+          repository.fakeBorrowingDetail = Borrowing(
+            id: 'brw-01',
+            transactionCode: 'BRW-2026-0001',
+            memberId: 'mem-01',
+            memberName: 'Nguyễn Văn An',
+            bookId: 'book-01',
+            bookTitle: 'Clean Code',
+            borrowDate: DateTime.utc(2026, 10, 29),
+            dueDate: DateTime.utc(2026, 11, 12),
+            status: 'BORROWED',
+            renewCount: 0,
+            renewalEligibility: null,
+          );
+
+          final bloc = MyBorrowingsBloc(borrowingRepository: repository);
+
+          bloc.add(const LoadMyBorrowings('mem-01'));
+          await bloc.stream.firstWhere((s) => s is MyBorrowingsLoaded);
+
+          bloc.add(const RenewBorrowingRequested(borrowingId: 'brw-01'));
+
+          await bloc.stream.firstWhere((s) => s is MyBorrowingsRenewFailure);
+
+          final failure = bloc.state as MyBorrowingsRenewFailure;
+          expect(
+            failure.message,
+            contains('Chưa xác định được điều kiện gia hạn'),
+          );
+          expect(repository.getBorrowingByIdCallCount, 1);
+          expect(repository.renewCallCount, 0); // Tuyệt đối KHÔNG gọi POST renewLoan
+          expect(repository.fakeRenewCount, 0);
+
+          await bloc.close();
+        },
+      );
+
+      test(
         'Concurrency guard | Chặn double-click khi request gia hạn đang pending',
         () async {
           final repository = FakeBorrowingRepository();
@@ -354,6 +395,39 @@ void main() {
           expect(failure.message, contains('Không thể kết nối đến máy chủ'));
           expect(repository.renewCallCount, 1);
           expect(repository.fakeRenewCount, 0);
+
+          await bloc.close();
+        },
+      );
+
+      test(
+        'Timeout mạng nhưng Backend đã gia hạn thành công | GET lại chi tiết thấy renewCount tăng -> emit RenewSuccess',
+        () async {
+          final repository = FakeBorrowingRepository();
+          // Giả lập renewLoan bị timeout
+          repository.renewLoanError = DioException(
+            requestOptions: RequestOptions(path: '/borrowings/brw-01/renew'),
+            type: DioExceptionType.receiveTimeout,
+          );
+
+          final bloc = MyBorrowingsBloc(borrowingRepository: repository);
+
+          bloc.add(const LoadMyBorrowings('mem-01'));
+          await bloc.stream.firstWhere((s) => s is MyBorrowingsLoaded);
+
+          // Giả lập trên backend thực tế đã tăng renewCount và dueDate
+          // Lần getBorrowingById thứ 2 (sau timeout) sẽ thấy dữ liệu mới
+          repository.fakeRenewCount = 1;
+          repository.fakeDueDate = DateTime.utc(2026, 11, 19);
+
+          bloc.add(const RenewBorrowingRequested(borrowingId: 'brw-01'));
+
+          await bloc.stream.firstWhere((s) => s is MyBorrowingsRenewSuccess);
+
+          final success = bloc.state as MyBorrowingsRenewSuccess;
+          expect(success.borrowingsPage.borrowings.first.renewCount, 1);
+          expect(repository.renewCallCount, 1);
+          expect(repository.getBorrowingByIdCallCount, 2);
 
           await bloc.close();
         },

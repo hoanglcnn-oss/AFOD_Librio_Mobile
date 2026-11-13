@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/errors/borrowing_error_mapper.dart';
 import '../data/borrowing_slips_repository.dart';
+import '../errors/borrowing_slip_error_mapper.dart';
 import 'borrowing_slip_event.dart';
 import 'borrowing_slip_state.dart';
 
@@ -33,7 +33,7 @@ class BorrowingSlipBloc extends Bloc<BorrowingSlipEvent, BorrowingSlipState> {
 
       emit(BorrowingSlipSuccess(slip));
     } catch (error) {
-      emit(BorrowingSlipFailure(getBorrowingErrorMessage(error)));
+      emit(BorrowingSlipFailure(getBorrowingSlipErrorMessage(error)));
     } finally {
       _isSubmitting = false;
     }

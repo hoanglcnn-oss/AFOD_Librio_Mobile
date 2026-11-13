@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/errors/renewal_error_mapper.dart';
+import '../../renewal/errors/renewal_error_mapper.dart';
 import '../data/borrowing_repository.dart';
 import '../data/models/borrowing.dart';
 import '../data/models/paginated_borrowings.dart';
@@ -125,14 +125,23 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
         event.borrowingId,
       );
 
-      // 2. canRenew = false: không gọi POST renewLoan, emit failure với lý do từ backend
-      if (detail.canRenew == false) {
-        final reason =
-            detail.renewalMessage ??
-            mapRenewalReasonCode(detail.renewalReasonCode);
-        final message = (reason != null && reason.isNotEmpty)
-            ? reason
-            : 'Phiếu mượn không đủ điều kiện gia hạn';
+      // 2. canRenew != true: không gửi POST renewLoan.
+      // Phân biệt null = chưa xác định, false = bị từ chối.
+      if (detail.canRenew != true) {
+        final String message;
+        if (detail.canRenew == false) {
+          final reason =
+              detail.renewalMessage ??
+              mapRenewalReasonCode(detail.renewalReasonCode);
+          message = (reason != null && reason.isNotEmpty)
+              ? reason
+              : 'Phiếu mượn không đủ điều kiện gia hạn';
+        } else {
+          // canRenew == null: Chưa xác định được điều kiện gia hạn từ Backend
+          message =
+              detail.renewalMessage ??
+              'Chưa xác định được điều kiện gia hạn từ hệ thống. Vui lòng thử lại sau.';
+        }
 
         emit(
           MyBorrowingsRenewFailure(
@@ -143,7 +152,7 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
         return;
       }
 
-      // 3. canRenew = true: gọi renewLoan() với extraDays (mặc định 7)
+      // 3. canRenew == true: gọi renewLoan() với extraDays (mặc định 7)
       final renewedBorrowing = await borrowingRepository.renewLoan(
         borrowingId: event.borrowingId,
         extraDays: event.extraDays,
@@ -152,9 +161,37 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
       final updatedPage = _updateBorrowingInPage(page, renewedBorrowing);
       emit(MyBorrowingsRenewSuccess(updatedPage));
     } on DioException catch (dioError) {
-      // HTTP 409 hoặc lỗi khác: hiển thị lỗi nghiệp vụ và lấy lại eligibility nếu 409
       PaginatedBorrowings latestPage = page;
-      if (dioError.response?.statusCode == 409) {
+
+      final isTimeoutOrNetwork =
+          dioError.type == DioExceptionType.connectionTimeout ||
+          dioError.type == DioExceptionType.receiveTimeout ||
+          dioError.type == DioExceptionType.sendTimeout ||
+          dioError.type == DioExceptionType.connectionError;
+
+      if (isTimeoutOrNetwork) {
+        // POST có thể đã thành công trên Backend trước khi kết nối bị ngắt.
+        // Cần GET lại chi tiết sau timeout để kiểm tra dueDate, renewCount.
+        try {
+          final reloaded = await borrowingRepository.getBorrowingById(
+            event.borrowingId,
+          );
+          final oldBorrowing = matches.first;
+          final didSucceedOnBackend =
+              reloaded.renewCount > oldBorrowing.renewCount ||
+              reloaded.dueDate.isAfter(oldBorrowing.dueDate);
+
+          if (didSucceedOnBackend) {
+            emit(
+              MyBorrowingsRenewSuccess(_updateBorrowingInPage(page, reloaded)),
+            );
+            return;
+          }
+          latestPage = _updateBorrowingInPage(page, reloaded);
+        } catch (_) {
+          // Nếu GET lại cũng timeout thì giữ nguyên page
+        }
+      } else if (dioError.response?.statusCode == 409) {
         try {
           final reloaded = await borrowingRepository.getBorrowingById(
             event.borrowingId,
@@ -170,7 +207,7 @@ class MyBorrowingsBloc extends Bloc<MyBorrowingsEvent, MyBorrowingsState> {
         ),
       );
     } catch (error) {
-      // Timeout hoặc lỗi ngoại lệ: không tự cộng ngày, không retry tự động
+      // Lỗi ngoại lệ: không tự cộng ngày, không retry tự động
       emit(
         MyBorrowingsRenewFailure(
           borrowingsPage: page,

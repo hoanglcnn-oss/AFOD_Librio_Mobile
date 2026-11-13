@@ -12,13 +12,20 @@ class MyBorrowingsScreen extends StatelessWidget {
   final String memberId;
   final VoidCallback onReturnSucceeded;
   final bool allowActions;
+  final bool? allowRenew;
+  final bool? allowReturn;
 
   const MyBorrowingsScreen({
     super.key,
     required this.memberId,
     required this.onReturnSucceeded,
-    this.allowActions = false,
+    this.allowActions = true,
+    this.allowRenew,
+    this.allowReturn,
   });
+
+  bool get _canRenew => allowRenew ?? allowActions;
+  bool get _canReturn => allowReturn ?? allowActions;
   Future<void> _confirmReturn(BuildContext context, String borrowingId) async {
     final bloc = context.read<MyBorrowingsBloc>();
 
@@ -218,10 +225,10 @@ class MyBorrowingsScreen extends StatelessWidget {
                 isBusy: isBusy,
                 isReturning: isCurrentReturn,
                 isRenewing: isCurrentRenew,
-                onReturn: allowActions
+                onReturn: _canReturn
                     ? () => _confirmReturn(context, borrowing.id)
                     : null,
-                onRenew: allowActions
+                onRenew: _canRenew
                     ? () => _confirmRenew(context, borrowing.id)
                     : null,
               );

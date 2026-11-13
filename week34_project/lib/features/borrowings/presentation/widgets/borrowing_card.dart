@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/errors/renewal_error_mapper.dart';
+import '../../../renewal/errors/renewal_error_mapper.dart';
 import '../../data/models/borrowing.dart';
 import 'borrowing_ui_helper.dart';
 
