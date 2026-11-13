@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/app_toast.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
-import '../../../borrowing_slips/presentation/pages/borrow_confirm_screen.dart';
+import '../../../borrowing/create_slip/presentation/pages/borrow_confirm_screen.dart';
 import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';
 import '../../../borrowing/reservations/bloc/reservations_bloc.dart';

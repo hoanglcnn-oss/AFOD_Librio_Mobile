@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/widgets/app_toast.dart';
-import '../../../auth/bloc/auth_bloc.dart';
-import '../../../auth/bloc/auth_state.dart';
-import '../../../books/data/models/book.dart';
-import '../../../members/data/api_members_repository.dart';
-import '../../../members/data/member_resolver.dart';
-import '../../../members/data/members_repository.dart';
+import '../../../../../core/widgets/app_toast.dart';
+import '../../../../auth/bloc/auth_bloc.dart';
+import '../../../../auth/bloc/auth_state.dart';
+import '../../../../books/data/models/book.dart';
+import '../../../../members/data/api_members_repository.dart';
+import '../../../../members/data/member_resolver.dart';
+import '../../../../members/data/members_repository.dart';
 import '../../bloc/borrowing_slip_bloc.dart';
 import '../../bloc/borrowing_slip_event.dart';
 import '../../bloc/borrowing_slip_state.dart';
-import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
-import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../data/models/create_borrowing_slip_request.dart';
+import '../../../shared/repositories/api_borrowing_slips_repository.dart';
+import '../../../shared/repositories/borrowing_slips_repository.dart';
+import '../../models/create_borrowing_slip_request.dart';
 import '../widgets/borrow_confirm_card.dart';
 import 'borrow_result_screen.dart';
 

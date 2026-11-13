@@ -10,7 +10,7 @@ import '../widgets/book_card.dart';
 import '../widgets/book_search_bar.dart';
 import 'barcode_scanner_screen.dart';
 import 'books_detail_screen.dart';
-import '../../../borrowing_slips/presentation/pages/borrowing_slip_confirm_screen.dart';
+import '../../../borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
 
 class BooksScreen extends StatefulWidget {
   final BooksRepository repository;

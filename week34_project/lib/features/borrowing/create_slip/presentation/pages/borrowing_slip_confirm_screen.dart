@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/widgets/app_toast.dart';
+import '../../../../../core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
@@ -13,9 +13,9 @@ import 'package:week34_project/features/members/data/models/member_debt_summary.
 import '../../bloc/borrowing_slip_bloc.dart';
 import '../../bloc/borrowing_slip_event.dart';
 import '../../bloc/borrowing_slip_state.dart';
-import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
-import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../data/models/create_borrowing_slip_request.dart';
+import '../../../shared/repositories/api_borrowing_slips_repository.dart';
+import '../../../shared/repositories/borrowing_slips_repository.dart';
+import '../../models/create_borrowing_slip_request.dart';
 
 class BorrowingSlipConfirmScreen extends StatelessWidget {
   final List<Book> books;

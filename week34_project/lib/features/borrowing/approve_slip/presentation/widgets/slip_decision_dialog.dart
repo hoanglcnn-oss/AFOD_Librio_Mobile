@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/widgets/app_toast.dart';
+import '../../../../../core/widgets/app_toast.dart';
 import '../../bloc/approve_slip_bloc.dart';
 import '../../bloc/approve_slip_event.dart';
 import '../../bloc/approve_slip_state.dart';
-import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../../borrowing/shared/models/borrowing_slip.dart';
+import '../../../shared/repositories/borrowing_slips_repository.dart';
+import '../../../shared/models/borrowing_slip.dart';
 
 Future<bool?> showSlipDecisionDialog(
   BuildContext context, {

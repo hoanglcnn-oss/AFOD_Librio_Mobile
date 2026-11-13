@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import 'librarian_manage_screen.dart';
-import '../../../borrowing_slips/presentation/pages/pending_borrowing_slips_screen.dart';
+import '../../../borrowing/approve_slip/presentation/pages/pending_borrowing_slips_screen.dart';
 
 class LibrarianMainScreen extends StatefulWidget {
   const LibrarianMainScreen({super.key});

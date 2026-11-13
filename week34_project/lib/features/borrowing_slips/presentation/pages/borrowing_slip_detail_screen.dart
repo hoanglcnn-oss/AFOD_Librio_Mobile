@@ -18,7 +18,7 @@ import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
 import '../../../borrowing/shared/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
 import '../widgets/borrowing_slip_ui_helper.dart';
-import '../widgets/slip_decision_dialog.dart';
+import '../../../borrowing/approve_slip/presentation/widgets/slip_decision_dialog.dart';
 import 'borrowing_slip_return_screen.dart';
 import 'pay_slip_fine_screen.dart';
 

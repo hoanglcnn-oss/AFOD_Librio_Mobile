@@ -1,6 +1,6 @@
 import '../models/borrowing_slip.dart';
 import '../models/paginated_borrowing_slips.dart';
-import '../../../borrowing_slips/data/models/create_borrowing_slip_request.dart';
+import '../../create_slip/models/create_borrowing_slip_request.dart';
 import '../../../borrowing_slips/data/models/return_slip_items_request.dart';
 
 abstract class BorrowingSlipsRepository {
