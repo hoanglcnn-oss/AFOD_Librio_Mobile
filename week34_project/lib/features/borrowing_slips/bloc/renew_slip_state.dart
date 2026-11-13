@@ -52,3 +52,4 @@ class RenewSlipFailure extends RenewSlipState {
   @override
   List<Object?> get props => [message, latestSlip];
 }
+

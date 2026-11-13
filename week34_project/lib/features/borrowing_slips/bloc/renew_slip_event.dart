@@ -34,3 +34,4 @@ class RenewSlipRequested extends RenewSlipEvent {
   @override
   List<Object?> get props => [slipId, extraDays, currentSlip];
 }
+
