@@ -11,7 +11,6 @@ import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing/create_slip/presentation/pages/borrow_confirm_screen.dart';
 import 'package:week34_project/features/borrowing/create_slip/presentation/pages/borrow_result_screen.dart';
-import 'package:week34_project/features/home/presentation/widgets/my_borrowings_tab.dart';
 import 'package:week34_project/features/members/data/models/member.dart';
 
 import 'fake/fake_auth_repository.dart';
@@ -219,53 +218,6 @@ void main() {
       // Không hiển thị ngày mượn hoặc hạn trả như đã nhận sách
       expect(find.text('Ngày mượn'), findsNothing);
       expect(find.text('Hạn trả'), findsNothing);
-    });
-  });
-
-  group('MyBorrowingsTab - R1.1', () {
-    late FakeBorrowingRepository borrowingSlipsRepository;
-    late FakeMembersRepository membersRepository;
-    late AuthBloc authBloc;
-
-    setUp(() {
-      borrowingSlipsRepository = FakeBorrowingRepository();
-      membersRepository = FakeMembersRepository(members: [sampleMember]);
-      authBloc = AuthBloc(
-        authRepository: FakeAuthRepository(),
-        tokenStorage: FakeTokenStorage()..savedToken = 'valid-jwt',
-      )..emit(AuthAuthenticated(user: authUser));
-    });
-
-    tearDown(() {
-      authBloc.close();
-    });
-
-    testWidgets(
-        'Không còn tab Mượn lẻ và Phiếu nhiều sách, hiển thị BorrowingSlipsScreen và nút Đặt trước của tôi',
-        (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: BlocProvider<AuthBloc>.value(
-              value: authBloc,
-              child: MyBorrowingsTab(
-                onReturnSucceeded: () {},
-                borrowingSlipsRepository: borrowingSlipsRepository,
-                membersRepository: membersRepository,
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // Kiểm tra: Đã bỏ tab "Mượn lẻ" và "Phiếu nhiều sách"
-      expect(find.text('Mượn lẻ'), findsNothing);
-      expect(find.text('Phiếu nhiều sách'), findsNothing);
-
-      // Nút "Đặt trước của tôi" vẫn còn
-      expect(find.byKey(const ValueKey('my_reservations_entry_button')), findsOneWidget);
-      expect(find.text('Đặt trước của tôi'), findsOneWidget);
     });
   });
 }

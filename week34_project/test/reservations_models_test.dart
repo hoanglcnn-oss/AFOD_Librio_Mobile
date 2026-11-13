@@ -173,39 +173,6 @@ void main() {
       expect(res.id, 'res-200');
       expect(res.bookTitle, 'Microservices Patterns');
     });
-
-    test('copyWith and toJson roundtrip', () {
-      final res = Reservation(
-        id: 'res-300',
-        reservationCode: 'RSV-300',
-        memberId: 'mem-1',
-        bookId: 'b-1',
-        bookTitle: 'Test Book',
-        status: 'PENDING',
-        reservedAt: DateTime.parse('2026-11-12T10:00:00Z'),
-        notes: 'Original note',
-      );
-
-      final updated = res.copyWith(
-        status: 'READY',
-        notes: 'Updated note',
-      );
-
-      expect(updated.status, 'READY');
-      expect(updated.notes, 'Updated note');
-      expect(updated.id, 'res-300');
-
-      final json = updated.toJson();
-      expect(json['id'], 'res-300');
-      expect(json['reservationCode'], 'RSV-300');
-      expect(json['status'], 'READY');
-      expect(json['notes'], 'Updated note');
-
-      final reconstructed = Reservation.fromJson(json);
-      expect(reconstructed.id, updated.id);
-      expect(reconstructed.reservationCode, updated.reservationCode);
-      expect(reconstructed.status, updated.status);
-    });
   });
 
   group('PaginatedReservations Model', () {

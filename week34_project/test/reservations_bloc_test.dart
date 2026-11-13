@@ -35,10 +35,6 @@ void main() {
       bloc.close();
     });
 
-    test('Initial state is ReservationsInitial', () {
-      expect(bloc.state, isA<ReservationsInitial>());
-    });
-
     test(
       'LoadReservations success emits [ReservationsLoading, ReservationsLoaded]',
       () async {

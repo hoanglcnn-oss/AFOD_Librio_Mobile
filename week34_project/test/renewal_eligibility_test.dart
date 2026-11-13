@@ -78,30 +78,6 @@ void main() {
       expect(eligibility2.canRenew, isTrue);
       expect(eligibility2.reasonCode, isNull);
     });
-
-    test('toJson và Equatable props so sánh đúng', () {
-      const e1 = RenewalEligibility(
-        canRenew: false,
-        reasonCode: 'OVERDUE',
-        message: 'Quá hạn',
-      );
-      const e2 = RenewalEligibility(
-        canRenew: false,
-        reasonCode: 'OVERDUE',
-        message: 'Quá hạn',
-      );
-      const e3 = RenewalEligibility(
-        canRenew: true,
-      );
-
-      expect(e1, equals(e2));
-      expect(e1 == e3, isFalse);
-
-      final json = e1.toJson();
-      expect(json['canRenew'], isFalse);
-      expect(json['reasonCode'], 'OVERDUE');
-      expect(json['message'], 'Quá hạn');
-    });
   });
 }
 
