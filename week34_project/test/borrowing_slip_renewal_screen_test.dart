@@ -111,11 +111,11 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Gia hạn phiếu mượn'), findsOneWidget);
-        expect(find.text('Xác nhận'), findsOneWidget);
-        expect(find.text('7 ngày'), findsWidgets); // Giá trị mặc định 7 ngày
+        expect(find.text('Xác nhận gia hạn'), findsOneWidget);
+        expect(find.text('7 ngày (mặc định)'), findsOneWidget); // Giá trị mặc định 7 ngày
 
         // Bấm Xác nhận gia hạn
-        await tester.tap(find.text('Xác nhận'));
+        await tester.tap(find.text('Xác nhận gia hạn'));
         await tester.pumpAndSettle();
 
         // Kiểm tra gọi API và cập nhật UI từ Backend
@@ -477,7 +477,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Xác nhận gia hạn
-        await tester.tap(find.text('Xác nhận'));
+        await tester.tap(find.text('Xác nhận gia hạn'));
         await tester.pumpAndSettle();
 
         // Kiểm tra kết quả: renewSlip đã gọi thành công
@@ -489,6 +489,117 @@ void main() {
         // Màn hình vẫn giữ nguyên kết quả thành công (renewCount: 1, toast thành công)
         expect(find.text('Số lần đã gia hạn: 1'), findsOneWidget);
         expect(find.text('Gia hạn phiếu mượn thành công'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'RN2 UX | Chọn lựa chọn nhanh 3 ngày và 14 ngày | Cập nhật hạn trả dự kiến và không tự gọi API',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        final initialSlip = BorrowingSlip(
+          id: 'slip-01',
+          slipNumber: 'SLIP-2026-0001',
+          memberId: 'mem-01',
+          status: 'BORROWED',
+          dueDate: DateTime.utc(2026, 11, 15),
+          renewCount: 0,
+          renewalEligibility: const RenewalEligibility(canRenew: true),
+          items: const [],
+        );
+        repository.fakeSlipDetail = initialSlip;
+
+        await tester.pumpWidget(createApp(repository, role: 'MEMBER'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Gia hạn'));
+        await tester.pumpAndSettle();
+
+        // Ban đầu mặc định 7 ngày, hạn trả hiện tại 15/11/2026, dự kiến 22/11/2026
+        expect(find.text('Hạn trả hiện tại:'), findsOneWidget);
+        expect(find.text('15/11/2026'), findsOneWidget);
+        expect(find.text('22/11/2026'), findsOneWidget);
+
+        // Chuyển sang 3 ngày
+        await tester.tap(find.text('3 ngày'));
+        await tester.pumpAndSettle();
+
+        // Không tự động gọi API khi chỉ đổi lựa chọn
+        expect(repository.renewSlipCallCount, 0);
+        // Hạn trả dự kiến cập nhật thành 18/11/2026
+        expect(find.text('18/11/2026'), findsOneWidget);
+
+        // Chuyển sang 14 ngày
+        await tester.tap(find.text('14 ngày (tối đa)'));
+        await tester.pumpAndSettle();
+        expect(repository.renewSlipCallCount, 0);
+        expect(find.text('29/11/2026'), findsOneWidget);
+
+        // Xác nhận gia hạn 14 ngày
+        await tester.tap(find.text('Xác nhận gia hạn'));
+        await tester.pumpAndSettle();
+
+        expect(repository.renewSlipCallCount, 1);
+        expect(repository.lastRenewSlipExtraDays, 14);
+      },
+    );
+
+    testWidgets(
+      'RN2 UX | Chọn Số ngày khác | Validation 1–14 khóa/mở nút Xác nhận gia hạn',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        final initialSlip = BorrowingSlip(
+          id: 'slip-01',
+          slipNumber: 'SLIP-2026-0001',
+          memberId: 'mem-01',
+          status: 'BORROWED',
+          dueDate: DateTime.utc(2026, 11, 15),
+          renewCount: 0,
+          renewalEligibility: const RenewalEligibility(canRenew: true),
+          items: const [],
+        );
+        repository.fakeSlipDetail = initialSlip;
+
+        await tester.pumpWidget(createApp(repository, role: 'MEMBER'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Gia hạn'));
+        await tester.pumpAndSettle();
+
+        // Chọn Số ngày khác
+        await tester.tap(find.text('Số ngày khác'));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(const ValueKey('renew_custom_input')), findsOneWidget);
+
+        // Khi chưa nhập số, nút Xác nhận bị disable
+        final confirmBtnFinder = find.byKey(const ValueKey('confirm_renew_button'));
+        expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNull);
+        expect(find.text('---'), findsOneWidget);
+
+        // Nhập 0 (không hợp lệ) -> vẫn disabled
+        await tester.enterText(find.byKey(const ValueKey('renew_custom_input')), '0');
+        await tester.pumpAndSettle();
+        expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNull);
+        expect(find.text('Số ngày phải từ 1 đến 14'), findsOneWidget);
+
+        // Nhập 15 (vượt quá 14) -> disabled
+        await tester.enterText(find.byKey(const ValueKey('renew_custom_input')), '15');
+        await tester.pumpAndSettle();
+        expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNull);
+        expect(find.text('Số ngày phải từ 1 đến 14'), findsOneWidget);
+
+        // Nhập 5 (hợp lệ) -> enabled, hạn trả dự kiến 20/11/2026
+        await tester.enterText(find.byKey(const ValueKey('renew_custom_input')), '5');
+        await tester.pumpAndSettle();
+        expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNotNull);
+        expect(find.text('20/11/2026'), findsOneWidget);
+
+        // Xác nhận
+        await tester.tap(confirmBtnFinder);
+        await tester.pumpAndSettle();
+
+        expect(repository.renewSlipCallCount, 1);
+        expect(repository.lastRenewSlipExtraDays, 5);
       },
     );
   });

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,6 +50,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
   late final MemberResolver _memberResolver;
   String? _resolvedMemberId;
   bool _isResolvingMember = false;
+  bool _isCancelling = false;
 
   @override
   void initState() {
@@ -190,46 +192,305 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     }
   }
 
+  Future<void> _confirmCancelSlip(BorrowingSlip slip) async {
+    if (_isCancelling) return;
+    final reasonController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Hủy phiếu mượn'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Bạn có chắc chắn muốn hủy phiếu mượn ${slip.slipNumber}?'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Lý do hủy (tùy chọn)',
+                border: OutlineInputBorder(),
+                hintText: 'Nhập lý do hủy...',
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(false),
+            child: const Text('Đóng'),
+          ),
+          FilledButton(
+            key: const ValueKey('confirm_cancel_slip_button'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogCtx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(dialogCtx).pop(true),
+            child: const Text('Xác nhận hủy'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final reason = reasonController.text.trim();
+      await _cancelSlip(
+        slip,
+        reason: reason.isNotEmpty ? reason : null,
+      );
+    }
+  }
+
+  Future<void> _cancelSlip(BorrowingSlip slip, {String? reason}) async {
+    if (_isCancelling) return;
+    setState(() {
+      _isCancelling = true;
+    });
+
+    try {
+      final cancelledSlip = await widget.repository.cancelBorrowingSlip(
+        slipId: slip.id,
+        reason: reason,
+      );
+      if (!mounted) return;
+      setState(() {
+        _future = Future.value(cancelledSlip);
+      });
+      AppToast.success(context, 'Đã hủy phiếu mượn thành công');
+    } catch (e) {
+      if (!mounted) return;
+      bool isTimeout = false;
+      if (e is DioException) {
+        isTimeout = e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.connectionError;
+      }
+
+      if (isTimeout) {
+        // Timeout/mất kết nối: không tự gửi PATCH lần 2; GET lại chi tiết để kiểm tra kết quả
+        try {
+          final verified = await widget.repository.getBorrowingSlipById(
+            slipId: slip.id,
+          );
+          if (mounted) {
+            if (verified.status.toUpperCase() == 'CANCELLED') {
+              setState(() {
+                _future = Future.value(verified);
+              });
+              AppToast.success(context, 'Đã hủy phiếu mượn thành công');
+              return;
+            } else {
+              AppToast.warning(
+                context,
+                'Yêu cầu hủy phiếu chưa thể xác nhận do gián đoạn kết nối. Vui lòng kiểm tra lại trạng thái phiếu.',
+              );
+              setState(() {
+                _future = Future.value(verified);
+              });
+              return;
+            }
+          }
+        } catch (_) {
+          if (mounted) {
+            AppToast.warning(
+              context,
+              'Không thể xác minh kết quả hủy phiếu do kết nối mạng gián đoạn. Vui lòng thử lại sau.',
+            );
+          }
+          return;
+        }
+      } else {
+        String message = 'Không thể hủy phiếu mượn.';
+        if (e is DioException) {
+          final data = e.response?.data;
+          if (data is Map && data['message'] != null) {
+            message = data['message'].toString();
+          }
+        }
+        AppToast.error(context, message);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCancelling = false;
+        });
+      }
+    }
+  }
+
   Future<void> _openRenewDialog(BuildContext context, BorrowingSlip slip) async {
-    int selectedDays = 7;
     final extraDays = await showDialog<int>(
       context: context,
       builder: (dialogContext) {
+        int selectedDays = 7;
+        bool isCustom = false;
+        final customController = TextEditingController();
+
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            bool isValid = false;
+            if (!isCustom) {
+              isValid = selectedDays >= 1 && selectedDays <= 14;
+            } else {
+              final parsed = int.tryParse(customController.text.trim());
+              isValid = parsed != null && parsed >= 1 && parsed <= 14;
+              if (isValid) {
+                selectedDays = parsed;
+              }
+            }
+
+            final currentDueDateStr =
+                BorrowingSlipUiHelper.formatDate(slip.dueDate);
+            final projectedDueDateStr = isValid
+                ? BorrowingSlipUiHelper.formatDate(
+                    slip.dueDate.add(Duration(days: selectedDays)),
+                  )
+                : '---';
+
             return AlertDialog(
               title: const Text('Gia hạn phiếu mượn'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Gia hạn toàn bộ sách trong phiếu mượn này.'),
-                  const SizedBox(height: 16),
-                  const Text('Chọn số ngày muốn gia hạn:'),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<int>(
-                    initialValue: selectedDays,
-                    items: [
-                      for (int day = 1; day <= 14; day++)
-                        DropdownMenuItem(
-                          value: day,
-                          child: Text('$day ngày'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Gia hạn toàn bộ sách trong phiếu mượn này.'),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Thời hạn gia hạn:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        ChoiceChip(
+                          key: const ValueKey('renew_chip_3'),
+                          label: const Text('3 ngày'),
+                          selected: !isCustom && selectedDays == 3,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setDialogState(() {
+                                isCustom = false;
+                                selectedDays = 3;
+                              });
+                            }
+                          },
                         ),
+                        ChoiceChip(
+                          key: const ValueKey('renew_chip_7'),
+                          label: const Text('7 ngày (mặc định)'),
+                          selected: !isCustom && selectedDays == 7,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setDialogState(() {
+                                isCustom = false;
+                                selectedDays = 7;
+                              });
+                            }
+                          },
+                        ),
+                        ChoiceChip(
+                          key: const ValueKey('renew_chip_14'),
+                          label: const Text('14 ngày (tối đa)'),
+                          selected: !isCustom && selectedDays == 14,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setDialogState(() {
+                                isCustom = false;
+                                selectedDays = 14;
+                              });
+                            }
+                          },
+                        ),
+                        ChoiceChip(
+                          key: const ValueKey('renew_chip_custom'),
+                          label: const Text('Số ngày khác'),
+                          selected: isCustom,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setDialogState(() {
+                                isCustom = true;
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    if (isCustom) ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        key: const ValueKey('renew_custom_input'),
+                        controller: customController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(2),
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Nhập số ngày (1–14)',
+                          hintText: 'Ví dụ: 5',
+                          border: const OutlineInputBorder(),
+                          errorText: customController.text.isNotEmpty && !isValid
+                              ? 'Số ngày phải từ 1 đến 14'
+                              : null,
+                        ),
+                        onChanged: (_) {
+                          setDialogState(() {});
+                        },
+                      ),
                     ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setDialogState(() {
-                          selectedDays = value;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Điều kiện gia hạn sẽ được hệ thống kiểm tra tự động.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Hạn trả hiện tại:'),
+                              Text(
+                                currentDueDateStr,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Hạn trả sau gia hạn:'),
+                              Text(
+                                projectedDueDateStr,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: isValid
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Điều kiện gia hạn sẽ được hệ thống kiểm tra tự động.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 TextButton(
@@ -237,9 +498,11 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                   child: const Text('Hủy'),
                 ),
                 FilledButton(
-                  onPressed: () =>
-                      Navigator.of(dialogContext).pop(selectedDays),
-                  child: const Text('Xác nhận'),
+                  key: const ValueKey('confirm_renew_button'),
+                  onPressed: isValid
+                      ? () => Navigator.of(dialogContext).pop(selectedDays)
+                      : null,
+                  child: const Text('Xác nhận gia hạn'),
                 ),
               ],
             );
@@ -454,6 +717,9 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
               final isOwner =
                   currentMemberId != null && currentMemberId == slip.memberId;
               final canUserRenew = canManageSlip || isOwner;
+              final canCancelSlip = isOwner &&
+                  role == 'MEMBER' &&
+                  slip.status.toUpperCase() == 'PENDING_APPROVAL';
               final isExcludedStatus = [
                 'COMPLETED',
                 'REJECTED',
@@ -595,6 +861,37 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                    if (canCancelSlip) ...[
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          key: const ValueKey('cancel_pending_slip_button'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor:
+                                Theme.of(context).colorScheme.error,
+                            side: BorderSide(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                          onPressed: _isCancelling
+                              ? null
+                              : () => _confirmCancelSlip(slip),
+                          icon: _isCancelling
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.cancel_outlined),
+                          label: Text(
+                            _isCancelling ? 'Đang hủy...' : 'Hủy phiếu mượn',
+                          ),
+                        ),
                       ),
                     ],
                     if (canManageSlip &&

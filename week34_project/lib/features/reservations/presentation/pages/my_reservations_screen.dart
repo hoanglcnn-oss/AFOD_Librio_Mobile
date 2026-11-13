@@ -5,8 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/app_toast.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
+import '../../../books/data/books_repository.dart';
+import '../../../books/data/models/book.dart';
+import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
+import '../../../borrowing_slips/presentation/pages/borrow_confirm_screen.dart';
 import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';
+import '../../../members/data/members_repository.dart';
 import '../../bloc/reservations_bloc.dart';
 import '../../bloc/reservations_event.dart';
 import '../../bloc/reservations_state.dart';
@@ -19,12 +24,18 @@ class MyReservationsScreen extends StatelessWidget {
   final String? memberId;
   final ReservationsRepository? repository;
   final MemberResolver? memberResolver;
+  final BooksRepository? booksRepository;
+  final BorrowingSlipsRepository? borrowingSlipsRepository;
+  final MembersRepository? membersRepository;
 
   const MyReservationsScreen({
     super.key,
     this.memberId,
     this.repository,
     this.memberResolver,
+    this.booksRepository,
+    this.borrowingSlipsRepository,
+    this.membersRepository,
   });
 
   @override
@@ -36,6 +47,9 @@ class MyReservationsScreen extends StatelessWidget {
       child: _MyReservationsView(
         memberId: memberId,
         memberResolver: memberResolver,
+        booksRepository: booksRepository,
+        borrowingSlipsRepository: borrowingSlipsRepository,
+        membersRepository: membersRepository,
       ),
     );
   }
@@ -44,10 +58,16 @@ class MyReservationsScreen extends StatelessWidget {
 class _MyReservationsView extends StatefulWidget {
   final String? memberId;
   final MemberResolver? memberResolver;
+  final BooksRepository? booksRepository;
+  final BorrowingSlipsRepository? borrowingSlipsRepository;
+  final MembersRepository? membersRepository;
 
   const _MyReservationsView({
     this.memberId,
     this.memberResolver,
+    this.booksRepository,
+    this.borrowingSlipsRepository,
+    this.membersRepository,
   });
 
   @override
@@ -226,6 +246,57 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
     }
   }
 
+  Future<void> _handleCreateSlip(Reservation reservation) async {
+    Book? book;
+    if (widget.booksRepository != null) {
+      try {
+        book = await widget.booksRepository!.getBookById(reservation.bookId);
+      } catch (_) {}
+    }
+
+    book ??= Book(
+      id: reservation.bookId,
+      title: reservation.bookTitle,
+      authorName: 'Đang cập nhật',
+      isbn: '',
+      categoryName: '',
+      description: '',
+      coverUrl: null,
+      copiesTotal: 1,
+      copiesAvailable: 1,
+      status: 'AVAILABLE',
+    );
+
+    if (!mounted) return;
+
+    AuthBloc? authBloc;
+    try {
+      authBloc = context.read<AuthBloc>();
+    } catch (_) {}
+
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) {
+          final screen = BorrowConfirmScreen(
+            book: book!,
+            borrowingSlipsRepository: widget.borrowingSlipsRepository,
+            membersRepository: widget.membersRepository,
+          );
+          if (authBloc != null) {
+            return BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: screen,
+            );
+          }
+          return screen;
+        },
+      ),
+    );
+
+    if (!mounted) return;
+    _onRefresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -354,6 +425,8 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
                       isOwner: isOwner,
                       isCancelling: cancellingId == item.id,
                       onCancel: () => _showCancelDialog(item),
+                      onCreateSlip:
+                          item.isReady ? () => _handleCreateSlip(item) : null,
                     );
                   },
                 ),

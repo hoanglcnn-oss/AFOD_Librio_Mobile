@@ -9,8 +9,12 @@ import 'package:week34_project/features/reservations/presentation/pages/my_reser
 import 'package:week34_project/features/reservations/presentation/widgets/reservation_card.dart';
 
 import 'fake/fake_auth_repository.dart';
+import 'fake/fake_borrowing_repository.dart';
+import 'fake/fake_members_repository.dart';
 import 'fake/fake_reservations_repository.dart';
 import 'fake/fake_token_storage.dart';
+import 'package:week34_project/features/borrowing_slips/presentation/pages/borrow_confirm_screen.dart';
+import 'package:week34_project/features/members/data/models/member.dart';
 
 void main() {
   final memberUser = UserProfile(
@@ -86,6 +90,45 @@ void main() {
       expect(find.text('Sách đã sẵn sàng để lấy!'), findsOneWidget);
       expect(find.textContaining('Hạn lấy sách: 15/11/2026 17:30'), findsOneWidget);
       expect(find.text('Hủy đặt trước'), findsOneWidget);
+    });
+
+    testWidgets('READY status | Hiển thị nút Tạo phiếu mượn bên cạnh Hủy đặt trước khi có callback', (tester) async {
+      final res = Reservation(
+        id: 'res-ready',
+        reservationCode: 'RSV-002',
+        memberId: 'mem-01',
+        bookId: 'b-2',
+        bookTitle: 'Refactoring',
+        status: 'READY',
+        reservedAt: DateTime(2026, 11, 10),
+        expiresAt: DateTime(2026, 11, 15, 17, 30),
+      );
+
+      bool onCreateSlipCalled = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ReservationCard(
+              reservation: res,
+              isOwner: true,
+              onCreateSlip: () {
+                onCreateSlipCalled = true;
+              },
+              onCancel: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('create_slip_btn_res-ready')), findsOneWidget);
+      expect(find.text('Tạo phiếu mượn'), findsOneWidget);
+      expect(find.byKey(const ValueKey('cancel_btn_res-ready')), findsOneWidget);
+      expect(find.text('Hủy đặt trước'), findsOneWidget);
+
+      await tester.tap(find.byKey(const ValueKey('create_slip_btn_res-ready')));
+      expect(onCreateSlipCalled, isTrue);
     });
 
     testWidgets('FULFILLED, CANCELLED, EXPIRED | Chỉ xem lịch sử, KHÔNG có nút Hủy đặt trước', (tester) async {
@@ -393,6 +436,64 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Bạn chưa có yêu cầu đặt trước nào'), findsOneWidget);
+    });
+
+    testWidgets('C5.5 | Nhấn Tạo phiếu mượn trên READY reservation | Mở BorrowConfirmScreen, không tự gọi POST', (tester) async {
+      final fakeBorrowRepo = FakeBorrowingRepository();
+      final sampleMember = Member(
+        id: 'mem-01',
+        fullName: 'Nguyen Van Member',
+        email: 'member@test.com',
+        cardNumber: 'LIB-001',
+        status: 'ACTIVE',
+        membershipExpiry: DateTime(2027, 1, 1),
+      );
+      final fakeMembersRepo = FakeMembersRepository(members: [sampleMember]);
+
+      reservationsRepository.reservations = [
+        Reservation(
+          id: 'res-ready-1',
+          reservationCode: 'RSV-READY',
+          memberId: 'mem-01',
+          bookId: 'b-ready',
+          bookTitle: 'Design Patterns',
+          status: 'READY',
+          reservedAt: DateTime(2026, 11, 10),
+        ),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<AuthBloc>.value(
+            value: authBloc,
+            child: MyReservationsScreen(
+              memberId: 'mem-01',
+              repository: reservationsRepository,
+              borrowingSlipsRepository: fakeBorrowRepo,
+              membersRepository: fakeMembersRepo,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tạo phiếu mượn'), findsOneWidget);
+      expect(find.text('Hủy đặt trước'), findsOneWidget);
+
+      // Bấm nút Tạo phiếu mượn
+      await tester.tap(find.text('Tạo phiếu mượn'));
+      await tester.pumpAndSettle();
+
+      // Màn hình BorrowConfirmScreen được mở
+      expect(find.byType(BorrowConfirmScreen), findsOneWidget);
+      expect(find.text('Xác nhận mượn sách'), findsOneWidget);
+      expect(find.text('Design Patterns'), findsOneWidget);
+      expect(find.text('Gửi phiếu mượn'), findsOneWidget);
+
+      // Tuyệt đối KHÔNG tự động thực hiện POST khi vừa mở màn
+      expect(fakeBorrowRepo.createSlipCallCount, 0);
+      // Không chuyển reservation sang FULFILLED từ Flutter
+      expect(reservationsRepository.reservations.first.status, 'READY');
     });
   });
 }

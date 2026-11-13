@@ -43,6 +43,11 @@ abstract class BorrowingSlipsRepository {
   });
 
   Future<BorrowingSlip> paySlipFine({required String slipId});
+
+  Future<BorrowingSlip> cancelBorrowingSlip({
+    required String slipId,
+    String? reason,
+  });
 }
 
 /// Ngoại lệ ném ra khi duyệt phiếu mượn nhưng độc giả vượt quá hạn mức cho phép

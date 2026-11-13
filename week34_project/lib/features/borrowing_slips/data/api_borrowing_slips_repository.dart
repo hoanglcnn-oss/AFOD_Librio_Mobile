@@ -323,4 +323,28 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
 
     return BorrowingSlip.fromJson(data);
   }
+
+  @override
+  Future<BorrowingSlip> cancelBorrowingSlip({
+    required String slipId,
+    String? reason,
+  }) async {
+    final token = await _tokenStorage.readToken();
+
+    if (token == null || token.isEmpty) {
+      throw StateError('Phiên đăng nhập không tồn tại');
+    }
+
+    if (slipId.trim().isEmpty) {
+      throw ArgumentError('Mã phiếu mượn không được để trống');
+    }
+
+    final data = await _remoteDataSource.cancelBorrowingSlip(
+      slipId: slipId.trim(),
+      token: token,
+      reason: reason,
+    );
+
+    return BorrowingSlip.fromJson(data);
+  }
 }

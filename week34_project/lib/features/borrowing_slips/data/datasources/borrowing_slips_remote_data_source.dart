@@ -61,6 +61,12 @@ abstract class BorrowingSlipsRemoteDataSource {
     required String slipId,
     required String token,
   });
+
+  Future<Map<String, dynamic>> cancelBorrowingSlip({
+    required String slipId,
+    required String token,
+    String? reason,
+  });
 }
 
 class BorrowingSlipsRemoteDataSourceImpl
@@ -218,6 +224,26 @@ class BorrowingSlipsRemoteDataSourceImpl
   }) async {
     final response = await _dio.post(
       '${ApiConstants.borrowingSlips}/$slipId/pay-fine',
+      options: Options(headers: {'Authorization': 'Bearer $token'}),
+    );
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<Map<String, dynamic>> cancelBorrowingSlip({
+    required String slipId,
+    required String token,
+    String? reason,
+  }) async {
+    final data = <String, dynamic>{};
+    if (reason != null && reason.trim().isNotEmpty) {
+      data['reason'] = reason.trim();
+    }
+
+    final response = await _dio.patch(
+      '${ApiConstants.borrowingSlips}/$slipId/cancel',
+      data: data.isNotEmpty ? data : null,
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

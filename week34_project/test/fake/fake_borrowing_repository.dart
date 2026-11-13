@@ -25,6 +25,13 @@ class FakeBorrowingRepository implements BorrowingSlipsRepository {
   int paySlipFineCallCount = 0;
   DioException? paySlipFineError;
 
+  int cancelSlipCallCount = 0;
+  String? lastCancelSlipReason;
+  DioException? cancelSlipError;
+  bool shouldFailCancelSlip = false;
+  BorrowingSlip? fakeCancelSlipResult;
+  Completer<void>? cancelSlipCompleter;
+
   int returnSlipCallCount = 0;
   ReturnSlipItemsRequest? lastReturnSlipRequest;
   DioException? returnSlipError;
@@ -425,6 +432,52 @@ class FakeBorrowingRepository implements BorrowingSlipsRepository {
     if (fakeSlipDetail != null) {
       fakeSlipDetail = result;
     }
+    return result;
+  }
+
+  @override
+  Future<BorrowingSlip> cancelBorrowingSlip({
+    required String slipId,
+    String? reason,
+  }) async {
+    cancelSlipCallCount++;
+    lastCancelSlipReason = reason;
+
+    if (cancelSlipCompleter != null) {
+      await cancelSlipCompleter!.future;
+    }
+
+    if (cancelSlipError != null) {
+      throw cancelSlipError!;
+    }
+
+    if (shouldFail || shouldFailCancelSlip) {
+      throw Exception('Không thể hủy phiếu mượn');
+    }
+
+    if (fakeCancelSlipResult != null) {
+      if (fakeSlipDetail != null) {
+        fakeSlipDetail = fakeCancelSlipResult;
+      }
+      return fakeCancelSlipResult!;
+    }
+
+    final result = BorrowingSlip(
+      id: slipId,
+      slipNumber: fakeSlipDetail?.slipNumber ?? 'SLIP-2026-0001',
+      memberId: fakeSlipDetail?.memberId ?? 'mem-01',
+      memberName: fakeSlipDetail?.memberName,
+      memberCardNumber: fakeSlipDetail?.memberCardNumber,
+      status: 'CANCELLED',
+      dueDate: fakeSlipDetail?.dueDate ??
+          DateTime.now().add(const Duration(days: 14)),
+      items: fakeSlipDetail?.items ?? const [],
+    );
+
+    if (fakeSlipDetail != null) {
+      fakeSlipDetail = result;
+    }
+
     return result;
   }
 }

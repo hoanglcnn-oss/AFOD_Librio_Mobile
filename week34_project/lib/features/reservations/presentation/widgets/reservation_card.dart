@@ -5,6 +5,7 @@ import '../../data/models/reservation.dart';
 class ReservationCard extends StatelessWidget {
   final Reservation reservation;
   final VoidCallback? onCancel;
+  final VoidCallback? onCreateSlip;
   final bool isCancelling;
   final bool isOwner;
 
@@ -12,6 +13,7 @@ class ReservationCard extends StatelessWidget {
     super.key,
     required this.reservation,
     this.onCancel,
+    this.onCreateSlip,
     this.isCancelling = false,
     this.isOwner = true,
   });
@@ -245,20 +247,38 @@ class ReservationCard extends StatelessWidget {
               ),
             ],
 
-            // Actions row: Nút Hủy đặt trước chỉ với PENDING/READY thuộc MEMBER
-            if (reservation.canCancel && isOwner) ...[
+            // Actions row: Nút Tạo phiếu mượn (chỉ READY) và Hủy đặt trước (PENDING/READY) thuộc MEMBER
+            if ((reservation.canCancel || (reservation.isReady && onCreateSlip != null)) && isOwner) ...[
               const SizedBox(height: 12),
               const Divider(height: 1),
               const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: isCancelling
-                    ? const SizedBox(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (reservation.isReady && onCreateSlip != null) ...[
+                    FilledButton.icon(
+                      key: ValueKey('create_slip_btn_${reservation.id}'),
+                      style: FilledButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: isCancelling ? null : onCreateSlip,
+                      icon: const Icon(
+                        Icons.assignment_turned_in_outlined,
+                        size: 16,
+                      ),
+                      label: const Text('Tạo phiếu mượn'),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  if (reservation.canCancel) ...[
+                    if (isCancelling)
+                      const SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : OutlinedButton.icon(
+                    else
+                      OutlinedButton.icon(
                         key: ValueKey('cancel_btn_${reservation.id}'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Theme.of(context).colorScheme.error,
@@ -271,6 +291,8 @@ class ReservationCard extends StatelessWidget {
                         icon: const Icon(Icons.cancel_outlined, size: 16),
                         label: const Text('Hủy đặt trước'),
                       ),
+                  ],
+                ],
               ),
             ],
           ],
