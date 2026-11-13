@@ -16,6 +16,8 @@ import '../../bloc/borrowing_slip_state.dart';
 import '../../../shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../models/create_borrowing_slip_request.dart';
+import '../widgets/borrow_debt_summary_card.dart';
+import '../widgets/borrow_slip_form_card.dart';
 
 class BorrowingSlipConfirmScreen extends StatelessWidget {
   final List<Book> books;
@@ -182,331 +184,78 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
               return FutureBuilder<MemberDebtSummary>(
                 future: _debtSummaryFuture,
                 builder: (context, debtSnapshot) {
-                  return _buildForm(memberId, state, debtSnapshot);
+                  final submitting = state is BorrowingSlipSubmitting;
+                  final totalSelected = _quantities.values.isEmpty
+                      ? 0
+                      : _quantities.values.reduce((a, b) => a + b);
+
+                  final debtSummary = debtSnapshot.data;
+                  final isDebtLoading =
+                      debtSnapshot.connectionState != ConnectionState.done;
+                  final isDebtError = debtSnapshot.hasError;
+
+                  final isExceedingLimit = debtSummary != null &&
+                      totalSelected > debtSummary.remainingBorrowLimit;
+                  final canBorrowCondition =
+                      debtSummary != null && debtSummary.canBorrow;
+
+                  final isDaysValid = _days >= 1 && _days <= 30;
+
+                  final canSubmit = !isDebtLoading &&
+                      !isDebtError &&
+                      debtSummary != null &&
+                      canBorrowCondition &&
+                      !isExceedingLimit &&
+                      isDaysValid;
+
+                  String? notAllowedReason;
+                  if (debtSummary != null) {
+                    if (!debtSummary.canBorrow) {
+                      notAllowedReason = debtSummary.reasonIfNotAllowed ??
+                          'Tài khoản hiện không đủ điều kiện mượn sách';
+                    } else if (isExceedingLimit) {
+                      notAllowedReason =
+                          'Số lượng sách chọn ($totalSelected cuốn) vượt quá hạn mức còn lại (${debtSummary.remainingBorrowLimit} cuốn)';
+                    }
+                  }
+
+                  return BorrowSlipFormCard(
+                    books: widget.books,
+                    quantities: _quantities,
+                    days: _days,
+                    daysController: _daysController,
+                    isDaysValid: isDaysValid,
+                    submitting: submitting,
+                    canSubmit: canSubmit,
+                    maxBorrowLimit: debtSummary?.maxBorrowLimit,
+                    errorMessage: state is BorrowingSlipFailure
+                        ? state.message
+                        : null,
+                    debtSummaryCard: BorrowDebtSummaryCard(
+                      isDebtLoading: isDebtLoading,
+                      isDebtError: isDebtError,
+                      debtSummary: debtSummary,
+                      totalSelected: totalSelected,
+                      canSubmit: canSubmit,
+                      notAllowedReason: notAllowedReason,
+                      onRetry: () => _loadDebtSummary(memberId),
+                    ),
+                    onDecreaseQuantity: (bookId) => setState(() {
+                      _quantities[bookId] = (_quantities[bookId] ?? 1) - 1;
+                    }),
+                    onIncreaseQuantity: (bookId) => setState(() {
+                      _quantities[bookId] = (_quantities[bookId] ?? 1) + 1;
+                    }),
+                    onDaysChanged: (days) => setState(() {
+                      _days = days;
+                    }),
+                    onSubmit: () => _submit(memberId),
+                  );
                 },
               );
             },
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildForm(
-    String memberId,
-    BorrowingSlipState state,
-    AsyncSnapshot<MemberDebtSummary> debtSnapshot,
-  ) {
-    final submitting = state is BorrowingSlipSubmitting;
-    final totalSelected = _quantities.values.isEmpty
-        ? 0
-        : _quantities.values.reduce((a, b) => a + b);
-
-    final debtSummary = debtSnapshot.data;
-    final isDebtLoading = debtSnapshot.connectionState != ConnectionState.done;
-    final isDebtError = debtSnapshot.hasError;
-
-    final isExceedingLimit =
-        debtSummary != null && totalSelected > debtSummary.remainingBorrowLimit;
-    final canBorrowCondition = debtSummary != null && debtSummary.canBorrow;
-
-    final isDaysValid = _days >= 1 && _days <= 30;
-
-    final canSubmit =
-        !isDebtLoading &&
-        !isDebtError &&
-        debtSummary != null &&
-        canBorrowCondition &&
-        !isExceedingLimit &&
-        isDaysValid;
-
-    String? notAllowedReason;
-    if (debtSummary != null) {
-      if (!debtSummary.canBorrow) {
-        notAllowedReason =
-            debtSummary.reasonIfNotAllowed ??
-            'Tài khoản hiện không đủ điều kiện mượn sách';
-      } else if (isExceedingLimit) {
-        notAllowedReason =
-            'Số lượng sách chọn ($totalSelected cuốn) vượt quá hạn mức còn lại (${debtSummary.remainingBorrowLimit} cuốn)';
-      }
-    }
-
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text('Sách đã chọn', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-
-            for (final book in widget.books)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        book.title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text('Còn ${book.copiesAvailable} cuốn'),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Text('Số lượng:'),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: submitting || _quantities[book.id]! <= 1
-                                ? null
-                                : () => setState(() {
-                                    _quantities[book.id] =
-                                        _quantities[book.id]! - 1;
-                                  }),
-                            icon: const Icon(Icons.remove_circle_outline),
-                          ),
-                          Text('${_quantities[book.id]}'),
-                          IconButton(
-                            onPressed:
-                                submitting ||
-                                    _quantities[book.id]! >=
-                                        book.copiesAvailable ||
-                                    (debtSummary != null &&
-                                        debtSummary.maxBorrowLimit > 0 &&
-                                        _quantities[book.id]! >=
-                                            debtSummary.maxBorrowLimit)
-                                ? null
-                                : () => setState(() {
-                                    _quantities[book.id] =
-                                        _quantities[book.id]! + 1;
-                                  }),
-                            icon: const Icon(Icons.add_circle_outline),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 16),
-
-            // Card Hạn mức mượn sách
-            _buildDebtSummaryCard(
-              memberId: memberId,
-              isDebtLoading: isDebtLoading,
-              isDebtError: isDebtError,
-              debtSummary: debtSummary,
-              totalSelected: totalSelected,
-              canSubmit: canSubmit,
-              notAllowedReason: notAllowedReason,
-            ),
-
-            const SizedBox(height: 20),
-
-            Text(
-              'Thời hạn mượn',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: _daysController,
-              enabled: !submitting,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Số ngày mượn',
-                hintText: 'Nhập từ 1 đến 30 ngày',
-                suffixText: 'ngày',
-                border: const OutlineInputBorder(),
-                errorText: !isDaysValid
-                    ? 'Thời hạn mượn phải từ 1 đến 30 ngày'
-                    : null,
-              ),
-              onChanged: (value) {
-                final parsed = int.tryParse(value);
-                setState(() {
-                  _days = parsed ?? 0;
-                });
-              },
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [1, 3, 7, 14, 30].map((d) {
-                return ChoiceChip(
-                  label: Text('$d ngày'),
-                  selected: _days == d,
-                  onSelected: submitting
-                      ? null
-                      : (selected) {
-                          if (selected) {
-                            setState(() {
-                              _days = d;
-                              _daysController.text = '$d';
-                            });
-                          }
-                        },
-                );
-              }).toList(),
-            ),
-
-            const SizedBox(height: 16),
-
-            const Text(
-              'Phiếu sẽ được gửi để chờ duyệt. '
-              'Sách chưa được mượn ngay sau khi gửi.',
-            ),
-
-            if (state is BorrowingSlipFailure) ...[
-              const SizedBox(height: 12),
-              Text(
-                state.message,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-
-            const SizedBox(height: 24),
-
-            FilledButton(
-              onPressed: submitting || !canSubmit
-                  ? null
-                  : () => _submit(memberId),
-              child: submitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Gửi phiếu mượn'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDebtSummaryCard({
-    required String memberId,
-    required bool isDebtLoading,
-    required bool isDebtError,
-    required MemberDebtSummary? debtSummary,
-    required int totalSelected,
-    required bool canSubmit,
-    required String? notAllowedReason,
-  }) {
-    if (isDebtLoading) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              SizedBox(width: 12),
-              Expanded(child: Text('Đang kiểm tra hạn mức mượn sách...')),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (isDebtError || debtSummary == null) {
-      return Card(
-        color: Theme.of(
-          context,
-        ).colorScheme.errorContainer.withValues(alpha: 0.3),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Không thể tải thông tin hạn mức mượn sách',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: () => _loadDebtSummary(memberId),
-                icon: const Icon(Icons.refresh, size: 16),
-                label: const Text('Thử lại'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Card(
-      color: canSubmit
-          ? Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
-          : Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.3),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  canSubmit ? Icons.verified_outlined : Icons.info_outline,
-                  size: 20,
-                  color: canSubmit
-                      ? Colors.green
-                      : Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Hạn mức mượn sách',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '• Đang mượn: ${debtSummary.currentBorrowedCount}/${debtSummary.maxBorrowLimit} cuốn',
-            ),
-            Text('• Còn được mượn: ${debtSummary.remainingBorrowLimit} cuốn'),
-            Text('• Đang chọn: $totalSelected cuốn'),
-            const SizedBox(height: 6),
-            if (canSubmit)
-              const Text(
-                'Đủ điều kiện gửi phiếu mượn',
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.w600,
-                ),
-              )
-            else
-              Text(
-                notAllowedReason ?? 'Không đủ điều kiện gửi phiếu mượn',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }
