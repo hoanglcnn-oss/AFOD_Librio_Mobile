@@ -14,6 +14,8 @@ import '../../../renewal/errors/renewal_error_mapper.dart';
 import '../../../renewal/bloc/renew_slip_bloc.dart';
 import '../../../renewal/bloc/renew_slip_event.dart';
 import '../../../renewal/bloc/renew_slip_state.dart';
+import '../../../renewal/presentation/widgets/slip_renewal_dialog.dart';
+import '../../../renewal/presentation/widgets/slip_renewal_section.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../../shared/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
@@ -324,191 +326,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
   Future<void> _openRenewDialog(BuildContext context, BorrowingSlip slip) async {
     final extraDays = await showDialog<int>(
       context: context,
-      builder: (dialogContext) {
-        int selectedDays = 7;
-        bool isCustom = false;
-        final customController = TextEditingController();
-
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            bool isValid = false;
-            if (!isCustom) {
-              isValid = selectedDays >= 1 && selectedDays <= 14;
-            } else {
-              final parsed = int.tryParse(customController.text.trim());
-              isValid = parsed != null && parsed >= 1 && parsed <= 14;
-              if (isValid) {
-                selectedDays = parsed;
-              }
-            }
-
-            final currentDueDateStr =
-                BorrowingSlipUiHelper.formatDate(slip.dueDate);
-            final projectedDueDateStr = isValid
-                ? BorrowingSlipUiHelper.formatDate(
-                    slip.dueDate.add(Duration(days: selectedDays)),
-                  )
-                : '---';
-
-            return AlertDialog(
-              title: const Text('Gia hạn phiếu mượn'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Gia hạn toàn bộ sách trong phiếu mượn này.'),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Thời hạn gia hạn:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        ChoiceChip(
-                          key: const ValueKey('renew_chip_3'),
-                          label: const Text('3 ngày'),
-                          selected: !isCustom && selectedDays == 3,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setDialogState(() {
-                                isCustom = false;
-                                selectedDays = 3;
-                              });
-                            }
-                          },
-                        ),
-                        ChoiceChip(
-                          key: const ValueKey('renew_chip_7'),
-                          label: const Text('7 ngày (mặc định)'),
-                          selected: !isCustom && selectedDays == 7,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setDialogState(() {
-                                isCustom = false;
-                                selectedDays = 7;
-                              });
-                            }
-                          },
-                        ),
-                        ChoiceChip(
-                          key: const ValueKey('renew_chip_14'),
-                          label: const Text('14 ngày (tối đa)'),
-                          selected: !isCustom && selectedDays == 14,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setDialogState(() {
-                                isCustom = false;
-                                selectedDays = 14;
-                              });
-                            }
-                          },
-                        ),
-                        ChoiceChip(
-                          key: const ValueKey('renew_chip_custom'),
-                          label: const Text('Số ngày khác'),
-                          selected: isCustom,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setDialogState(() {
-                                isCustom = true;
-                              });
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    if (isCustom) ...[
-                      const SizedBox(height: 12),
-                      TextField(
-                        key: const ValueKey('renew_custom_input'),
-                        controller: customController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(2),
-                        ],
-                        decoration: InputDecoration(
-                          labelText: 'Nhập số ngày (1–14)',
-                          hintText: 'Ví dụ: 5',
-                          border: const OutlineInputBorder(),
-                          errorText: customController.text.isNotEmpty && !isValid
-                              ? 'Số ngày phải từ 1 đến 14'
-                              : null,
-                        ),
-                        onChanged: (_) {
-                          setDialogState(() {});
-                        },
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Hạn trả hiện tại:'),
-                              Text(
-                                currentDueDateStr,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Hạn trả sau gia hạn:'),
-                              Text(
-                                projectedDueDateStr,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: isValid
-                                      ? Theme.of(context).primaryColor
-                                      : Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Điều kiện gia hạn sẽ được hệ thống kiểm tra tự động.',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Hủy'),
-                ),
-                FilledButton(
-                  key: const ValueKey('confirm_renew_button'),
-                  onPressed: isValid
-                      ? () => Navigator.of(dialogContext).pop(selectedDays)
-                      : null,
-                  child: const Text('Xác nhận gia hạn'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (_) => SlipRenewalDialog(slip: slip),
     );
 
     if (extraDays != null && context.mounted) {
@@ -520,99 +338,6 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
         ),
       );
     }
-  }
-
-  Widget _buildRenewalSection(
-    BuildContext context,
-    BorrowingSlip slip,
-    RenewSlipState renewState,
-  ) {
-    final isProcessing =
-        renewState is RenewSlipSubmitting || renewState is RenewSlipChecking;
-
-    if (isProcessing) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              renewState is RenewSlipChecking
-                  ? 'Đang kiểm tra điều kiện gia hạn...'
-                  : 'Đang xử lý gia hạn...',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (slip.canRenew == true) {
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: FilledButton.icon(
-          onPressed: () => _openRenewDialog(context, slip),
-          icon: const Icon(Icons.update, size: 18),
-          label: const Text('Gia hạn'),
-        ),
-      );
-    }
-
-    if (slip.canRenew == false) {
-      final reason =
-          slip.renewalMessage ??
-          mapRenewalReasonCode(slip.renewalReasonCode) ??
-          'Phiếu mượn không đủ điều kiện để gia hạn.';
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: FilledButton.icon(
-              onPressed: null,
-              icon: const Icon(Icons.update, size: 18),
-              label: const Text('Gia hạn'),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            reason,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.error,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      );
-    }
-
-    // canRenew == null: nút Kiểm tra gia hạn, không tự cho phép PATCH
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              _renewBloc.add(CheckSlipRenewalRequested(slip.id));
-            },
-            icon: const Icon(Icons.search, size: 18),
-            label: const Text('Kiểm tra gia hạn'),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          'Chưa có thông tin gia hạn. Bấm để kiểm tra điều kiện.',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
-    );
   }
 
   @override
@@ -790,7 +515,14 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                     Text('Số lần đã gia hạn: ${slip.renewCount}'),
                     if (!isExcludedStatus && canUserRenew) ...[
                       const SizedBox(height: 8),
-                      _buildRenewalSection(context, slip, renewState),
+                      SlipRenewalSection(
+                        slip: slip,
+                        renewState: renewState,
+                        onRenewPressed: () => _openRenewDialog(context, slip),
+                        onCheckEligibility: () {
+                          _renewBloc.add(CheckSlipRenewalRequested(slip.id));
+                        },
+                      ),
                     ],
                     if (overdue) ...[
                       const SizedBox(height: 8),
