@@ -9,7 +9,12 @@ import 'reservations_state.dart';
 
 class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
   final ReservationsRepository reservationsRepository;
-  int _activeRequestId = 0;
+
+  // Quản lý riêng biệt request đọc và ghi để tránh race condition
+  int _readRequestId = 0;
+  int _writeEpoch = 0;
+  bool _isMutating = false;
+  final Set<String> _cancelledReservationIds = {};
 
   ReservationsBloc({required this.reservationsRepository})
       : super(const ReservationsInitial()) {
@@ -23,12 +28,15 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
     LoadReservations event,
     Emitter<ReservationsState> emit,
   ) async {
-    if (state is ReservationCancelling || state is ReservationCreating) {
+    if (_isMutating ||
+        state is ReservationCancelling ||
+        state is ReservationCreating) {
       // Không ngắt quãng mutation đang xử lý
       return;
     }
 
-    final reqId = ++_activeRequestId;
+    final reqReadId = ++_readRequestId;
+    final reqWriteEpoch = _writeEpoch;
     emit(const ReservationsLoading());
 
     try {
@@ -38,17 +46,39 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
         limit: event.limit,
       );
 
-      if (reqId != _activeRequestId) {
-        // Response cũ, bỏ qua để tránh ghi đè dữ liệu mới
+      // Nếu có mutation diễn ra hoặc có request đọc mới hơn: bỏ qua response cũ
+      if (reqReadId != _readRequestId ||
+          reqWriteEpoch != _writeEpoch ||
+          _isMutating) {
         return;
       }
 
+      final reconciledItems = paginated.items.map((r) {
+        if (_cancelledReservationIds.contains(r.id)) {
+          return r.copyWith(status: 'CANCELLED');
+        }
+        return r;
+      }).toList();
+
+      final reconciledPaginated = PaginatedReservations(
+        items: reconciledItems,
+        page: paginated.page,
+        limit: paginated.limit,
+        totalItems: paginated.totalItems,
+        totalPages: paginated.totalPages,
+        hasNextPage: paginated.hasNextPage,
+      );
+
       emit(ReservationsLoaded(
-        paginated: paginated,
+        paginated: reconciledPaginated,
         memberId: event.memberId,
       ));
     } catch (e) {
-      if (reqId != _activeRequestId) return;
+      if (reqReadId != _readRequestId ||
+          reqWriteEpoch != _writeEpoch ||
+          _isMutating) {
+        return;
+      }
 
       emit(ReservationsFailure(
         ReservationErrorMapper.mapError(
@@ -63,6 +93,13 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
     RefreshReservations event,
     Emitter<ReservationsState> emit,
   ) async {
+    if (_isMutating ||
+        state is ReservationCancelling ||
+        state is ReservationCreating) {
+      event.completer?.complete();
+      return;
+    }
+
     final current = state;
     final int page = switch (current) {
       ReservationsLoaded(:final paginated) => paginated.page,
@@ -79,7 +116,8 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
       _ => 10,
     };
 
-    final reqId = ++_activeRequestId;
+    final reqReadId = ++_readRequestId;
+    final reqWriteEpoch = _writeEpoch;
 
     try {
       final paginated = await reservationsRepository.getReservations(
@@ -88,16 +126,39 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
         limit: limit,
       );
 
-      if (reqId != _activeRequestId) {
+      // Bỏ qua nếu có mutation đang chạy hoặc đã có thay đổi mutation mới hơn
+      if (reqReadId != _readRequestId ||
+          reqWriteEpoch != _writeEpoch ||
+          _isMutating) {
         return;
       }
 
+      final reconciledItems = paginated.items.map((r) {
+        if (_cancelledReservationIds.contains(r.id)) {
+          return r.copyWith(status: 'CANCELLED');
+        }
+        return r;
+      }).toList();
+
+      final reconciledPaginated = PaginatedReservations(
+        items: reconciledItems,
+        page: paginated.page,
+        limit: paginated.limit,
+        totalItems: paginated.totalItems,
+        totalPages: paginated.totalPages,
+        hasNextPage: paginated.hasNextPage,
+      );
+
       emit(ReservationsLoaded(
-        paginated: paginated,
+        paginated: reconciledPaginated,
         memberId: event.memberId,
       ));
     } catch (e) {
-      if (reqId != _activeRequestId) return;
+      if (reqReadId != _readRequestId ||
+          reqWriteEpoch != _writeEpoch ||
+          _isMutating) {
+        return;
+      }
 
       if (current is! ReservationsLoaded &&
           current is! ReservationCancelSuccess &&
@@ -118,7 +179,9 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
     CancelReservationRequested event,
     Emitter<ReservationsState> emit,
   ) async {
-    if (state is ReservationCancelling || state is ReservationCreating) {
+    if (_isMutating ||
+        state is ReservationCancelling ||
+        state is ReservationCreating) {
       // Chống mutation trùng / double submit
       return;
     }
@@ -128,7 +191,8 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
       return;
     }
 
-    final mutationId = ++_activeRequestId;
+    _isMutating = true;
+    ++_writeEpoch;
 
     emit(ReservationCancelling(
       paginated: currentPaginated,
@@ -143,8 +207,23 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
         reason: event.reason,
       );
 
-      // Sau khi PATCH cancel thành công:
-      final refreshId = ++_activeRequestId;
+      _cancelledReservationIds.add(event.reservationId);
+
+      // Cập nhật optimistic từ kết quả PATCH thành công
+      final updatedItems = currentPaginated.items.map((r) {
+        return r.id == event.reservationId ? cancelledReservation : r;
+      }).toList();
+
+      PaginatedReservations finalPaginated = PaginatedReservations(
+        items: updatedItems,
+        page: currentPaginated.page,
+        limit: currentPaginated.limit,
+        totalItems: currentPaginated.totalItems,
+        totalPages: currentPaginated.totalPages,
+        hasNextPage: currentPaginated.hasNextPage,
+      );
+
+      // Cố gắng refresh thêm từ backend nhưng GET refresh không được làm mất ReservationCancelSuccess
       try {
         final refreshed = await reservationsRepository.getReservations(
           memberId: event.memberId,
@@ -152,38 +231,28 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
           limit: currentPaginated.limit,
         );
 
-        if (refreshId != _activeRequestId) return;
-
-        emit(ReservationCancelSuccess(
-          paginated: refreshed,
-          memberId: event.memberId,
-          message: 'Hủy đặt trước thành công',
-        ));
-      } catch (_) {
-        // PATCH cancel thành công nhưng GET refresh lỗi vẫn phải báo hủy thành công, giữ dữ liệu Backend đã trả
-        if (refreshId != _activeRequestId && mutationId != _activeRequestId) {
-          return;
-        }
-
-        final updatedItems = currentPaginated.items.map((r) {
+        final reconciled = refreshed.items.map((r) {
           return r.id == event.reservationId ? cancelledReservation : r;
         }).toList();
 
-        final optimisticPaginated = PaginatedReservations(
-          items: updatedItems,
-          page: currentPaginated.page,
-          limit: currentPaginated.limit,
-          totalItems: currentPaginated.totalItems,
-          totalPages: currentPaginated.totalPages,
-          hasNextPage: currentPaginated.hasNextPage,
+        finalPaginated = PaginatedReservations(
+          items: reconciled,
+          page: refreshed.page,
+          limit: refreshed.limit,
+          totalItems: refreshed.totalItems,
+          totalPages: refreshed.totalPages,
+          hasNextPage: refreshed.hasNextPage,
         );
-
-        emit(ReservationCancelSuccess(
-          paginated: optimisticPaginated,
-          memberId: event.memberId,
-          message: 'Hủy đặt trước thành công',
-        ));
+      } catch (_) {
+        // Giữ nguyên finalPaginated đã cập nhật từ PATCH thành công
       }
+
+      // Luôn phát ReservationCancelSuccess khi PATCH thành công
+      emit(ReservationCancelSuccess(
+        paginated: finalPaginated,
+        memberId: event.memberId,
+        message: 'Hủy đặt trước thành công',
+      ));
     } catch (e) {
       if (ReservationErrorMapper.isTimeout(e)) {
         // Timeout: KHÔNG TỰ RETRY MUTATION; kiểm tra lại backend
@@ -193,7 +262,20 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
           );
 
           if (detail.isCancelled) {
-            final refreshId = ++_activeRequestId;
+            _cancelledReservationIds.add(event.reservationId);
+            final updatedItems = currentPaginated.items.map((r) {
+              return r.id == event.reservationId ? detail : r;
+            }).toList();
+
+            PaginatedReservations finalPaginated = PaginatedReservations(
+              items: updatedItems,
+              page: currentPaginated.page,
+              limit: currentPaginated.limit,
+              totalItems: currentPaginated.totalItems,
+              totalPages: currentPaginated.totalPages,
+              hasNextPage: currentPaginated.hasNextPage,
+            );
+
             try {
               final refreshed = await reservationsRepository.getReservations(
                 memberId: event.memberId,
@@ -201,33 +283,26 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
                 limit: currentPaginated.limit,
               );
 
-              if (refreshId != _activeRequestId) return;
-
-              emit(ReservationCancelSuccess(
-                paginated: refreshed,
-                memberId: event.memberId,
-                message: 'Đã xác nhận hủy đặt trước thành công',
-              ));
-              return;
-            } catch (_) {
-              final updatedItems = currentPaginated.items.map((r) {
+              final reconciled = refreshed.items.map((r) {
                 return r.id == event.reservationId ? detail : r;
               }).toList();
 
-              emit(ReservationCancelSuccess(
-                paginated: PaginatedReservations(
-                  items: updatedItems,
-                  page: currentPaginated.page,
-                  limit: currentPaginated.limit,
-                  totalItems: currentPaginated.totalItems,
-                  totalPages: currentPaginated.totalPages,
-                  hasNextPage: currentPaginated.hasNextPage,
-                ),
-                memberId: event.memberId,
-                message: 'Đã xác nhận hủy đặt trước thành công',
-              ));
-              return;
-            }
+              finalPaginated = PaginatedReservations(
+                items: reconciled,
+                page: refreshed.page,
+                limit: refreshed.limit,
+                totalItems: refreshed.totalItems,
+                totalPages: refreshed.totalPages,
+                hasNextPage: refreshed.hasNextPage,
+              );
+            } catch (_) {}
+
+            emit(ReservationCancelSuccess(
+              paginated: finalPaginated,
+              memberId: event.memberId,
+              message: 'Đã xác nhận hủy đặt trước thành công',
+            ));
+            return;
           }
         } catch (_) {}
 
@@ -244,6 +319,8 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
           message: ReservationErrorMapper.mapError(e),
         ));
       }
+    } finally {
+      _isMutating = false;
     }
   }
 
@@ -251,15 +328,16 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
     CreateReservationRequested event,
     Emitter<ReservationsState> emit,
   ) async {
-    if (state is ReservationCreating || state is ReservationCancelling) {
+    if (_isMutating ||
+        state is ReservationCreating ||
+        state is ReservationCancelling) {
       // Chống mutation trùng / double submit
       return;
     }
 
-    final mutationId = ++_activeRequestId;
+    _isMutating = true;
+    ++_writeEpoch;
     emit(ReservationCreating(bookId: event.bookId));
-
-    final requestStartTime = DateTime.now();
 
     try {
       final reservation = await reservationsRepository.createReservation(
@@ -272,47 +350,15 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
           ? 'Sách đã sẵn sàng nhận'
           : 'Đang chờ sách';
 
-      if (mutationId != _activeRequestId) return;
-
       emit(ReservationCreateSuccess(
         reservation: reservation,
         message: 'Đặt trước thành công ($statusText)',
       ));
     } catch (e) {
-      if (mutationId != _activeRequestId) return;
       if (ReservationErrorMapper.isTimeout(e)) {
         // Timeout: KHÔNG TỰ RETRY POST
-        try {
-          final list = await reservationsRepository.getReservations(
-            memberId: event.memberId,
-            page: 1,
-            limit: 10,
-          );
-
-          // Chỉ xác nhận thành công nếu tìm thấy một reservation MỚI được tạo sau thời điểm request
-          // KHÔNG khẳng định POST timeout thành công chỉ vì thấy một reservation cũ cùng bookId trong trang đầu!
-          final newlyCreated = list.items.where((r) {
-            if (r.bookId != event.bookId) return false;
-            if (!r.isPending && !r.isReady) return false;
-            if (r.reservedAt == null) return false;
-            return r.reservedAt!.isAfter(
-              requestStartTime.subtract(const Duration(seconds: 5)),
-            );
-          }).toList();
-
-          if (newlyCreated.isNotEmpty) {
-            final res = newlyCreated.first;
-            final statusText =
-                res.isReady ? 'Sách đã sẵn sàng nhận' : 'Đang chờ sách';
-            emit(ReservationCreateSuccess(
-              reservation: res,
-              message: 'Đã xác nhận đặt trước ($statusText)',
-            ));
-            return;
-          }
-        } catch (_) {}
-
-        // Hiển thị kết quả chưa xác định khi không xác minh được, hướng người dùng kiểm tra danh sách
+        // Không coi reservation có reservedAt gần requestStartTime là bằng chứng chắc chắn POST vừa thành công.
+        // Báo kết quả chưa xác định, không tự retry POST.
         emit(const ReservationCreateFailure(
           'Kết quả đặt trước chưa được xác định do mất kết nối. Vui lòng kiểm tra lại trong danh sách đặt trước.',
         ));
@@ -321,6 +367,8 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
           ReservationErrorMapper.mapError(e),
         ));
       }
+    } finally {
+      _isMutating = false;
     }
   }
 

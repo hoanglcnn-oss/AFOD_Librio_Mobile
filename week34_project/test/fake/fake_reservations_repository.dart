@@ -23,6 +23,8 @@ class FakeReservationsRepository implements ReservationsRepository {
 
   Completer<void>? createCompleter;
   Completer<void>? cancelCompleter;
+  Completer<void>? getCompleter;
+  bool pauseNextGetOnly = false;
 
   FakeReservationsRepository({List<Reservation>? initialReservations}) {
     if (initialReservations != null) {
@@ -72,6 +74,14 @@ class FakeReservationsRepository implements ReservationsRepository {
     int limit = 10,
   }) async {
     getCallCount++;
+
+    if (getCompleter != null) {
+      final c = getCompleter!;
+      if (pauseNextGetOnly) {
+        getCompleter = null;
+      }
+      await c.future;
+    }
 
     if (shouldFailGet) {
       throw Exception('Get reservations failed');
