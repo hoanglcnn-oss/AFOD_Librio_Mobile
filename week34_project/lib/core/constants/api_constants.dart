@@ -13,4 +13,5 @@ class ApiConstants {
   static const String borrowings = '/borrowings';
   static const String borrowingSlips = '/borrowing-slips';
   static const String members = '/members';
+  static const String reservations = '/reservations';
 }

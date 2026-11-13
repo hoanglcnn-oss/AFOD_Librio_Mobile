@@ -12,6 +12,7 @@ import '../../../borrowings/bloc/my_borrowings_event.dart';
 import '../../../borrowings/data/api_borrowing_repository.dart';
 import '../../../borrowings/presentation/pages/my_borrowings_screen.dart';
 import '../../../borrowing_slips/presentation/pages/borrowing_slip_list_screen.dart';
+import '../../../reservations/presentation/pages/my_reservations_screen.dart';
 
 class MyBorrowingsTab extends StatefulWidget {
   final VoidCallback onReturnSucceeded;
@@ -78,6 +79,28 @@ class _MyBorrowingsTabState extends State<MyBorrowingsTab> {
           length: 2,
           child: Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        key: const ValueKey('my_reservations_entry_button'),
+                        icon: const Icon(Icons.bookmark_outline, size: 18),
+                        label: const Text('Đặt trước của tôi'),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  MyReservationsScreen(memberId: memberId),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const TabBar(
                 tabs: [
                   Tab(text: 'Mượn lẻ'),

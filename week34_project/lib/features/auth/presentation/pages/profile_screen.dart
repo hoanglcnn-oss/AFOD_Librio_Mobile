@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:week34_project/features/members/presentation/pages/borrowing_limit_screen.dart';
+import 'package:week34_project/features/reservations/presentation/pages/my_reservations_screen.dart';
 
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
@@ -76,6 +77,23 @@ class ProfileScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) =>
                           BorrowingLimitScreen(memberId: user.memberId),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                key: const ValueKey('profile_my_reservations_tile'),
+                leading: const Icon(Icons.bookmark_outline),
+                title: const Text('Đặt trước của tôi'),
+                subtitle: const Text(
+                  'Xem và quản lý các yêu cầu đặt trước sách',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          MyReservationsScreen(memberId: user.memberId),
                     ),
                   );
                 },
