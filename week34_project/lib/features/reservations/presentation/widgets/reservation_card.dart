@@ -16,7 +16,8 @@ class ReservationCard extends StatelessWidget {
     this.isOwner = true,
   });
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Chưa xác định';
     final d = date.day.toString().padLeft(2, '0');
     final m = date.month.toString().padLeft(2, '0');
     final y = date.year;
@@ -94,7 +95,7 @@ class ReservationCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Mã phiếu: ${reservation.reservationNumber}',
+                    'Mã phiếu: ${reservation.reservationCode}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -143,7 +144,7 @@ class ReservationCard extends StatelessWidget {
                     size: 15, color: Colors.grey.shade600),
                 const SizedBox(width: 6),
                 Text(
-                  'Ngày đặt: ${_formatDate(reservation.reservationDate)}',
+                  'Ngày đặt: ${_formatDate(reservation.reservedAt)}',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade700,

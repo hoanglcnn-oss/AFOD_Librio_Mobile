@@ -1,11 +1,16 @@
 class Reservation {
   final String id;
-  final String reservationNumber;
+  final String reservationCode;
+  String get reservationNumber => reservationCode;
+
   final String memberId;
   final String bookId;
   final String bookTitle;
   final String status;
-  final DateTime reservationDate;
+
+  final DateTime? reservedAt;
+  DateTime? get reservationDate => reservedAt;
+
   final DateTime? readyAt;
   final DateTime? expiresAt;
   final DateTime? fulfilledAt;
@@ -15,19 +20,22 @@ class Reservation {
 
   const Reservation({
     required this.id,
-    required this.reservationNumber,
+    String? reservationCode,
+    String? reservationNumber,
     required this.memberId,
     required this.bookId,
     required this.bookTitle,
     required this.status,
-    required this.reservationDate,
+    DateTime? reservedAt,
+    DateTime? reservationDate,
     this.readyAt,
     this.expiresAt,
     this.fulfilledAt,
     this.cancelledAt,
     this.cancellationReason,
     this.notes,
-  });
+  })  : reservationCode = reservationCode ?? reservationNumber ?? '',
+        reservedAt = reservedAt ?? reservationDate;
 
   bool get isPending => status == 'PENDING';
   bool get isReady => status == 'READY';
@@ -74,7 +82,8 @@ class Reservation {
     final memberId = rawMemberId.toString();
 
     final id = (json['id'] ?? json['_id'] ?? '').toString();
-    final reservationNumber = (json['reservationNumber'] ??
+    final reservationCode = (json['reservationCode'] ??
+            json['reservationNumber'] ??
             json['code'] ??
             json['id'] ??
             '')
@@ -82,19 +91,21 @@ class Reservation {
 
     final status = (json['status'] ?? 'PENDING').toString().toUpperCase();
 
-    final reservationDate = _parseDate(
-          json['reservationDate'] ?? json['createdAt'] ?? json['created_at'],
-        ) ??
-        DateTime.now();
+    final reservedAt = _parseDate(
+      json['reservedAt'] ??
+          json['reservationDate'] ??
+          json['createdAt'] ??
+          json['created_at'],
+    );
 
     return Reservation(
       id: id,
-      reservationNumber: reservationNumber,
+      reservationCode: reservationCode,
       memberId: memberId,
       bookId: bookId,
       bookTitle: bookTitle,
       status: status,
-      reservationDate: reservationDate,
+      reservedAt: reservedAt,
       readyAt: _parseDate(json['readyAt'] ?? json['ready_at']),
       expiresAt: _parseDate(
         json['expiresAt'] ?? json['expires_at'] ?? json['expiryDate'],
@@ -111,12 +122,14 @@ class Reservation {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'reservationNumber': reservationNumber,
+        'reservationCode': reservationCode,
+        'reservationNumber': reservationCode,
         'memberId': memberId,
         'bookId': bookId,
         'bookTitle': bookTitle,
         'status': status,
-        'reservationDate': reservationDate.toIso8601String(),
+        'reservedAt': reservedAt?.toIso8601String(),
+        'reservationDate': reservedAt?.toIso8601String(),
         'readyAt': readyAt?.toIso8601String(),
         'expiresAt': expiresAt?.toIso8601String(),
         'fulfilledAt': fulfilledAt?.toIso8601String(),
@@ -127,11 +140,13 @@ class Reservation {
 
   Reservation copyWith({
     String? id,
+    String? reservationCode,
     String? reservationNumber,
     String? memberId,
     String? bookId,
     String? bookTitle,
     String? status,
+    DateTime? reservedAt,
     DateTime? reservationDate,
     DateTime? readyAt,
     DateTime? expiresAt,
@@ -142,12 +157,12 @@ class Reservation {
   }) {
     return Reservation(
       id: id ?? this.id,
-      reservationNumber: reservationNumber ?? this.reservationNumber,
+      reservationCode: reservationCode ?? reservationNumber ?? this.reservationCode,
       memberId: memberId ?? this.memberId,
       bookId: bookId ?? this.bookId,
       bookTitle: bookTitle ?? this.bookTitle,
       status: status ?? this.status,
-      reservationDate: reservationDate ?? this.reservationDate,
+      reservedAt: reservedAt ?? reservationDate ?? this.reservedAt,
       readyAt: readyAt ?? this.readyAt,
       expiresAt: expiresAt ?? this.expiresAt,
       fulfilledAt: fulfilledAt ?? this.fulfilledAt,

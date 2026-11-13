@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:equatable/equatable.dart';
 
 abstract class ReservationsEvent extends Equatable {
@@ -24,8 +25,9 @@ class LoadReservations extends ReservationsEvent {
 
 class RefreshReservations extends ReservationsEvent {
   final String memberId;
+  final Completer<void>? completer;
 
-  const RefreshReservations(this.memberId);
+  const RefreshReservations(this.memberId, {this.completer});
 
   @override
   List<Object?> get props => [memberId];

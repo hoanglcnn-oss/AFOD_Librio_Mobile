@@ -16,12 +16,12 @@ void main() {
 
     final initialReservation = Reservation(
       id: 'res-1',
-      reservationNumber: 'RSV-001',
+      reservationCode: 'RSV-001',
       memberId: 'mem-1',
       bookId: 'b-1',
       bookTitle: 'Clean Code',
       status: 'PENDING',
-      reservationDate: DateTime(2026, 11, 10),
+      reservedAt: DateTime(2026, 11, 10),
     );
 
     setUp(() {
@@ -71,26 +71,25 @@ void main() {
     });
 
     test('RefreshReservations updates loaded reservations without showing initial loading', () async {
-      // Đầu tiên load thành công
       bloc.add(const LoadReservations(memberId: 'mem-1'));
       await Future.delayed(Duration.zero);
       expect(bloc.state, isA<ReservationsLoaded>());
 
-      // Thêm 1 reservation mới vào repo
       repository.reservations.add(
         Reservation(
           id: 'res-2',
-          reservationNumber: 'RSV-002',
+          reservationCode: 'RSV-002',
           memberId: 'mem-1',
           bookId: 'b-2',
           bookTitle: 'Design Patterns',
           status: 'READY',
-          reservationDate: DateTime.now(),
+          reservedAt: DateTime.now(),
         ),
       );
 
-      bloc.add(const RefreshReservations('mem-1'));
-      await Future.delayed(Duration.zero);
+      final completer = Completer<void>();
+      bloc.add(RefreshReservations('mem-1', completer: completer));
+      await completer.future;
 
       expect(bloc.state, isA<ReservationsLoaded>());
       final loaded = bloc.state as ReservationsLoaded;
@@ -118,6 +117,34 @@ void main() {
       final success = states[1] as ReservationCancelSuccess;
       expect(success.paginated.items.first.status, 'CANCELLED');
       expect(repository.cancelCallCount, 1);
+    });
+
+    test('PATCH cancel thành công nhưng GET refresh lỗi | Vẫn báo hủy thành công và giữ dữ liệu Backend đã trả', () async {
+      bloc.add(const LoadReservations(memberId: 'mem-1'));
+      await Future.delayed(Duration.zero);
+
+      // Sau khi cancel xong, GET getReservations sẽ lỗi
+      repository.cancelCompleter = Completer<void>();
+
+      final states = <ReservationsState>[];
+      bloc.stream.listen(states.add);
+
+      bloc.add(const CancelReservationRequested(
+        reservationId: 'res-1',
+        memberId: 'mem-1',
+      ));
+      await Future.delayed(Duration.zero);
+      expect(bloc.state, isA<ReservationCancelling>());
+
+      // Cấu hình GET bị lỗi
+      repository.shouldFailGet = true;
+      repository.cancelCompleter!.complete();
+      await Future.delayed(Duration.zero);
+
+      // Phải emit ReservationCancelSuccess chứ không được làm mất kết quả thành công
+      expect(states.last, isA<ReservationCancelSuccess>());
+      final success = states.last as ReservationCancelSuccess;
+      expect(success.paginated.items.first.status, 'CANCELLED');
     });
 
     test('CancelReservationRequested prevents duplicate submit when cancelling', () async {
@@ -148,11 +175,31 @@ void main() {
       expect(bloc.state, isA<ReservationCancelSuccess>());
     });
 
+    test('Chống response load cũ ghi đè khi mutation đang hoặc vừa hoàn tất', () async {
+      // Giả lập load chậm
+      final loadCompleter = Completer<void>();
+      bloc.add(const LoadReservations(memberId: 'mem-1'));
+      await Future.delayed(Duration.zero);
+
+      // Trước khi load xong, đã có state loaded trước đó
+      // Giả lập trigger cancel
+      bloc.add(const CancelReservationRequested(
+        reservationId: 'res-1',
+        memberId: 'mem-1',
+      ));
+      await Future.delayed(Duration.zero);
+
+      // Response của load cũ đến sau -> không được ghi đè
+      loadCompleter.complete();
+      await Future.delayed(Duration.zero);
+
+      expect(bloc.state, isNot(isA<ReservationsLoading>()));
+    });
+
     test('CancelReservationRequested timeout | Backend xác nhận đã hủy -> Success không gọi lại PATCH', () async {
       bloc.add(const LoadReservations(memberId: 'mem-1'));
       await Future.delayed(Duration.zero);
 
-      // Giả lập PATCH bị timeout nhưng thực tế Backend đã cập nhật trạng thái
       repository.cancelError = DioException(
         requestOptions: RequestOptions(path: ApiConstants.reservations),
         type: DioExceptionType.connectionTimeout,
@@ -183,7 +230,6 @@ void main() {
       bloc.add(const LoadReservations(memberId: 'mem-1'));
       await Future.delayed(Duration.zero);
 
-      // Giả lập PATCH bị timeout và reservation vẫn PENDING
       repository.cancelError = DioException(
         requestOptions: RequestOptions(path: ApiConstants.reservations),
         type: DioExceptionType.receiveTimeout,
@@ -279,22 +325,22 @@ void main() {
       expect(failure.message, 'Bạn đã có lượt đặt trước đang hoạt động');
     });
 
-    test('CreateReservationRequested timeout | Backend xác nhận -> Success không gọi lại POST', () async {
+    test('CreateReservationRequested timeout | Tìm thấy reservation MỚI -> Success không gọi lại POST', () async {
       repository.createError = DioException(
         requestOptions: RequestOptions(path: ApiConstants.reservations),
         type: DioExceptionType.connectionTimeout,
       );
 
-      // Thêm reservation vào backend như thể request ban đầu đã thành công
+      // Thêm reservation MỚI vào backend với thời gian hiện tại
       repository.reservations.add(
         Reservation(
           id: 'res-timeout',
-          reservationNumber: 'RSV-TO',
+          reservationCode: 'RSV-TO',
           memberId: 'mem-1',
           bookId: 'b-99',
           bookTitle: 'Sách 99',
           status: 'PENDING',
-          reservationDate: DateTime.now(),
+          reservedAt: DateTime.now(),
         ),
       );
 
@@ -311,6 +357,64 @@ void main() {
       expect(states[0], isA<ReservationCreating>());
       expect(states[1], isA<ReservationCreateSuccess>());
       expect(repository.createCallCount, 1); // Không tự retry POST
+    });
+
+    test('CreateReservationRequested timeout | Chỉ thấy reservation CŨ ở trang đầu -> Báo kết quả chưa xác định, KHÔNG khẳng định thành công', () async {
+      repository.createError = DioException(
+        requestOptions: RequestOptions(path: ApiConstants.reservations),
+        type: DioExceptionType.connectionTimeout,
+      );
+
+      // Đã có 1 reservation CŨ cho cuốn sách này từ 2 ngày trước
+      repository.reservations.add(
+        Reservation(
+          id: 'res-old',
+          reservationCode: 'RSV-OLD',
+          memberId: 'mem-1',
+          bookId: 'b-99',
+          bookTitle: 'Sách 99',
+          status: 'PENDING',
+          reservedAt: DateTime.now().subtract(const Duration(days: 2)),
+        ),
+      );
+
+      final states = <ReservationsState>[];
+      bloc.stream.listen(states.add);
+
+      bloc.add(const CreateReservationRequested(
+        memberId: 'mem-1',
+        bookId: 'b-99',
+      ));
+      await Future.delayed(Duration.zero);
+
+      expect(states.length, 2);
+      expect(states[0], isA<ReservationCreating>());
+      expect(states[1], isA<ReservationCreateFailure>());
+      final fail = states[1] as ReservationCreateFailure;
+      expect(fail.message, contains('chưa được xác định'));
+      expect(repository.createCallCount, 1); // Không tự retry POST
+    });
+
+    test('CreateReservationRequested timeout | Không tìm thấy trong trang 1 (hoặc trang ngoài) -> Báo kết quả chưa xác định', () async {
+      repository.createError = DioException(
+        requestOptions: RequestOptions(path: ApiConstants.reservations),
+        type: DioExceptionType.sendTimeout,
+      );
+
+      final states = <ReservationsState>[];
+      bloc.stream.listen(states.add);
+
+      bloc.add(const CreateReservationRequested(
+        memberId: 'mem-1',
+        bookId: 'b-not-found',
+      ));
+      await Future.delayed(Duration.zero);
+
+      expect(states.length, 2);
+      expect(states[0], isA<ReservationCreating>());
+      expect(states[1], isA<ReservationCreateFailure>());
+      final fail = states[1] as ReservationCreateFailure;
+      expect(fail.message, contains('chưa được xác định'));
     });
   });
 }

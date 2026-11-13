@@ -28,12 +28,12 @@ void main() {
     testWidgets('PENDING status | Hiển thị badge, thông tin chờ và nút Hủy đặt trước khi là chủ sở hữu', (tester) async {
       final res = Reservation(
         id: 'res-1',
-        reservationNumber: 'RSV-001',
+        reservationCode: 'RSV-001',
         memberId: 'mem-01',
         bookId: 'b-1',
         bookTitle: 'Clean Code',
         status: 'PENDING',
-        reservationDate: DateTime(2026, 11, 10),
+        reservedAt: DateTime(2026, 11, 10),
       );
 
       await tester.pumpWidget(
@@ -59,12 +59,12 @@ void main() {
     testWidgets('READY status | Hiển thị thông báo sẵn sàng lấy sách và hạn lấy sách', (tester) async {
       final res = Reservation(
         id: 'res-2',
-        reservationNumber: 'RSV-002',
+        reservationCode: 'RSV-002',
         memberId: 'mem-01',
         bookId: 'b-2',
         bookTitle: 'Refactoring',
         status: 'READY',
-        reservationDate: DateTime(2026, 11, 10),
+        reservedAt: DateTime(2026, 11, 10),
         expiresAt: DateTime(2026, 11, 15, 17, 30),
       );
 
@@ -91,12 +91,12 @@ void main() {
     testWidgets('FULFILLED, CANCELLED, EXPIRED | Chỉ xem lịch sử, KHÔNG có nút Hủy đặt trước', (tester) async {
       final fulfilledRes = Reservation(
         id: 'res-3',
-        reservationNumber: 'RSV-003',
+        reservationCode: 'RSV-003',
         memberId: 'mem-01',
         bookId: 'b-3',
         bookTitle: 'Book 3',
         status: 'FULFILLED',
-        reservationDate: DateTime(2026, 11, 1),
+        reservedAt: DateTime(2026, 11, 1),
       );
 
       await tester.pumpWidget(
@@ -118,12 +118,12 @@ void main() {
       // CANCELLED
       final cancelledRes = Reservation(
         id: 'res-4',
-        reservationNumber: 'RSV-004',
+        reservationCode: 'RSV-004',
         memberId: 'mem-01',
         bookId: 'b-4',
         bookTitle: 'Book 4',
         status: 'CANCELLED',
-        reservationDate: DateTime(2026, 11, 1),
+        reservedAt: DateTime(2026, 11, 1),
         cancellationReason: 'Độc giả tự hủy',
       );
 
@@ -147,12 +147,12 @@ void main() {
       // EXPIRED
       final expiredRes = Reservation(
         id: 'res-5',
-        reservationNumber: 'RSV-005',
+        reservationCode: 'RSV-005',
         memberId: 'mem-01',
         bookId: 'b-5',
         bookTitle: 'Book 5',
         status: 'EXPIRED',
-        reservationDate: DateTime(2026, 10, 1),
+        reservedAt: DateTime(2026, 10, 1),
       );
 
       await tester.pumpWidget(
@@ -175,12 +175,12 @@ void main() {
     testWidgets('Ownership check | Không phải chủ sở hữu (isOwner = false) -> Khóa nút Hủy', (tester) async {
       final res = Reservation(
         id: 'res-1',
-        reservationNumber: 'RSV-001',
+        reservationCode: 'RSV-001',
         memberId: 'mem-other',
         bookId: 'b-1',
         bookTitle: 'Clean Code',
         status: 'PENDING',
-        reservationDate: DateTime(2026, 11, 10),
+        reservedAt: DateTime(2026, 11, 10),
       );
 
       await tester.pumpWidget(
@@ -203,12 +203,12 @@ void main() {
     testWidgets('Librarian guard | MEMBER không thấy thao tác quản lý của thủ thư', (tester) async {
       final res = Reservation(
         id: 'res-1',
-        reservationNumber: 'RSV-001',
+        reservationCode: 'RSV-001',
         memberId: 'mem-01',
         bookId: 'b-1',
         bookTitle: 'Clean Code',
         status: 'PENDING',
-        reservationDate: DateTime(2026, 11, 10),
+        reservedAt: DateTime(2026, 11, 10),
       );
 
       await tester.pumpWidget(
@@ -246,21 +246,21 @@ void main() {
         initialReservations: [
           Reservation(
             id: 'res-01',
-            reservationNumber: 'RSV-001',
+            reservationCode: 'RSV-001',
             memberId: 'mem-01',
             bookId: 'book-01',
             bookTitle: 'Clean Architecture',
             status: 'PENDING',
-            reservationDate: DateTime(2026, 11, 10),
+            reservedAt: DateTime(2026, 11, 10),
           ),
           Reservation(
             id: 'res-02',
-            reservationNumber: 'RSV-002',
+            reservationCode: 'RSV-002',
             memberId: 'mem-01',
             bookId: 'book-02',
             bookTitle: 'The Pragmatic Programmer',
             status: 'READY',
-            reservationDate: DateTime(2026, 11, 11),
+            reservedAt: DateTime(2026, 11, 11),
             expiresAt: DateTime(2026, 11, 18, 12, 0),
           ),
         ],
@@ -290,40 +290,90 @@ void main() {
       expect(find.text('The Pragmatic Programmer'), findsOneWidget);
       expect(find.text('Sách đã sẵn sàng để lấy!'), findsOneWidget);
 
-      // Bấm nút Hủy đặt trước cho cuốn 1
       final cancelButtons = find.widgetWithText(OutlinedButton, 'Hủy đặt trước');
       expect(cancelButtons, findsNWidgets(2));
 
       await tester.tap(cancelButtons.first);
       await tester.pumpAndSettle();
 
-      // Kiểm tra dialog xác nhận mở ra
       expect(find.text('Hủy đặt trước'), findsWidgets);
       expect(find.textContaining('Bạn có chắc chắn muốn hủy đặt trước cuốn sách "Clean Architecture"?'), findsOneWidget);
       expect(find.text('Lý do hủy (tùy chọn)'), findsOneWidget);
 
-      // Bấm đóng dialog -> không gọi API hủy
       await tester.tap(find.text('Đóng'));
       await tester.pumpAndSettle();
       expect(reservationsRepository.cancelCallCount, 0);
 
-      // Mở lại dialog và xác nhận hủy
       await tester.tap(cancelButtons.first);
       await tester.pumpAndSettle();
 
-      // Nhập lý do hủy
       await tester.enterText(find.byType(TextField), 'Thay đổi kế hoạch học tập');
       await tester.pumpAndSettle();
 
-      // Xác nhận hủy
       await tester.tap(find.text('Xác nhận hủy'));
       await tester.pumpAndSettle();
 
       expect(reservationsRepository.cancelCallCount, 1);
       expect(find.text('Hủy đặt trước thành công'), findsOneWidget);
 
-      // Cuốn 1 giờ đã chuyển sang trạng thái Đã hủy
       expect(find.text('Đã hủy'), findsOneWidget);
+    });
+
+    testWidgets('Không tin memberId truyền từ UI làm bằng chứng ownership | Không hiện nút Hủy của member khác', (tester) async {
+      // Đăng nhập là mem-01, nhưng UI truyền vào memberId='victim-99'
+      reservationsRepository.reservations.add(
+        Reservation(
+          id: 'res-victim',
+          reservationCode: 'RSV-VICTIM',
+          memberId: 'victim-99',
+          bookId: 'book-victim',
+          bookTitle: 'Victim Book',
+          status: 'PENDING',
+          reservedAt: DateTime(2026, 11, 10),
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<AuthBloc>.value(
+            value: authBloc,
+            child: MyReservationsScreen(
+              memberId: 'victim-99',
+              repository: reservationsRepository,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Victim Book'), findsOneWidget);
+      // Nút Hủy đặt trước KHÔNG được hiển thị vì user đăng nhập (mem-01) không phải chủ sở hữu của victim-99
+      expect(find.text('Hủy đặt trước'), findsNothing);
+    });
+
+    testWidgets('Pull-to-refresh phải đợi GET thực sự hoàn thành', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<AuthBloc>.value(
+            value: authBloc,
+            child: MyReservationsScreen(
+              memberId: 'mem-01',
+              repository: reservationsRepository,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final initialGetCalls = reservationsRepository.getCallCount;
+
+      // Kéo xuống để refresh
+      await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+
+      expect(reservationsRepository.getCallCount, greaterThan(initialGetCalls));
     });
 
     testWidgets('Hiển thị trạng thái rỗng khi không có lượt đặt trước nào', (tester) async {

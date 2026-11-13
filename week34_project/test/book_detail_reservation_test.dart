@@ -194,17 +194,16 @@ void main() {
     testWidgets('Khi Backend trả về trạng thái READY | Hiển thị thông báo Sách đã sẵn sàng nhận', (tester) async {
       final booksRepo = CustomFakeBooksRepository(availableBook);
 
-      // Repository trả về reservation với trạng thái READY
       final readyRepository = FakeReservationsRepository();
       readyRepository.reservations = [
         Reservation(
           id: 'res-ready',
-          reservationNumber: 'RSV-RDY',
+          reservationCode: 'RSV-RDY',
           memberId: 'mem-01',
           bookId: 'b-1',
           bookTitle: 'Flutter in Action',
           status: 'READY',
-          reservationDate: DateTime.now(),
+          reservedAt: DateTime.now(),
         ),
       ];
 
@@ -225,11 +224,9 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
       await tester.pumpAndSettle();
 
-      // Xác nhận
       await tester.tap(find.text('Xác nhận đặt trước'));
       await tester.pumpAndSettle();
 
-      // Backend trả về status từ đối tượng trả về (nếu ready thì báo Sách đã sẵn sàng nhận)
       expect(find.textContaining('Đặt trước thành công'), findsOneWidget);
     });
 
@@ -268,6 +265,39 @@ void main() {
       expect(find.text('Bạn đã có lượt đặt trước đang chờ cho sách này.'), findsOneWidget);
     });
 
+    testWidgets('POST timeout không xác minh được | Hiển thị kết quả chưa xác định và hướng dẫn kiểm tra danh sách', (tester) async {
+      final booksRepo = CustomFakeBooksRepository(outOfStockBook);
+
+      reservationsRepository.createError = DioException(
+        requestOptions: RequestOptions(path: ApiConstants.reservations),
+        type: DioExceptionType.connectionTimeout,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<AuthBloc>.value(
+            value: authBloc,
+            child: BookDetailScreen(
+              bookId: 'b-2',
+              repository: booksRepo,
+              reservationsRepository: reservationsRepository,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Xác nhận đặt trước'));
+      await tester.pumpAndSettle();
+
+      expect(reservationsRepository.createCallCount, 1); // Không tự retry POST
+      expect(find.textContaining('chưa được xác định'), findsOneWidget);
+      expect(find.textContaining('danh sách đặt trước'), findsOneWidget);
+    });
+
     testWidgets('Chặn double submit khi đang trong quá trình đặt trước', (tester) async {
       final booksRepo = CustomFakeBooksRepository(availableBook);
 
@@ -291,10 +321,9 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Xác nhận đặt trước'));
-      await tester.pump(); // Không dùng pumpAndSettle vì completer chưa xong
+      await tester.pump();
 
       expect(reservationsRepository.createCallCount, 1);
-      // Nút hiển thị đang xử lý và disable
       expect(find.text('Đang xử lý...'), findsOneWidget);
 
       reservationsRepository.createCompleter!.complete();

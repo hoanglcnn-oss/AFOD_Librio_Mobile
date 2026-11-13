@@ -52,12 +52,12 @@ class FakeReservationsRepository implements ReservationsRepository {
 
     final newReservation = Reservation(
       id: 'res-${DateTime.now().millisecondsSinceEpoch}',
-      reservationNumber: 'RSV-${reservations.length + 1}',
+      reservationCode: 'RSV-${reservations.length + 1}',
       memberId: memberId,
       bookId: bookId,
       bookTitle: 'Sách #$bookId',
       status: 'PENDING',
-      reservationDate: DateTime.now(),
+      reservedAt: DateTime.now(),
       notes: notes,
     );
 

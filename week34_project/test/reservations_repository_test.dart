@@ -19,24 +19,24 @@ class FakeReservationsRemoteDataSource implements ReservationsRemoteDataSource {
 
   Map<String, dynamic> fakeCreateResponse = {
     'id': 'res-10',
-    'reservationNumber': 'RSV-10',
+    'reservationCode': 'RSV-10',
     'memberId': 'mem-10',
     'bookId': 'b-10',
     'bookTitle': 'Dart in Action',
     'status': 'PENDING',
-    'reservationDate': '2026-11-13T10:00:00Z',
+    'reservedAt': '2026-11-13T10:00:00Z',
   };
 
   Map<String, dynamic> fakeGetResponse = {
     'data': [
       {
         'id': 'res-10',
-        'reservationNumber': 'RSV-10',
+        'reservationCode': 'RSV-10',
         'memberId': 'mem-10',
         'bookId': 'b-10',
         'bookTitle': 'Dart in Action',
         'status': 'PENDING',
-        'reservationDate': '2026-11-13T10:00:00Z',
+        'reservedAt': '2026-11-13T10:00:00Z',
       }
     ],
     'meta': {
@@ -50,23 +50,23 @@ class FakeReservationsRemoteDataSource implements ReservationsRemoteDataSource {
 
   Map<String, dynamic> fakeDetailResponse = {
     'id': 'res-10',
-    'reservationNumber': 'RSV-10',
+    'reservationCode': 'RSV-10',
     'memberId': 'mem-10',
     'bookId': 'b-10',
     'bookTitle': 'Dart in Action',
     'status': 'READY',
-    'reservationDate': '2026-11-13T10:00:00Z',
+    'reservedAt': '2026-11-13T10:00:00Z',
     'expiresAt': '2026-11-16T18:00:00Z',
   };
 
   Map<String, dynamic> fakeCancelResponse = {
     'id': 'res-10',
-    'reservationNumber': 'RSV-10',
+    'reservationCode': 'RSV-10',
     'memberId': 'mem-10',
     'bookId': 'b-10',
     'bookTitle': 'Dart in Action',
     'status': 'CANCELLED',
-    'reservationDate': '2026-11-13T10:00:00Z',
+    'reservedAt': '2026-11-13T10:00:00Z',
     'cancellationReason': 'Changed mind',
   };
 
@@ -144,6 +144,8 @@ void main() {
       expect(remoteDataSource.lastCreatedData?['bookId'], 'b-10');
       expect(remoteDataSource.lastCreatedData?['notes'], 'Cần gấp trước thứ sáu');
       expect(res.id, 'res-10');
+      expect(res.reservationCode, 'RSV-10');
+      expect(res.reservedAt, DateTime.parse('2026-11-13T10:00:00Z'));
       expect(res.bookTitle, 'Dart in Action');
     });
 

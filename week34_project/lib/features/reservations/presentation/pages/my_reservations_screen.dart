@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -55,7 +56,8 @@ class _MyReservationsView extends StatefulWidget {
 
 class _MyReservationsViewState extends State<_MyReservationsView> {
   int _page = 1;
-  String? _resolvedMemberId;
+  String? _authenticatedMemberId;
+  String? _displayMemberId;
   bool _isResolvingMember = true;
   String? _resolveError;
 
@@ -72,32 +74,36 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
     });
 
     try {
-      if (widget.memberId != null && widget.memberId!.trim().isNotEmpty) {
-        _resolvedMemberId = widget.memberId!.trim();
-      } else {
-        final authState = context.read<AuthBloc>().state;
-        if (authState is! AuthAuthenticated) {
-          setState(() {
-            _isResolvingMember = false;
-            _resolveError = 'Vui lòng đăng nhập để xem danh sách đặt trước.';
-          });
-          return;
-        }
-
-        final user = authState.user;
-        final resolver = widget.memberResolver ??
-            MemberResolver(membersRepository: ApiMembersRepository());
-
-        _resolvedMemberId = await resolver.resolve(
-          memberId: user.memberId,
-          email: user.email,
-          role: user.role,
-        );
+      final authState = context.read<AuthBloc>().state;
+      if (authState is! AuthAuthenticated) {
+        setState(() {
+          _isResolvingMember = false;
+          _resolveError = 'Vui lòng đăng nhập để xem danh sách đặt trước.';
+        });
+        return;
       }
+
+      final user = authState.user;
+      final resolver = widget.memberResolver ??
+          MemberResolver(membersRepository: ApiMembersRepository());
+
+      // Luôn xác thực và lấy memberId từ user đã đăng nhập
+      _authenticatedMemberId = await resolver.resolve(
+        memberId: user.memberId,
+        email: user.email,
+        role: user.role,
+      );
+
+      // Nếu widget.memberId được truyền vào: chỉ dùng làm target filter nếu hợp lệ,
+      // nhưng TUYỆT ĐỐI KHÔNG dùng làm bằng chứng ownership!
+      _displayMemberId =
+          (widget.memberId != null && widget.memberId!.trim().isNotEmpty)
+              ? widget.memberId!.trim()
+              : _authenticatedMemberId;
 
       if (!mounted) return;
 
-      if (_resolvedMemberId == null || _resolvedMemberId!.isEmpty) {
+      if (_displayMemberId == null || _displayMemberId!.isEmpty) {
         setState(() {
           _isResolvingMember = false;
           _resolveError = 'Không tìm thấy hồ sơ độc giả.';
@@ -120,36 +126,52 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
   }
 
   void _loadData() {
-    if (_resolvedMemberId == null) return;
+    if (_displayMemberId == null) return;
     context.read<ReservationsBloc>().add(
           LoadReservations(
-            memberId: _resolvedMemberId!,
+            memberId: _displayMemberId!,
             page: _page,
           ),
         );
   }
 
   Future<void> _onRefresh() async {
-    if (_resolvedMemberId == null) return;
+    if (_displayMemberId == null) return;
+    final completer = Completer<void>();
     context.read<ReservationsBloc>().add(
-          RefreshReservations(_resolvedMemberId!),
+          RefreshReservations(
+            _displayMemberId!,
+            completer: completer,
+          ),
         );
+    await completer.future;
   }
 
   void _changePage(int newPage) {
-    if (_resolvedMemberId == null) return;
+    if (_displayMemberId == null) return;
     setState(() {
       _page = newPage;
     });
     context.read<ReservationsBloc>().add(
           LoadReservations(
-            memberId: _resolvedMemberId!,
+            memberId: _displayMemberId!,
             page: newPage,
           ),
         );
   }
 
   Future<void> _showCancelDialog(Reservation reservation) async {
+    // Không tin tưởng memberId từ UI làm bằng chứng ownership:
+    // Chỉ cho phép hủy nếu reservation thuộc về tài khoản đang đăng nhập
+    if (_authenticatedMemberId == null ||
+        _authenticatedMemberId != reservation.memberId) {
+      AppToast.error(
+        context,
+        'Bạn không có quyền hủy phiếu đặt trước của người khác.',
+      );
+      return;
+    }
+
     final reasonController = TextEditingController();
 
     final confirmed = await showDialog<bool>(
@@ -191,11 +213,11 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
       ),
     );
 
-    if (confirmed == true && mounted && _resolvedMemberId != null) {
+    if (confirmed == true && mounted && _authenticatedMemberId != null) {
       context.read<ReservationsBloc>().add(
             CancelReservationRequested(
               reservationId: reservation.id,
-              memberId: _resolvedMemberId!,
+              memberId: _authenticatedMemberId!,
               reason: reasonController.text.trim().isNotEmpty
                   ? reasonController.text.trim()
                   : null,
@@ -322,8 +344,10 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
                   itemCount: reservations.length,
                   itemBuilder: (context, index) {
                     final item = reservations[index];
-                    final isOwner = _resolvedMemberId != null &&
-                        item.memberId == _resolvedMemberId;
+                    // Không tin memberId từ UI, chỉ so với _authenticatedMemberId
+                    final isOwner = _authenticatedMemberId != null &&
+                        _authenticatedMemberId!.isNotEmpty &&
+                        item.memberId == _authenticatedMemberId;
 
                     return ReservationCard(
                       reservation: item,

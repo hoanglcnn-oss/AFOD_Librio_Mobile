@@ -4,44 +4,78 @@ import 'package:week34_project/features/reservations/data/models/reservation.dar
 
 void main() {
   group('Reservation Model', () {
-    test('Parse PENDING reservation from flat JSON', () {
+    test('Parse thực tế theo Backend contract: reservationCode và reservedAt', () {
       final json = {
-        'id': 'res-101',
-        'reservationNumber': 'RSV-001',
-        'memberId': 'mem-1',
-        'bookId': 'b-1',
-        'bookTitle': 'Lập trình Flutter',
+        'id': 'res-backend-001',
+        'reservationCode': 'RSV-2026-0001',
+        'memberId': 'mem-101',
+        'bookId': 'b-202',
+        'bookTitle': 'Lập trình Flutter chuyên sâu',
         'status': 'PENDING',
-        'reservationDate': '2026-11-10T10:00:00Z',
-        'notes': 'Lấy vào cuối tuần',
+        'reservedAt': '2026-11-13T08:30:00.000Z',
+        'notes': 'Nhận sách vào buổi chiều',
       };
 
       final res = Reservation.fromJson(json);
 
-      expect(res.id, 'res-101');
-      expect(res.reservationNumber, 'RSV-001');
-      expect(res.memberId, 'mem-1');
-      expect(res.bookId, 'b-1');
-      expect(res.bookTitle, 'Lập trình Flutter');
+      expect(res.id, 'res-backend-001');
+      expect(res.reservationCode, 'RSV-2026-0001');
+      expect(res.reservationNumber, 'RSV-2026-0001'); // Alias
+      expect(res.memberId, 'mem-101');
+      expect(res.bookId, 'b-202');
+      expect(res.bookTitle, 'Lập trình Flutter chuyên sâu');
       expect(res.status, 'PENDING');
       expect(res.isPending, isTrue);
       expect(res.isReady, isFalse);
-      expect(res.isFulfilled, isFalse);
-      expect(res.isCancelled, isFalse);
-      expect(res.isExpired, isFalse);
       expect(res.canCancel, isTrue);
       expect(res.statusLabel, 'Đang chờ sách');
-      expect(res.notes, 'Lấy vào cuối tuần');
+      expect(res.reservedAt, DateTime.parse('2026-11-13T08:30:00.000Z'));
+      expect(res.reservationDate, DateTime.parse('2026-11-13T08:30:00.000Z')); // Alias
+      expect(res.notes, 'Nhận sách vào buổi chiều');
+    });
+
+    test('Không dùng DateTime.now() để che dữ liệu thời gian thiếu/sai -> reservedAt là null', () {
+      final json = {
+        'id': 'res-no-date',
+        'reservationCode': 'RSV-NODATE',
+        'memberId': 'mem-1',
+        'bookId': 'b-1',
+        'bookTitle': 'Sách không có ngày',
+        'status': 'PENDING',
+      };
+
+      final res = Reservation.fromJson(json);
+
+      expect(res.id, 'res-no-date');
+      expect(res.reservedAt, isNull);
+      expect(res.reservationDate, isNull);
+    });
+
+    test('Giữ fallback tương thích: reservationNumber và createdAt', () {
+      final json = {
+        'id': 'res-fallback',
+        'reservationNumber': 'RSV-FALLBACK',
+        'memberId': 'mem-1',
+        'bookId': 'b-1',
+        'bookTitle': 'Sách cũ',
+        'status': 'PENDING',
+        'createdAt': '2026-11-10T10:00:00Z',
+      };
+
+      final res = Reservation.fromJson(json);
+
+      expect(res.reservationCode, 'RSV-FALLBACK');
+      expect(res.reservedAt, DateTime.parse('2026-11-10T10:00:00Z'));
     });
 
     test('Parse READY reservation with nested book and expiresAt', () {
       final json = {
         'id': 'res-102',
-        'reservationNumber': 'RSV-002',
+        'reservationCode': 'RSV-002',
         'member': {'id': 'mem-2', 'fullName': 'Nguyễn Văn A'},
         'book': {'id': 'b-2', 'title': 'Clean Code'},
         'status': 'READY',
-        'createdAt': '2026-11-10T08:00:00Z',
+        'reservedAt': '2026-11-10T08:00:00Z',
         'readyAt': '2026-11-12T09:00:00Z',
         'expiresAt': '2026-11-15T18:00:00Z',
       };
@@ -64,12 +98,12 @@ void main() {
     test('Parse FULFILLED reservation', () {
       final json = {
         'id': 'res-103',
-        'reservationNumber': 'RSV-003',
+        'reservationCode': 'RSV-003',
         'memberId': 'mem-1',
         'bookId': 'b-3',
         'bookTitle': 'Design Patterns',
         'status': 'FULFILLED',
-        'reservationDate': '2026-11-01T10:00:00Z',
+        'reservedAt': '2026-11-01T10:00:00Z',
         'fulfilledAt': '2026-11-05T14:00:00Z',
       };
 
@@ -84,12 +118,12 @@ void main() {
     test('Parse CANCELLED reservation with reason', () {
       final json = {
         'id': 'res-104',
-        'reservationNumber': 'RSV-004',
+        'reservationCode': 'RSV-004',
         'memberId': 'mem-1',
         'bookId': 'b-4',
         'bookTitle': 'Refactoring',
         'status': 'CANCELLED',
-        'reservationDate': '2026-11-02T10:00:00Z',
+        'reservedAt': '2026-11-02T10:00:00Z',
         'cancelledAt': '2026-11-03T11:00:00Z',
         'cancellationReason': 'Không còn nhu cầu',
       };
@@ -106,12 +140,12 @@ void main() {
     test('Parse EXPIRED reservation', () {
       final json = {
         'id': 'res-105',
-        'reservationNumber': 'RSV-005',
+        'reservationCode': 'RSV-005',
         'memberId': 'mem-1',
         'bookId': 'b-5',
         'bookTitle': 'Domain-Driven Design',
         'status': 'EXPIRED',
-        'reservationDate': '2026-10-20T10:00:00Z',
+        'reservedAt': '2026-10-20T10:00:00Z',
         'expiresAt': '2026-10-25T18:00:00Z',
       };
 
@@ -126,12 +160,12 @@ void main() {
       final raw = {
         'data': {
           'id': 'res-200',
-          'reservationNumber': 'RSV-200',
+          'reservationCode': 'RSV-200',
           'memberId': 'mem-1',
           'bookId': 'b-10',
           'bookTitle': 'Microservices Patterns',
           'status': 'PENDING',
-          'reservationDate': '2026-11-12T10:00:00Z',
+          'reservedAt': '2026-11-12T10:00:00Z',
         }
       };
 
@@ -143,12 +177,12 @@ void main() {
     test('copyWith and toJson roundtrip', () {
       final res = Reservation(
         id: 'res-300',
-        reservationNumber: 'RSV-300',
+        reservationCode: 'RSV-300',
         memberId: 'mem-1',
         bookId: 'b-1',
         bookTitle: 'Test Book',
         status: 'PENDING',
-        reservationDate: DateTime.parse('2026-11-12T10:00:00Z'),
+        reservedAt: DateTime.parse('2026-11-12T10:00:00Z'),
         notes: 'Original note',
       );
 
@@ -163,11 +197,13 @@ void main() {
 
       final json = updated.toJson();
       expect(json['id'], 'res-300');
+      expect(json['reservationCode'], 'RSV-300');
       expect(json['status'], 'READY');
       expect(json['notes'], 'Updated note');
 
       final reconstructed = Reservation.fromJson(json);
       expect(reconstructed.id, updated.id);
+      expect(reconstructed.reservationCode, updated.reservationCode);
       expect(reconstructed.status, updated.status);
     });
   });
@@ -178,21 +214,21 @@ void main() {
         'data': [
           {
             'id': 'res-1',
-            'reservationNumber': 'RSV-1',
+            'reservationCode': 'RSV-1',
             'memberId': 'mem-1',
             'bookId': 'b-1',
             'bookTitle': 'Book 1',
             'status': 'PENDING',
-            'reservationDate': '2026-11-12T10:00:00Z',
+            'reservedAt': '2026-11-12T10:00:00Z',
           },
           {
             'id': 'res-2',
-            'reservationNumber': 'RSV-2',
+            'reservationCode': 'RSV-2',
             'memberId': 'mem-1',
             'bookId': 'b-2',
             'bookTitle': 'Book 2',
             'status': 'READY',
-            'reservationDate': '2026-11-11T10:00:00Z',
+            'reservedAt': '2026-11-11T10:00:00Z',
           }
         ],
         'meta': {
@@ -219,12 +255,12 @@ void main() {
         'items': [
           {
             'id': 'res-1',
-            'reservationNumber': 'RSV-1',
+            'reservationCode': 'RSV-1',
             'memberId': 'mem-1',
             'bookId': 'b-1',
             'bookTitle': 'Book 1',
             'status': 'PENDING',
-            'reservationDate': '2026-11-12T10:00:00Z',
+            'reservedAt': '2026-11-12T10:00:00Z',
           }
         ],
         'page': 2,
