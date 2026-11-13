@@ -1,31 +1,19 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
 import 'package:week34_project/features/borrowing_slips/data/borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/create_borrowing_slip_request.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/paginated_borrowing_slips.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/return_slip_items_request.dart';
-import 'package:week34_project/features/borrowings/data/borrowing_repository.dart';
-import 'package:week34_project/features/borrowings/data/models/borrowing.dart';
-import 'package:week34_project/features/borrowings/data/models/create_borrowing_request.dart';
-import 'package:week34_project/features/borrowings/data/models/paginated_borrowings.dart';
+import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
 
-class FakeBorrowingRepository
-    implements BorrowingRepository, BorrowingSlipsRepository {
+class FakeBorrowingRepository implements BorrowingSlipsRepository {
   bool shouldFail;
-  bool shouldFailReturn = false;
-  int returnCallCount = 0;
-  bool shouldFailRenew = false;
-  int renewCallCount = 0;
-  int lastExtraDays = 0;
-  Completer<void>? renewCompleter;
-  DioException? renewLoanError;
-  Borrowing? fakeRenewBorrowingResult;
-  int getBorrowingByIdCallCount = 0;
-  bool shouldFailGetBorrowingById = false;
-  Borrowing? fakeBorrowingDetail;
-  DioException? getBorrowingByIdError;
+  bool shouldFailCreateSlip = false;
+  int createSlipCallCount = 0;
+  Completer<void>? createSlipCompleter;
+  DioException? createSlipErrorOnce;
+  final List<CreateBorrowingSlipRequest> createSlipRequests = [];
 
   int renewSlipCallCount = 0;
   bool shouldFailRenewSlip = false;
@@ -34,44 +22,27 @@ class FakeBorrowingRepository
   BorrowingSlip? fakeRenewSlipResult;
   Completer<void>? renewSlipCompleter;
 
-  int payFineCallCount = 0;
-  bool shouldFailPayFine = false;
-  DioException? payFineError;
-  String? lastPayFineBorrowingId;
-  Borrowing? fakePayFineResult;
-  bool shouldFailCreateSlip = false;
-  int createSlipCallCount = 0;
-  // Cho phép tạo các trường hợp test khác nhau.
-  String fakeBorrowingStatus = 'BORROWED';
-  int fakeRenewCount = 0;
-  DateTime? fakeDueDate;
-  DioException? createSlipErrorOnce;
-  DioException? borrowError;
-  int borrowCallCount = 0;
+  int paySlipFineCallCount = 0;
+  DioException? paySlipFineError;
+
   int returnSlipCallCount = 0;
   ReturnSlipItemsRequest? lastReturnSlipRequest;
   DioException? returnSlipError;
-  int paySlipFineCallCount = 0;
-  DioException? paySlipFineError;
+
   int approveSlipCallCount = 0;
+  DioException? approveSlipError;
+  Object? approveSlipException;
+
   int rejectSlipCallCount = 0;
   String? lastRejectionReason;
+  DioException? rejectSlipError;
 
   int getPendingSlipsCallCount = 0;
   bool shouldFailGetPendingSlips = false;
   PaginatedBorrowingSlips? fakePendingSlipsPage;
   PaginatedBorrowingSlips Function(int page, int limit)?
-  fakePendingSlipsBuilder;
+      fakePendingSlipsBuilder;
   DioException? getPendingSlipsError;
-
-  int getAllBorrowingsCallCount = 0;
-  String? lastGetAllBorrowingsStatus;
-  int? lastGetAllBorrowingsPage;
-  bool shouldFailGetAllBorrowings = false;
-  PaginatedBorrowings? fakeAllBorrowingsPage;
-  PaginatedBorrowings Function(String? status, int page, int limit)?
-  fakeAllBorrowingsBuilder;
-  DioException? getAllBorrowingsError;
 
   int getAllSlipsCallCount = 0;
   String? lastGetAllSlipsStatus;
@@ -79,50 +50,17 @@ class FakeBorrowingRepository
   bool shouldFailGetAllSlips = false;
   PaginatedBorrowingSlips? fakeAllSlipsPage;
   PaginatedBorrowingSlips Function(String? status, int page, int limit)?
-  fakeAllSlipsBuilder;
+      fakeAllSlipsBuilder;
   DioException? getAllSlipsError;
 
   BorrowingSlip? fakeSlipDetail;
   BorrowingSlip Function(String slipId)? fakeSlipDetailBuilder;
   int getBorrowingSlipByIdCallCount = 0;
 
-  DioException? approveSlipError;
-  Object? approveSlipException;
-  DioException? rejectSlipError;
-  final List<CreateBorrowingRequest> borrowRequests = [];
-  final List<CreateBorrowingSlipRequest> createSlipRequests = [];
+  DateTime? fakeDueDate;
+  int fakeRenewCount = 0;
 
   FakeBorrowingRepository({this.shouldFail = false});
-
-  @override
-  Future<Borrowing> borrowBook(CreateBorrowingRequest request) async {
-    borrowCallCount++;
-    borrowRequests.add(request);
-
-    if (borrowError != null) {
-      throw borrowError!;
-    }
-
-    if (shouldFail) {
-      throw Exception('Không thể mượn sách');
-    }
-
-    return Borrowing(
-      id: 'brw-01',
-      transactionCode: 'BRW-2026-0001',
-      memberId: request.memberId,
-      memberName: 'Nguyễn Văn An',
-      bookId: request.bookId,
-      bookTitle: 'Clean Code',
-      borrowDate: DateTime.utc(2026, 10, 29),
-      dueDate: DateTime.utc(
-        2026,
-        10,
-        29,
-      ).add(Duration(days: request.durationDays)),
-      status: 'BORROWED',
-    );
-  }
 
   @override
   Future<BorrowingSlip> createBorrowingSlip(
@@ -131,17 +69,20 @@ class FakeBorrowingRepository
     createSlipCallCount++;
     createSlipRequests.add(request);
 
-    // Giả lập Backend trả HTTP 400 đúng một lần.
-    final error = createSlipErrorOnce;
+    if (createSlipCompleter != null) {
+      await createSlipCompleter!.future;
+    }
 
+    final error = createSlipErrorOnce;
     if (error != null) {
       createSlipErrorOnce = null;
       throw error;
     }
 
-    if (shouldFailCreateSlip) {
+    if (shouldFailCreateSlip || shouldFail) {
       throw Exception('Không thể tạo phiếu mượn');
     }
+
     return BorrowingSlip(
       id: 'slip-01',
       slipNumber: 'SLIP-2026-0001',
@@ -162,92 +103,15 @@ class FakeBorrowingRepository
   }
 
   @override
-  Future<PaginatedBorrowings> getBorrowings({
-    required String memberId,
-    int page = 1,
-    int limit = 10,
-  }) async {
-    if (shouldFail) {
-      throw Exception('Không thể tải danh sách mượn sách');
-    }
-
-    final borrowing = Borrowing(
-      id: 'brw-01',
-      transactionCode: 'BRW-2026-0001',
-      memberId: memberId,
-      memberName: 'Nguyễn Văn An',
-      bookId: 'book-01',
-      bookTitle: 'Clean Code',
-      borrowDate: DateTime.utc(2026, 10, 29),
-      dueDate: fakeDueDate ?? DateTime.now().add(const Duration(days: 14)),
-      status: fakeBorrowingStatus,
-      renewCount: fakeRenewCount,
-    );
-
-    return PaginatedBorrowings(
-      borrowings: [borrowing],
-      page: page,
-      limit: limit,
-      totalItems: 1,
-      totalPages: 1,
-      hasNextPage: false,
-    );
-  }
-
-  @override
-  Future<PaginatedBorrowings> getAllBorrowings({
-    String? status,
-    int page = 1,
-    int limit = 10,
-  }) async {
-    getAllBorrowingsCallCount++;
-    lastGetAllBorrowingsStatus = status;
-    lastGetAllBorrowingsPage = page;
-
-    if (getAllBorrowingsError != null) {
-      throw getAllBorrowingsError!;
-    }
-
-    if (shouldFailGetAllBorrowings) {
-      throw Exception('Không thể tải danh sách mượn đơn lẻ');
-    }
-
-    if (fakeAllBorrowingsBuilder != null) {
-      return fakeAllBorrowingsBuilder!(status, page, limit);
-    }
-
-    if (fakeAllBorrowingsPage != null) {
-      return fakeAllBorrowingsPage!;
-    }
-
-    final borrowing = Borrowing(
-      id: 'brw-01',
-      transactionCode: 'BRW-2026-0001',
-      memberId: 'mem-01',
-      memberName: 'Nguyễn Văn An',
-      bookId: 'book-01',
-      bookTitle: 'Clean Code',
-      borrowDate: DateTime.utc(2026, 10, 29),
-      dueDate: DateTime.utc(2026, 11, 12),
-      status: status ?? 'BORROWED',
-    );
-
-    return PaginatedBorrowings(
-      borrowings: [borrowing],
-      page: page,
-      limit: limit,
-      totalItems: 1,
-      totalPages: 1,
-      hasNextPage: false,
-    );
-  }
-
-  @override
   Future<PaginatedBorrowingSlips> getBorrowingSlips({
     required String memberId,
     int page = 1,
     int limit = 10,
   }) async {
+    if (shouldFail) {
+      throw Exception('Không thể tải danh sách phiếu mượn');
+    }
+
     return PaginatedBorrowingSlips(
       slips: const [],
       page: page,
@@ -451,33 +315,6 @@ class FakeBorrowingRepository
     );
   }
 
-  bool? lastReturnFinePaid;
-
-  @override
-  Future<Borrowing> returnBook({
-    required String borrowingId,
-    bool finePaid = false,
-  }) async {
-    returnCallCount++;
-    lastReturnFinePaid = finePaid;
-
-    if (shouldFailReturn) {
-      throw Exception('Không thể trả sách');
-    }
-
-    return Borrowing(
-      id: borrowingId,
-      transactionCode: 'BRW-2026-0001',
-      memberId: 'mem-01',
-      memberName: 'Nguyễn Văn An',
-      bookId: 'book-01',
-      bookTitle: 'Clean Code',
-      borrowDate: DateTime.utc(2026, 10, 29),
-      dueDate: DateTime.utc(2026, 11, 12),
-      status: 'RETURNED',
-    );
-  }
-
   @override
   Future<BorrowingSlip> returnSlipItems({
     required String slipId,
@@ -496,8 +333,8 @@ class FakeBorrowingRepository
       memberId: 'mem-01',
       status: 'PARTIAL_RETURNED',
       dueDate: DateTime.utc(2026, 11, 15),
-      items: [
-        const BorrowingSlipItem(
+      items: const [
+        BorrowingSlipItem(
           id: 'item-A',
           bookId: 'book-A',
           bookTitle: 'Sách A',
@@ -505,7 +342,7 @@ class FakeBorrowingRepository
           returnedQuantity: 1,
           status: 'RETURNED',
         ),
-        const BorrowingSlipItem(
+        BorrowingSlipItem(
           id: 'item-C',
           bookId: 'book-C',
           bookTitle: 'Sách C',
@@ -513,86 +350,6 @@ class FakeBorrowingRepository
           status: 'BORROWING',
         ),
       ],
-    );
-  }
-
-  @override
-  Future<Borrowing> renewLoan({
-    required String borrowingId,
-    int extraDays = 7,
-    String? notes,
-  }) async {
-    renewCallCount++;
-    lastExtraDays = extraDays;
-
-    if (renewCompleter != null) {
-      await renewCompleter!.future;
-    }
-
-    if (renewLoanError != null) {
-      throw renewLoanError!;
-    }
-
-    if (shouldFailRenew) {
-      throw Exception('Không thể gia hạn sách');
-    }
-
-    if (fakeRenewBorrowingResult != null) {
-      return fakeRenewBorrowingResult!;
-    }
-
-    final oldDueDate =
-        fakeDueDate ?? DateTime.now().add(const Duration(days: 14));
-
-    final newDueDate = oldDueDate.add(Duration(days: extraDays));
-
-    fakeDueDate = newDueDate;
-    fakeRenewCount++;
-
-    return Borrowing(
-      id: borrowingId,
-      transactionCode: 'BRW-2026-0001',
-      memberId: 'mem-01',
-      memberName: 'Nguyễn Văn An',
-      bookId: 'book-01',
-      bookTitle: 'Clean Code',
-      borrowDate: DateTime.utc(2026, 11, 1),
-      dueDate: newDueDate,
-      status: 'BORROWED',
-      renewCount: fakeRenewCount,
-      renewalEligibility: const RenewalEligibility(canRenew: true),
-    );
-  }
-
-  @override
-  Future<Borrowing> payFine(String borrowingId) async {
-    payFineCallCount++;
-    lastPayFineBorrowingId = borrowingId;
-
-    if (payFineError != null) {
-      throw payFineError!;
-    }
-
-    if (shouldFailPayFine) {
-      throw Exception('Không thể thu tiền phạt');
-    }
-
-    if (fakePayFineResult != null) {
-      return fakePayFineResult!;
-    }
-
-    return Borrowing(
-      id: borrowingId,
-      transactionCode: 'BRW-2026-0001',
-      memberId: 'mem-01',
-      memberName: 'Nguyễn Văn An',
-      bookId: 'book-01',
-      bookTitle: 'Clean Code',
-      borrowDate: DateTime.utc(2026, 10, 29),
-      dueDate: DateTime.utc(2026, 11, 12),
-      status: 'RETURNED',
-      fineAmount: 50000,
-      finePaid: true,
     );
   }
 
@@ -615,34 +372,6 @@ class FakeBorrowingRepository
       finePaidAt: DateTime.utc(2026, 11, 20),
       items: const [],
     );
-  }
-
-  @override
-  Future<Borrowing> getBorrowingById(String borrowingId) async {
-    getBorrowingByIdCallCount++;
-
-    if (getBorrowingByIdError != null) {
-      throw getBorrowingByIdError!;
-    }
-
-    if (shouldFail || shouldFailGetBorrowingById) {
-      throw Exception('Không thể tải chi tiết lượt mượn');
-    }
-
-    return fakeBorrowingDetail ??
-        Borrowing(
-          id: borrowingId,
-          transactionCode: 'BRW-2026-0001',
-          memberId: 'mem-01',
-          memberName: 'Nguyễn Văn An',
-          bookId: 'book-01',
-          bookTitle: 'Clean Code',
-          borrowDate: DateTime.utc(2026, 10, 29),
-          dueDate: fakeDueDate ?? DateTime.utc(2026, 11, 12),
-          status: fakeBorrowingStatus,
-          renewCount: fakeRenewCount,
-          renewalEligibility: const RenewalEligibility(canRenew: true),
-        );
   }
 
   @override
@@ -672,8 +401,9 @@ class FakeBorrowingRepository
       return fakeRenewSlipResult!;
     }
 
-    final oldDueDate =
-        fakeDueDate ?? fakeSlipDetail?.dueDate ?? DateTime.now().add(const Duration(days: 14));
+    final oldDueDate = fakeDueDate ??
+        fakeSlipDetail?.dueDate ??
+        DateTime.now().add(const Duration(days: 14));
     final newDueDate = oldDueDate.add(Duration(days: extraDays));
     fakeDueDate = newDueDate;
 

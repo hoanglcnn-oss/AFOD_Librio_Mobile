@@ -28,11 +28,11 @@ class BorrowConfirmCard extends StatelessWidget {
             Text(book.title, style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 12),
             Text('Tác giả: ${book.authorName}'),
-            Text('Số lượng còn: ${book.copiesAvailable}'),
+            Text('Số lượng còn: ${book.copiesAvailable} cuốn'),
             const SizedBox(height: 24),
             const ListTile(
               leading: Icon(Icons.event),
-              title: Text('Thời hạn mượn'),
+              title: Text('Thời hạn mượn dự kiến'),
               subtitle: Text('14 ngày'),
             ),
             const ListTile(
@@ -40,8 +40,29 @@ class BorrowConfirmCard extends StatelessWidget {
               title: Text('Hồ sơ độc giả'),
               subtitle: Text('Đã xác định'),
             ),
+            const SizedBox(height: 12),
+            const Card(
+              color: Color(0xFFFFF8E1),
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Phiếu sẽ được gửi để chờ thủ thư duyệt. '
+                        'Sách chưa được mượn ngay sau khi gửi.',
+                        style: TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             FilledButton(
+              key: const ValueKey('confirm_borrow_button'),
               onPressed: isSubmitting || isSuccess || !book.canBorrow
                   ? null
                   : onConfirm,
@@ -51,7 +72,7 @@ class BorrowConfirmCard extends StatelessWidget {
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Xác nhận mượn'),
+                  : const Text('Gửi phiếu mượn'),
             ),
           ],
         ),

@@ -1,39 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
-import 'package:week34_project/features/auth/bloc/auth_state.dart';
-import 'package:week34_project/features/books/data/models/book.dart';
-import 'package:week34_project/features/members/data/api_members_repository.dart';
-import 'package:week34_project/features/members/data/member_resolver.dart';
 
 import '../../../../core/widgets/app_toast.dart';
-import '../../bloc/borrowing_bloc.dart';
-import '../../bloc/borrowing_event.dart';
-import '../../bloc/borrowing_state.dart';
-import '../../data/api_borrowing_repository.dart';
-import '../../data/models/create_borrowing_request.dart';
+import '../../../auth/bloc/auth_bloc.dart';
+import '../../../auth/bloc/auth_state.dart';
+import '../../../books/data/models/book.dart';
+import '../../../members/data/api_members_repository.dart';
+import '../../../members/data/member_resolver.dart';
+import '../../../members/data/members_repository.dart';
+import '../../bloc/borrowing_slip_bloc.dart';
+import '../../bloc/borrowing_slip_event.dart';
+import '../../bloc/borrowing_slip_state.dart';
+import '../../data/api_borrowing_slips_repository.dart';
+import '../../data/borrowing_slips_repository.dart';
+import '../../data/models/create_borrowing_slip_request.dart';
 import '../widgets/borrow_confirm_card.dart';
 import 'borrow_result_screen.dart';
 
 class BorrowConfirmScreen extends StatelessWidget {
   final Book book;
+  final BorrowingSlipsRepository? borrowingSlipsRepository;
+  final MembersRepository? membersRepository;
 
-  const BorrowConfirmScreen({super.key, required this.book});
+  const BorrowConfirmScreen({
+    super.key,
+    required this.book,
+    this.borrowingSlipsRepository,
+    this.membersRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          BorrowingBloc(borrowingRepository: ApiBorrowingRepository()),
-      child: _BorrowConfirmContent(book: book),
+      create: (_) => BorrowingSlipBloc(
+        borrowingSlipsRepository:
+            borrowingSlipsRepository ?? ApiBorrowingSlipsRepository(),
+      ),
+      child: _BorrowConfirmContent(
+        book: book,
+        membersRepository: membersRepository ?? ApiMembersRepository(),
+      ),
     );
   }
 }
 
 class _BorrowConfirmContent extends StatefulWidget {
   final Book book;
+  final MembersRepository membersRepository;
 
-  const _BorrowConfirmContent({required this.book});
+  const _BorrowConfirmContent({
+    required this.book,
+    required this.membersRepository,
+  });
 
   @override
   State<_BorrowConfirmContent> createState() => _BorrowConfirmContentState();
@@ -46,34 +64,22 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
   @override
   void initState() {
     super.initState();
-
-    _resolver = MemberResolver(membersRepository: ApiMembersRepository());
-
+    _resolver = MemberResolver(membersRepository: widget.membersRepository);
     _memberIdFuture = _resolveMember();
   }
 
   Future<String?> _resolveMember() async {
     final authState = context.read<AuthBloc>().state;
-
     if (authState is! AuthAuthenticated) {
-      debugPrint('MEMBER: user not authenticated');
       return null;
     }
 
     final user = authState.user;
-
-    debugPrint('MEMBER: role=${user.role}');
-    debugPrint('MEMBER: hasMemberId=${user.memberId != null}');
-
-    final result = await _resolver.resolve(
+    return _resolver.resolve(
       memberId: user.memberId,
       email: user.email,
       role: user.role,
     );
-
-    debugPrint('MEMBER: resolved=${result != null}');
-
-    return result;
   }
 
   void _retryResolve() {
@@ -84,24 +90,22 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<BorrowingBloc, BorrowingState>(
+    return BlocListener<BorrowingSlipBloc, BorrowingSlipState>(
       listener: (context, state) {
-        if (state is BorrowingSuccess) {
+        if (state is BorrowingSlipSuccess) {
           Navigator.of(context)
               .push<bool>(
                 MaterialPageRoute<bool>(
-                  builder: (_) =>
-                      BorrowResultScreen(borrowing: state.borrowing),
+                  builder: (_) => BorrowResultScreen(slip: state.slip),
                 ),
               )
               .then((_) {
                 if (!context.mounted) return;
-
                 Navigator.of(context).pop(true);
               });
         }
 
-        if (state is BorrowingFailure) {
+        if (state is BorrowingSlipFailure) {
           AppToast.error(context, state.message);
         }
       },
@@ -122,8 +126,7 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
 
             if (memberId == null || memberId.isEmpty) {
               return _buildResolveError(
-                'Không tìm thấy hồ sơ độc giả liên kết '
-                'với tài khoản này.',
+                'Không tìm thấy hồ sơ độc giả liên kết với tài khoản này.',
               );
             }
 
@@ -156,10 +159,10 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
   }
 
   Widget _buildConfirmation(String memberId) {
-    return BlocBuilder<BorrowingBloc, BorrowingState>(
+    return BlocBuilder<BorrowingSlipBloc, BorrowingSlipState>(
       builder: (context, state) {
-        final isSubmitting = state is BorrowingSubmitting;
-        final isSuccess = state is BorrowingSuccess;
+        final isSubmitting = state is BorrowingSlipSubmitting;
+        final isSuccess = state is BorrowingSlipSuccess;
 
         return BorrowConfirmCard(
           book: widget.book,
@@ -167,12 +170,17 @@ class _BorrowConfirmContentState extends State<_BorrowConfirmContent> {
           isSubmitting: isSubmitting,
           isSuccess: isSuccess,
           onConfirm: () {
-            context.read<BorrowingBloc>().add(
-              BorrowBookRequested(
-                CreateBorrowingRequest(
+            context.read<BorrowingSlipBloc>().add(
+              CreateSlipRequested(
+                CreateBorrowingSlipRequest(
                   memberId: memberId,
-                  bookId: widget.book.id,
-                  durationDays: 14,
+                  expectedReturnDays: 14,
+                  items: [
+                    BorrowingSlipItemRequest(
+                      bookId: widget.book.id,
+                      quantity: 1,
+                    ),
+                  ],
                 ),
               ),
             );

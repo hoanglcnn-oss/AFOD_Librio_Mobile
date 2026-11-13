@@ -3,21 +3,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
+import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
+import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
+import '../../../borrowing_slips/presentation/pages/borrowing_slip_list_screen.dart';
 import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';
-
-import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
-import '../../../borrowings/bloc/my_borrowings_bloc.dart';
-import '../../../borrowings/bloc/my_borrowings_event.dart';
-import '../../../borrowings/data/api_borrowing_repository.dart';
-import '../../../borrowings/presentation/pages/my_borrowings_screen.dart';
-import '../../../borrowing_slips/presentation/pages/borrowing_slip_list_screen.dart';
+import '../../../members/data/members_repository.dart';
 import '../../../reservations/presentation/pages/my_reservations_screen.dart';
 
 class MyBorrowingsTab extends StatefulWidget {
   final VoidCallback onReturnSucceeded;
+  final BorrowingSlipsRepository? borrowingSlipsRepository;
+  final MembersRepository? membersRepository;
 
-  const MyBorrowingsTab({super.key, required this.onReturnSucceeded});
+  const MyBorrowingsTab({
+    super.key,
+    required this.onReturnSucceeded,
+    this.borrowingSlipsRepository,
+    this.membersRepository,
+  });
 
   @override
   State<MyBorrowingsTab> createState() => _MyBorrowingsTabState();
@@ -41,7 +45,9 @@ class _MyBorrowingsTabState extends State<MyBorrowingsTab> {
 
     final user = authState.user;
 
-    final resolver = MemberResolver(membersRepository: ApiMembersRepository());
+    final resolver = MemberResolver(
+      membersRepository: widget.membersRepository ?? ApiMembersRepository(),
+    );
 
     return resolver.resolve(
       memberId: user.memberId,
@@ -75,60 +81,39 @@ class _MyBorrowingsTabState extends State<MyBorrowingsTab> {
           return _buildMessage('Không tìm thấy hồ sơ độc giả.');
         }
 
-        return DefaultTabController(
-          length: 2,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        key: const ValueKey('my_reservations_entry_button'),
-                        icon: const Icon(Icons.bookmark_outline, size: 18),
-                        label: const Text('Đặt trước của tôi'),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  MyReservationsScreen(memberId: memberId),
-                            ),
-                          );
-                        },
-                      ),
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('my_reservations_entry_button'),
+                      icon: const Icon(Icons.bookmark_outline, size: 18),
+                      label: const Text('Đặt trước của tôi'),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                MyReservationsScreen(memberId: memberId),
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
-              ),
-              const TabBar(
-                tabs: [
-                  Tab(text: 'Mượn lẻ'),
-                  Tab(text: 'Phiếu nhiều sách'),
+                  ),
                 ],
               ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    BlocProvider(
-                      create: (_) => MyBorrowingsBloc(
-                        borrowingRepository: ApiBorrowingRepository(),
-                      )..add(LoadMyBorrowings(memberId)),
-                      child: MyBorrowingsScreen(
-                        memberId: memberId,
-                        allowActions: true,
-                        onReturnSucceeded: widget.onReturnSucceeded,
-                      ),
-                    ),
-                    BorrowingSlipsScreen(
-                      memberId: memberId,
-                      repository: ApiBorrowingSlipsRepository(),
-                    ),
-                  ],
-                ),
+            ),
+            Expanded(
+              child: BorrowingSlipsScreen(
+                memberId: memberId,
+                repository: widget.borrowingSlipsRepository ??
+                    ApiBorrowingSlipsRepository(),
+                onReturnSucceeded: widget.onReturnSucceeded,
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

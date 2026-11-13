@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
-import '../../../borrowings/data/api_borrowing_repository.dart';
 import 'librarian_manage_screen.dart';
 import '../../../borrowing_slips/presentation/pages/pending_borrowing_slips_screen.dart';
 
@@ -17,13 +16,11 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
   int _selectedIndex = 0;
 
   static const _titles = ['Phiếu chờ duyệt', 'Quản lý phiếu mượn', 'Tài khoản'];
-  late final ApiBorrowingRepository _borrowingRepository;
   late final ApiBorrowingSlipsRepository _borrowingSlipsRepository;
 
   @override
   void initState() {
     super.initState();
-    _borrowingRepository = ApiBorrowingRepository();
     _borrowingSlipsRepository = ApiBorrowingSlipsRepository();
   }
 
@@ -36,7 +33,6 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
         children: [
           PendingBorrowingSlipsScreen(repository: _borrowingSlipsRepository),
           LibrarianManageScreen(
-            borrowingRepository: _borrowingRepository,
             borrowingSlipsRepository: _borrowingSlipsRepository,
           ),
           const ProfileScreen(),
@@ -49,14 +45,14 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.pending_actions_outlined),
-            selectedIcon: Icon(Icons.pending_actions),
+            icon: Icon(Icons.assignment_turned_in_outlined),
+            selectedIcon: Icon(Icons.assignment_turned_in),
             label: 'Chờ duyệt',
           ),
           NavigationDestination(
-            icon: Icon(Icons.library_books_outlined),
-            selectedIcon: Icon(Icons.library_books),
-            label: 'Quản lý phiếu',
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'Phiếu mượn',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

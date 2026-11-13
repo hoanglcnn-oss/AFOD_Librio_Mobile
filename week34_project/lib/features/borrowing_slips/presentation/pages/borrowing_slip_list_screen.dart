@@ -8,11 +8,13 @@ import 'borrowing_slip_detail_screen.dart';
 class BorrowingSlipsScreen extends StatefulWidget {
   final String memberId;
   final BorrowingSlipsRepository repository;
+  final VoidCallback? onReturnSucceeded;
 
   const BorrowingSlipsScreen({
     super.key,
     required this.memberId,
     required this.repository,
+    this.onReturnSucceeded,
   });
 
   @override
@@ -50,7 +52,10 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
       ),
     );
 
-    if (mounted) _refresh();
+    if (mounted) {
+      _refresh();
+      widget.onReturnSucceeded?.call();
+    }
   }
 
   void _changePage(int page) {
