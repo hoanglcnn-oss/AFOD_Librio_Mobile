@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
-import 'package:week34_project/features/reservations/data/models/reservation.dart';
-import 'package:week34_project/features/reservations/presentation/pages/my_reservations_screen.dart';
-import 'package:week34_project/features/reservations/presentation/widgets/reservation_card.dart';
+import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
+import 'package:week34_project/features/borrowing/reservations/presentation/pages/my_reservations_screen.dart';
+import 'package:week34_project/features/borrowing/reservations/presentation/widgets/reservation_card.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_borrowing_repository.dart';

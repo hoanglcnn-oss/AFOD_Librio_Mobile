@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/reservations/data/models/paginated_reservations.dart';
-import 'package:week34_project/features/reservations/data/models/reservation.dart';
+import 'package:week34_project/features/borrowing/reservations/data/models/paginated_reservations.dart';
+import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
 
 void main() {
   group('Reservation Model', () {

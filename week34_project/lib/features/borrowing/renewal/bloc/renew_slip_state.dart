@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../borrowing/shared/models/borrowing_slip.dart';
+import '../../shared/models/borrowing_slip.dart';
 
 abstract class RenewSlipState extends Equatable {
   const RenewSlipState();

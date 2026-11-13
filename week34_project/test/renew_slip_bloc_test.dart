@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/borrowing_slips/bloc/renew_slip_bloc.dart';
-import 'package:week34_project/features/borrowing_slips/bloc/renew_slip_event.dart';
-import 'package:week34_project/features/borrowing_slips/bloc/renew_slip_state.dart';
+import 'package:week34_project/features/borrowing/renewal/bloc/renew_slip_bloc.dart';
+import 'package:week34_project/features/borrowing/renewal/bloc/renew_slip_event.dart';
+import 'package:week34_project/features/borrowing/renewal/bloc/renew_slip_state.dart';
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
-import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
+import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 

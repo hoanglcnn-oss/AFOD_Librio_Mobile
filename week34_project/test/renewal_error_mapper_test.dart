@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/renewal/errors/renewal_error_mapper.dart';
+import 'package:week34_project/features/borrowing/renewal/errors/renewal_error_mapper.dart';
 
 void main() {
   group('RenewalErrorMapper', () {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:week34_project/features/members/presentation/pages/borrowing_limit_screen.dart';
-import 'package:week34_project/features/reservations/presentation/pages/my_reservations_screen.dart';
+import 'package:week34_project/features/borrowing/reservations/presentation/pages/my_reservations_screen.dart';
 
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';

@@ -5,7 +5,7 @@ import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.d
 import 'package:week34_project/features/borrowing_slips/data/models/create_borrowing_slip_request.dart';
 import 'package:week34_project/features/borrowing/shared/models/paginated_borrowing_slips.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/return_slip_items_request.dart';
-import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
+import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
 
 class FakeBorrowingRepository implements BorrowingSlipsRepository {
   bool shouldFail;

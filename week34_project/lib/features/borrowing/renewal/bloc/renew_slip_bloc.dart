@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../renewal/errors/renewal_error_mapper.dart';
-import '../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../borrowing/shared/models/borrowing_slip.dart';
+import '../errors/renewal_error_mapper.dart';
+import '../../shared/repositories/borrowing_slips_repository.dart';
+import '../../shared/models/borrowing_slip.dart';
 import 'renew_slip_event.dart';
 import 'renew_slip_state.dart';
 

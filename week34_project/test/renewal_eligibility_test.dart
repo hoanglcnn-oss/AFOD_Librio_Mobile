@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
+import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
 
 void main() {
   group('RenewalEligibility', () {

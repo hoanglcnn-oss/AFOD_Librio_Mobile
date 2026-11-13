@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/constants/api_constants.dart';
-import '../../../../core/network/dio_client.dart';
+import '../../../../../core/constants/api_constants.dart';
+import '../../../../../core/network/dio_client.dart';
 
 abstract class ReservationsRemoteDataSource {
   Future<Map<String, dynamic>> createReservation({

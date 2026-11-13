@@ -10,7 +10,7 @@ import 'package:week34_project/features/borrowing_slips/presentation/pages/borro
 import 'package:week34_project/features/members/data/member_resolver.dart';
 import 'package:week34_project/features/members/data/members_repository.dart';
 import 'package:week34_project/features/members/data/models/member.dart';
-import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
+import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_borrowing_repository.dart';

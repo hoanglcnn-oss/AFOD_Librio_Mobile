@@ -8,11 +8,11 @@ import '../../../auth/bloc/auth_state.dart';
 import '../../../borrowing_slips/presentation/pages/borrow_confirm_screen.dart';
 import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';
-import '../../../reservations/bloc/reservations_bloc.dart';
-import '../../../reservations/bloc/reservations_event.dart';
-import '../../../reservations/bloc/reservations_state.dart';
-import '../../../reservations/data/api_reservations_repository.dart';
-import '../../../reservations/data/reservations_repository.dart';
+import '../../../borrowing/reservations/bloc/reservations_bloc.dart';
+import '../../../borrowing/reservations/bloc/reservations_event.dart';
+import '../../../borrowing/reservations/bloc/reservations_state.dart';
+import '../../../borrowing/reservations/data/api_reservations_repository.dart';
+import '../../../borrowing/reservations/data/reservations_repository.dart';
 import '../../data/books_repository.dart';
 import '../../data/models/book.dart';
 

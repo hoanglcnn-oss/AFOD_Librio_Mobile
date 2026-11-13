@@ -9,7 +9,7 @@ import '../../../borrowing_slips/presentation/pages/borrowing_slip_list_screen.d
 import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';
 import '../../../members/data/members_repository.dart';
-import '../../../reservations/presentation/pages/my_reservations_screen.dart';
+import '../../../borrowing/reservations/presentation/pages/my_reservations_screen.dart';
 
 class MyBorrowingsTab extends StatefulWidget {
   final VoidCallback onReturnSucceeded;

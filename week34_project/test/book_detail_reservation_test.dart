@@ -11,7 +11,7 @@ import 'package:week34_project/features/books/data/books_repository.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/books/data/models/paginated_books.dart';
 import 'package:week34_project/features/books/presentation/pages/books_detail_screen.dart';
-import 'package:week34_project/features/reservations/data/models/reservation.dart';
+import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_reservations_repository.dart';
