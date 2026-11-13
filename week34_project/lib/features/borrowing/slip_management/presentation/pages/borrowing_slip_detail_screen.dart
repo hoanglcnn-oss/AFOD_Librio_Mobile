@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/widgets/app_toast.dart';
@@ -19,6 +18,9 @@ import '../../../renewal/presentation/widgets/slip_renewal_section.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../../shared/models/borrowing_slip.dart';
 import '../widgets/borrowing_slip_item_card.dart';
+import '../widgets/cancel_slip_dialog.dart';
+import '../widgets/slip_detail_actions.dart';
+import '../widgets/slip_detail_header.dart';
 import '../../../shared/widgets/borrowing_slip_ui_helper.dart';
 import '../../../approve_slip/presentation/widgets/slip_decision_dialog.dart';
 import '../../../return_slip/presentation/pages/borrowing_slip_return_screen.dart';
@@ -196,51 +198,16 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
 
   Future<void> _confirmCancelSlip(BorrowingSlip slip) async {
     if (_isCancelling) return;
-    final reasonController = TextEditingController();
 
-    final confirmed = await showDialog<bool>(
+    final result = await showDialog<CancelSlipDialogResult>(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: const Text('Hủy phiếu mượn'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Bạn có chắc chắn muốn hủy phiếu mượn ${slip.slipNumber}?'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: reasonController,
-              decoration: const InputDecoration(
-                labelText: 'Lý do hủy (tùy chọn)',
-                border: OutlineInputBorder(),
-                hintText: 'Nhập lý do hủy...',
-              ),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(false),
-            child: const Text('Đóng'),
-          ),
-          FilledButton(
-            key: const ValueKey('confirm_cancel_slip_button'),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogCtx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(dialogCtx).pop(true),
-            child: const Text('Xác nhận hủy'),
-          ),
-        ],
-      ),
+      builder: (_) => CancelSlipDialog(slip: slip),
     );
 
-    if (confirmed == true && mounted) {
-      final reason = reasonController.text.trim();
+    if (result != null && mounted) {
       await _cancelSlip(
         slip,
-        reason: reason.isNotEmpty ? reason : null,
+        reason: result.reason,
       );
     }
   }
@@ -460,59 +427,10 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text(
-                      slip.slipNumber,
-                      style: Theme.of(context).textTheme.titleLarge,
+                    SlipDetailHeader(
+                      slip: slip,
+                      isOverdue: overdue,
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Độc giả: ${slip.memberName != null && slip.memberName!.trim().isNotEmpty ? slip.memberName!.trim() : (slip.memberCardNumber != null && slip.memberCardNumber!.trim().isNotEmpty ? slip.memberCardNumber!.trim() : slip.memberId)}',
-                              ),
-                              if (slip.memberName != null &&
-                                  slip.memberName!.trim().isNotEmpty &&
-                                  slip.memberCardNumber != null &&
-                                  slip.memberCardNumber!.trim().isNotEmpty) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Số thẻ: ${slip.memberCardNumber!.trim()}',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                              const SizedBox(height: 2),
-                              Text(
-                                'Mã độc giả: ${slip.memberId}',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.copy, size: 18),
-                          tooltip: 'Sao chép mã độc giả',
-                          onPressed: () {
-                            Clipboard.setData(
-                              ClipboardData(text: slip.memberId),
-                            );
-                            AppToast.success(context, 'Đã sao chép mã độc giả');
-                          },
-                        ),
-                      ],
-                    ),
-                    Text(
-                      'Trạng thái: '
-                      '${BorrowingSlipUiHelper.slipStatus(slip.status)}',
-                    ),
-                    Text(
-                      'Hạn trả: '
-                      '${BorrowingSlipUiHelper.formatDate(slip.dueDate)}',
-                    ),
-                    Text('Số lần đã gia hạn: ${slip.renewCount}'),
                     if (!isExcludedStatus && canUserRenew) ...[
                       const SizedBox(height: 8),
                       SlipRenewalSection(
@@ -522,15 +440,6 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                         onCheckEligibility: () {
                           _renewBloc.add(CheckSlipRenewalRequested(slip.id));
                         },
-                      ),
-                    ],
-                    if (overdue) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Phiếu có sách chưa trả và đã quá hạn',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
                       ),
                     ],
                     const SizedBox(height: 20),
@@ -559,89 +468,17 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                               : Theme.of(context).colorScheme.error,
                         ),
                       ),
-                    if (BorrowingSlipUiHelper.hasUnpaidFine(slip)) ...[
-                      const SizedBox(height: 12),
-                      if (canManageSlip)
-                        FilledButton.icon(
-                          onPressed: () => _openPayFine(slip),
-                          icon: const Icon(Icons.payments_outlined),
-                          label: const Text('Ghi nhận đã thu tiền phạt'),
-                        )
-                      else
-                        const Text(
-                          'Vui lòng liên hệ thủ thư để thanh toán tiền phạt.',
-                        ),
-                    ],
-                    if (canManageSlip && slip.status == 'PENDING_APPROVAL') ...[
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () =>
-                                  _processSlip(slip, approve: false),
-                              child: const Text('Từ chối'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: FilledButton.icon(
-                              onPressed: () =>
-                                  _processSlip(slip, approve: true),
-                              icon: const Icon(Icons.check),
-                              label: const Text('Duyệt phiếu'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    if (canCancelSlip) ...[
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          key: const ValueKey('cancel_pending_slip_button'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor:
-                                Theme.of(context).colorScheme.error,
-                            side: BorderSide(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                          onPressed: _isCancelling
-                              ? null
-                              : () => _confirmCancelSlip(slip),
-                          icon: _isCancelling
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.cancel_outlined),
-                          label: Text(
-                            _isCancelling ? 'Đang hủy...' : 'Hủy phiếu mượn',
-                          ),
-                        ),
-                      ),
-                    ],
-                    if (canManageSlip &&
-                        (slip.status == 'BORROWED' ||
-                            slip.status == 'PARTIAL_RETURNED') &&
-                        slip.items.any((item) => item.remainingQuantity > 0)) ...[
-                      const SizedBox(height: 16),
-                      FilledButton.icon(
-                        onPressed: () => _openReturn(slip),
-                        icon: const Icon(Icons.assignment_return),
-                        label: const Text('Xác nhận trả sách'),
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      onPressed: _refresh,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Cập nhật trạng thái phiếu'),
+                    SlipDetailActions(
+                      slip: slip,
+                      canManageSlip: canManageSlip,
+                      canCancelSlip: canCancelSlip,
+                      isCancelling: _isCancelling,
+                      onApprove: () => _processSlip(slip, approve: true),
+                      onReject: () => _processSlip(slip, approve: false),
+                      onCancel: () => _confirmCancelSlip(slip),
+                      onReturn: () => _openReturn(slip),
+                      onPayFine: () => _openPayFine(slip),
+                      onRefresh: _refresh,
                     ),
                   ],
                 ),
