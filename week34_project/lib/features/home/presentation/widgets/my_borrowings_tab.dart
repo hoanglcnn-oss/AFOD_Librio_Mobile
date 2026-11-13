@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
-import '../../../borrowing_slips/data/api_borrowing_slips_repository.dart';
-import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
+import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
+import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
 import '../../../borrowing_slips/presentation/pages/borrowing_slip_list_screen.dart';
 import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/borrowing_slips_repository.dart';
+import '../../borrowing/shared/repositories/borrowing_slips_repository.dart';
 import 'pay_slip_fine_event.dart';
 import 'pay_slip_fine_state.dart';
 

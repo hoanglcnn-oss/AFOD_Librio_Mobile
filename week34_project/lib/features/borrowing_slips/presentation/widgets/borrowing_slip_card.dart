@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/borrowing_slip.dart';
+import '../../../borrowing/shared/models/borrowing_slip.dart';
 import 'borrowing_slip_ui_helper.dart';
 
 //card của phiếu mượn

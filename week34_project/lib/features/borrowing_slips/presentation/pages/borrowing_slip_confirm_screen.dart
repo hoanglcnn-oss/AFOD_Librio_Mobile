@@ -13,8 +13,8 @@ import 'package:week34_project/features/members/data/models/member_debt_summary.
 import '../../bloc/borrowing_slip_bloc.dart';
 import '../../bloc/borrowing_slip_event.dart';
 import '../../bloc/borrowing_slip_state.dart';
-import '../../data/api_borrowing_slips_repository.dart';
-import '../../data/borrowing_slips_repository.dart';
+import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
+import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
 import '../../data/models/create_borrowing_slip_request.dart';
 
 class BorrowingSlipConfirmScreen extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/borrowing_slips_repository.dart';
-import '../errors/borrowing_slip_error_mapper.dart';
+import '../../borrowing/shared/repositories/borrowing_slips_repository.dart';
+import '../../borrowing/shared/errors/borrowing_slip_error_mapper.dart';
 import 'borrowing_slip_event.dart';
 import 'borrowing_slip_state.dart';
 

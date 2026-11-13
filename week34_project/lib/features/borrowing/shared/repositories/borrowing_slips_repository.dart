@@ -1,7 +1,7 @@
-import 'models/borrowing_slip.dart';
-import 'models/create_borrowing_slip_request.dart';
-import 'models/paginated_borrowing_slips.dart';
-import 'models/return_slip_items_request.dart';
+import '../models/borrowing_slip.dart';
+import '../models/paginated_borrowing_slips.dart';
+import '../../../borrowing_slips/data/models/create_borrowing_slip_request.dart';
+import '../../../borrowing_slips/data/models/return_slip_items_request.dart';
 
 abstract class BorrowingSlipsRepository {
   Future<BorrowingSlip> createBorrowingSlip(CreateBorrowingSlipRequest request);

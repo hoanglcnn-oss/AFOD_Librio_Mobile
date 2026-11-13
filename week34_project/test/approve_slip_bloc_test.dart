@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/borrowing_slips/bloc/approve_slip_bloc.dart';
 import 'package:week34_project/features/borrowing_slips/bloc/approve_slip_event.dart';
 import 'package:week34_project/features/borrowing_slips/bloc/approve_slip_state.dart';
-import 'package:week34_project/features/borrowing_slips/data/borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 

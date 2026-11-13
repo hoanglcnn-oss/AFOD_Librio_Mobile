@@ -7,7 +7,7 @@ import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
 import '../../../books/data/books_repository.dart';
 import '../../../books/data/models/book.dart';
-import '../../../borrowing_slips/data/borrowing_slips_repository.dart';
+import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
 import '../../../borrowing_slips/presentation/pages/borrow_confirm_screen.dart';
 import '../../../members/data/api_members_repository.dart';
 import '../../../members/data/member_resolver.dart';

@@ -8,7 +8,7 @@ import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
-import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
+import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing_slips/presentation/pages/borrow_confirm_screen.dart';
 import 'package:week34_project/features/borrowing_slips/presentation/pages/borrow_result_screen.dart';
 import 'package:week34_project/features/home/presentation/widgets/my_borrowings_tab.dart';

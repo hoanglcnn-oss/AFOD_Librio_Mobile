@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/borrowing_slip.dart';
+import '../../../borrowing/shared/models/borrowing_slip.dart';
 
 class BorrowResultScreen extends StatelessWidget {
   final BorrowingSlip slip;

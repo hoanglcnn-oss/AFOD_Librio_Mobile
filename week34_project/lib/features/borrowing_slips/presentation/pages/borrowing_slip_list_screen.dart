@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../data/borrowing_slips_repository.dart';
-import '../../data/models/paginated_borrowing_slips.dart';
+import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
+import '../../../borrowing/shared/models/paginated_borrowing_slips.dart';
 import '../widgets/borrowing_slip_card.dart';
 import 'borrowing_slip_detail_screen.dart';
 
