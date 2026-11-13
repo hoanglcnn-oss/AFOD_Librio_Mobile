@@ -10,6 +10,7 @@ import 'package:week34_project/features/borrowing_slips/presentation/pages/borro
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_borrowing_repository.dart';
+import 'fake/fake_members_repository.dart';
 import 'fake/fake_token_storage.dart';
 
 void main() {
@@ -38,6 +39,7 @@ void main() {
       AuthAuthenticated(
         user: UserProfile(
           id: 'user-01',
+          memberId: 'mem-01',
           email: 'test@librio.vn',
           phone: '0901234567',
           fullName: 'Người dùng kiểm thử',
@@ -55,6 +57,7 @@ void main() {
           body: BorrowingSlipDetailScreen(
             slipId: 'slip-01',
             repository: repository,
+            membersRepository: FakeMembersRepository(),
           ),
         ),
       ),

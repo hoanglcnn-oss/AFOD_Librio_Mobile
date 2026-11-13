@@ -6,6 +6,9 @@ import '../../../../core/widgets/app_toast.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
 import '../../../auth/data/models/app_role.dart';
+import '../../../members/data/api_members_repository.dart';
+import '../../../members/data/member_resolver.dart';
+import '../../../members/data/members_repository.dart';
 import '../../../renewal/errors/renewal_error_mapper.dart';
 import '../../bloc/renew_slip_bloc.dart';
 import '../../bloc/renew_slip_event.dart';
@@ -22,12 +25,16 @@ class BorrowingSlipDetailScreen extends StatefulWidget {
   final String slipId;
   final BorrowingSlipsRepository repository;
   final RenewSlipBloc? renewSlipBloc;
+  final MembersRepository? membersRepository;
+  final MemberResolver? memberResolver;
 
   const BorrowingSlipDetailScreen({
     super.key,
     required this.slipId,
     required this.repository,
     this.renewSlipBloc,
+    this.membersRepository,
+    this.memberResolver,
   });
 
   @override
@@ -39,6 +46,9 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
   late Future<BorrowingSlip> _future;
   late final RenewSlipBloc _renewBloc;
   late final bool _isCustomBloc;
+  late final MemberResolver _memberResolver;
+  String? _resolvedMemberId;
+  bool _isResolvingMember = false;
 
   @override
   void initState() {
@@ -46,7 +56,68 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     _isCustomBloc = widget.renewSlipBloc != null;
     _renewBloc =
         widget.renewSlipBloc ?? RenewSlipBloc(repository: widget.repository);
+    _memberResolver =
+        widget.memberResolver ??
+        MemberResolver(
+          membersRepository: widget.membersRepository ?? ApiMembersRepository(),
+        );
     _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant BorrowingSlipDetailScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.slipId != widget.slipId) {
+      _load();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _resolveCurrentMemberId();
+  }
+
+  Future<void> _resolveCurrentMemberId() async {
+    if (_isResolvingMember) return;
+    AuthBloc? authBloc;
+    try {
+      authBloc = context.read<AuthBloc>();
+    } catch (_) {}
+    final authState = authBloc?.state;
+    if (authState is AuthAuthenticated) {
+      final user = authState.user;
+      // 1. Ưu tiên user.memberId nếu đã có
+      if (user.memberId != null && user.memberId!.trim().isNotEmpty) {
+        if (_resolvedMemberId != user.memberId!.trim()) {
+          setState(() {
+            _resolvedMemberId = user.memberId!.trim();
+          });
+        }
+        return;
+      }
+
+      // 2. Dùng MemberResolver nếu chưa có liên kết (user.memberId == null)
+      if (user.role.toUpperCase() == 'MEMBER') {
+        _isResolvingMember = true;
+        try {
+          final resolved = await _memberResolver.resolve(
+            memberId: user.memberId,
+            email: user.email,
+            role: user.role,
+          );
+          if (mounted && resolved != null) {
+            setState(() {
+              _resolvedMemberId = resolved;
+            });
+          }
+        } catch (_) {
+          // Bỏ qua lỗi tra cứu, giữ _resolvedMemberId = null (fail-closed)
+        } finally {
+          _isResolvingMember = false;
+        }
+      }
+    }
   }
 
   @override
@@ -231,7 +302,8 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     }
 
     if (slip.canRenew == false) {
-      final reason = slip.renewalMessage ??
+      final reason =
+          slip.renewalMessage ??
           mapRenewalReasonCode(slip.renewalReasonCode) ??
           'Phiếu mượn không đủ điều kiện để gia hạn.';
       return Column(
@@ -291,10 +363,23 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
       listener: (context, state) {
         if (state is RenewSlipSuccess) {
           AppToast.success(context, state.message);
+          // Giữ state.slip làm dữ liệu đã xác nhận
           setState(() {
             _future = Future.value(state.slip);
           });
-          _refresh();
+          // Đồng bộ ngầm từ Backend; nếu mạng lỗi thì KHÔNG xóa mất kết quả thành công
+          widget.repository
+              .getBorrowingSlipById(slipId: widget.slipId)
+              .then((refreshed) {
+                if (mounted) {
+                  setState(() {
+                    _future = Future.value(refreshed);
+                  });
+                }
+              })
+              .catchError((_) {
+                // Giữ nguyên state.slip đã xác nhận từ trước
+              });
         } else if (state is RenewSlipChecked) {
           setState(() {
             _future = Future.value(state.slip);
@@ -302,7 +387,8 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
           if (state.slip.canRenew == true) {
             AppToast.success(context, 'Phiếu đủ điều kiện gia hạn.');
           } else if (state.slip.canRenew == false) {
-            final reason = state.slip.renewalMessage ??
+            final reason =
+                state.slip.renewalMessage ??
                 mapRenewalReasonCode(state.slip.renewalReasonCode) ??
                 'Phiếu không đủ điều kiện gia hạn.';
             AppToast.warning(context, reason);
@@ -356,10 +442,17 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
 
               final canManageSlip =
                   AppRole.fromString(role).canManageBorrowingSlips;
-              final currentUserId =
-                  authState is AuthAuthenticated ? authState.user.id : null;
+
+              // Ưu tiên authState.user.memberId, sau đó dùng _resolvedMemberId từ MemberResolver
+              // Fail-closed: Nếu không xác định được memberId thì isOwner = false
+              final currentMemberId = (authState is AuthAuthenticated &&
+                      authState.user.memberId != null &&
+                      authState.user.memberId!.trim().isNotEmpty)
+                  ? authState.user.memberId!.trim()
+                  : _resolvedMemberId;
+
               final isOwner =
-                  currentUserId == null || currentUserId == slip.memberId;
+                  currentMemberId != null && currentMemberId == slip.memberId;
               final canUserRenew = canManageSlip || isOwner;
               final isExcludedStatus = [
                 'COMPLETED',

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,10 +7,14 @@ import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing_slips/presentation/pages/borrowing_slip_detail_screen.dart';
+import 'package:week34_project/features/members/data/member_resolver.dart';
+import 'package:week34_project/features/members/data/members_repository.dart';
+import 'package:week34_project/features/members/data/models/member.dart';
 import 'package:week34_project/features/renewal/models/renewal_eligibility.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_borrowing_repository.dart';
+import 'fake/fake_members_repository.dart';
 import 'fake/fake_token_storage.dart';
 
 void main() {
@@ -33,12 +38,16 @@ void main() {
   Widget createApp(
     FakeBorrowingRepository repository, {
     String role = 'MEMBER',
-    String userId = 'user-01',
+    String userId = 'acc-01',
+    String? memberId = 'mem-01',
+    MembersRepository? membersRepository,
+    MemberResolver? memberResolver,
   }) {
     authBloc.emit(
       AuthAuthenticated(
         user: UserProfile(
           id: userId,
+          memberId: memberId,
           email: 'test@librio.vn',
           phone: '0901234567',
           fullName: 'Người dùng kiểm thử',
@@ -56,6 +65,8 @@ void main() {
           body: BorrowingSlipDetailScreen(
             slipId: 'slip-01',
             repository: repository,
+            membersRepository: membersRepository,
+            memberResolver: memberResolver,
           ),
         ),
       ),
@@ -70,7 +81,7 @@ void main() {
         final initialSlip = BorrowingSlip(
           id: 'slip-01',
           slipNumber: 'SLIP-2026-0001',
-          memberId: 'user-01',
+          memberId: 'mem-01',
           status: 'BORROWED',
           dueDate: DateTime.utc(2026, 11, 15),
           renewCount: 0,
@@ -122,7 +133,7 @@ void main() {
         repository.fakeSlipDetail = BorrowingSlip(
           id: 'slip-01',
           slipNumber: 'SLIP-2026-0001',
-          memberId: 'user-01',
+          memberId: 'mem-01',
           status: 'BORROWED',
           dueDate: DateTime.utc(2026, 11, 15),
           renewCount: 1,
@@ -158,7 +169,7 @@ void main() {
         repository.fakeSlipDetail = BorrowingSlip(
           id: 'slip-01',
           slipNumber: 'SLIP-2026-0001',
-          memberId: 'user-01',
+          memberId: 'mem-01',
           status: 'BORROWED',
           dueDate: DateTime.utc(2026, 11, 15),
           renewCount: 2,
@@ -190,7 +201,7 @@ void main() {
         repository.fakeSlipDetail = BorrowingSlip(
           id: 'slip-01',
           slipNumber: 'SLIP-2026-0001',
-          memberId: 'user-01',
+          memberId: 'mem-01',
           status: 'BORROWED',
           dueDate: DateTime.utc(2026, 11, 15),
           renewCount: 0,
@@ -224,7 +235,7 @@ void main() {
           repository.fakeSlipDetail = BorrowingSlip(
             id: 'slip-01',
             slipNumber: 'SLIP-2026-0001',
-            memberId: 'user-01',
+            memberId: 'mem-01',
             status: status,
             dueDate: DateTime.utc(2026, 11, 15),
             renewCount: 0,
@@ -256,7 +267,7 @@ void main() {
         repository.fakeSlipDetail = BorrowingSlip(
           id: 'slip-01',
           slipNumber: 'SLIP-2026-0001',
-          memberId: 'user-01',
+          memberId: 'mem-01',
           status: 'BORROWED',
           dueDate: DateTime.utc(2026, 11, 15),
           renewCount: 0,
@@ -289,13 +300,13 @@ void main() {
     );
 
     testWidgets(
-      'MEMBER xem phiếu của độc giả khác | Không thấy thao tác gia hạn',
+      'P1: user.id != user.memberId | Trùng user.memberId thì hiện nút Gia hạn',
       (tester) async {
         final repository = FakeBorrowingRepository();
         repository.fakeSlipDetail = BorrowingSlip(
           id: 'slip-01',
           slipNumber: 'SLIP-2026-0001',
-          memberId: 'other-member', // Không phải user-01
+          memberId: 'mem-01',
           status: 'BORROWED',
           dueDate: DateTime.utc(2026, 11, 15),
           renewCount: 0,
@@ -304,14 +315,181 @@ void main() {
         );
 
         await tester.pumpWidget(
-          createApp(repository, role: 'MEMBER', userId: 'user-01'),
+          createApp(
+            repository,
+            role: 'MEMBER',
+            userId: 'acc-01',
+            memberId: 'mem-01',
+          ),
         );
         await tester.pumpAndSettle();
 
-        // Không thấy nút Gia hạn
+        // Khớp user.memberId -> hiển thị nút Gia hạn
+        expect(find.text('Gia hạn'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'P1: user.id != user.memberId | Trùng user.id nhưng khác user.memberId thì KHÔNG hiện nút',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        // slip.memberId trùng user.id ('acc-01') nhưng khác user.memberId ('mem-01')
+        // Lỗi cũ sẽ so sánh slip.memberId == user.id nên cho phép nhầm, sửa đúng phải KHÔNG hiện nút.
+        repository.fakeSlipDetail = BorrowingSlip(
+          id: 'slip-01',
+          slipNumber: 'SLIP-2026-0001',
+          memberId: 'acc-01', // Trùng user.id nhưng không phải memberId thực
+          status: 'BORROWED',
+          dueDate: DateTime.utc(2026, 11, 15),
+          renewCount: 0,
+          renewalEligibility: const RenewalEligibility(canRenew: true),
+          items: const [],
+        );
+
+        await tester.pumpWidget(
+          createApp(
+            repository,
+            role: 'MEMBER',
+            userId: 'acc-01',
+            memberId: 'mem-01',
+          ),
+        );
+        await tester.pumpAndSettle();
+
         expect(find.text('Gia hạn'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'P1: user.memberId == null | Dùng MemberResolver tra cứu thành công -> Hiện nút Gia hạn',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        repository.fakeSlipDetail = BorrowingSlip(
+          id: 'slip-01',
+          slipNumber: 'SLIP-2026-0001',
+          memberId: 'mem-resolved-99',
+          status: 'BORROWED',
+          dueDate: DateTime.utc(2026, 11, 15),
+          renewCount: 0,
+          renewalEligibility: const RenewalEligibility(canRenew: true),
+          items: const [],
+        );
+
+        final membersRepository = FakeMembersRepository(
+          members: [
+            Member(
+              id: 'mem-resolved-99',
+              fullName: 'Độc giả kiểm thử',
+              email: 'test@librio.vn',
+              cardNumber: 'CARD-99',
+              status: 'ACTIVE',
+              membershipExpiry: DateTime(2027, 1, 1),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          createApp(
+            repository,
+            role: 'MEMBER',
+            userId: 'acc-01',
+            memberId: null, // Không có sẵn memberId trên user
+            membersRepository: membersRepository,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // MemberResolver tìm thấy memberId 'mem-resolved-99' trùng với slip -> hiển thị nút Gia hạn
+        expect(find.text('Gia hạn'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'P1: user.memberId == null và không tra cứu được | Fail-closed, KHÔNG hiện nút Gia hạn',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        repository.fakeSlipDetail = BorrowingSlip(
+          id: 'slip-01',
+          slipNumber: 'SLIP-2026-0001',
+          memberId: 'mem-01',
+          status: 'BORROWED',
+          dueDate: DateTime.utc(2026, 11, 15),
+          renewCount: 0,
+          renewalEligibility: const RenewalEligibility(canRenew: true),
+          items: const [],
+        );
+
+        final membersRepository = FakeMembersRepository(members: []);
+
+        await tester.pumpWidget(
+          createApp(
+            repository,
+            role: 'MEMBER',
+            userId: 'acc-01',
+            memberId: null, // Không xác định được
+            membersRepository: membersRepository,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Không xác định được owner -> Fail-closed, không hiện nút Gia hạn
+        expect(find.text('Gia hạn'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'P2: PATCH thành công nhưng GET refresh thất bại | Vẫn giữ kết quả thành công, không chuyển sang màn hình lỗi',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        final initialSlip = BorrowingSlip(
+          id: 'slip-01',
+          slipNumber: 'SLIP-2026-0001',
+          memberId: 'mem-01',
+          status: 'BORROWED',
+          dueDate: DateTime.utc(2026, 11, 15),
+          renewCount: 0,
+          renewalEligibility: const RenewalEligibility(canRenew: true),
+          items: const [],
+        );
+
+        int getSlipCalls = 0;
+        repository.fakeSlipDetailBuilder = (slipId) {
+          getSlipCalls++;
+          if (getSlipCalls <= 2) {
+            // Lần 1: Load ban đầu của FutureBuilder
+            // Lần 2: Pre-check eligibility của RenewSlipBloc
+            return initialSlip;
+          }
+          // Lần 3+: Khi refresh ngầm sau PATCH thành công -> ném lỗi mạng
+          throw DioException(
+            requestOptions: RequestOptions(path: '/borrowing-slips/slip-01'),
+            type: DioExceptionType.connectionError,
+          );
+        };
+
+        await tester.pumpWidget(createApp(repository, role: 'MEMBER'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Số lần đã gia hạn: 0'), findsOneWidget);
+
+        // Bấm Gia hạn -> Mở dialog
+        await tester.tap(find.text('Gia hạn'));
+        await tester.pumpAndSettle();
+
+        // Xác nhận gia hạn
+        await tester.tap(find.text('Xác nhận'));
+        await tester.pumpAndSettle();
+
+        // Kiểm tra kết quả: renewSlip đã gọi thành công
+        expect(repository.renewSlipCallCount, 1);
+
+        // Quan trọng nhất: Màn hình KHÔNG được hiển thị "Không thể tải chi tiết phiếu"
+        expect(find.text('Không thể tải chi tiết phiếu'), findsNothing);
+
+        // Màn hình vẫn giữ nguyên kết quả thành công (renewCount: 1, toast thành công)
+        expect(find.text('Số lần đã gia hạn: 1'), findsOneWidget);
+        expect(find.text('Gia hạn phiếu mượn thành công'), findsOneWidget);
       },
     );
   });
 }
-

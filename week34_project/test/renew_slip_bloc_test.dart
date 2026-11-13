@@ -373,16 +373,31 @@ void main() {
           renewalEligibility: const RenewalEligibility(canRenew: true),
           items: const [],
         );
-        repository.fakeSlipDetail = initialSlip;
+
+        int getSlipCalls = 0;
+        repository.fakeSlipDetailBuilder = (slipId) {
+          getSlipCalls++;
+          if (getSlipCalls == 1) {
+            // Lần 1: trước khi PATCH để kiểm tra eligibility
+            return initialSlip;
+          }
+          // Lần 2: sau khi PATCH renewSlip -> ném lỗi mạng để giả lập GET refresh thất bại
+          throw DioException(
+            requestOptions: RequestOptions(path: '/borrowing-slips/slip-01'),
+            type: DioExceptionType.connectionError,
+          );
+        };
 
         final bloc = RenewSlipBloc(repository: repository);
 
-        bloc.add(const RenewSlipRequested('slip-01'));
+        bloc.add(const RenewSlipRequested('slip-01', extraDays: 7));
 
         await bloc.stream.firstWhere((s) => s is RenewSlipSuccess);
 
         final success = bloc.state as RenewSlipSuccess;
         expect(success.slip.renewCount, 1);
+        expect(repository.renewSlipCallCount, 1);
+        expect(getSlipCalls, 2); // Xác nhận đã gọi GET refresh lần 2 và bị lỗi
 
         await bloc.close();
       },
