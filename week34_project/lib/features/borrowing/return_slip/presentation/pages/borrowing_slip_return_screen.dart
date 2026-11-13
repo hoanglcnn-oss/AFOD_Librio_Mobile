@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/return_slip_bloc.dart';
 import '../../bloc/return_slip_event.dart';
 import '../../bloc/return_slip_state.dart';
-import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../../borrowing/shared/models/borrowing_slip.dart';
-import '../../data/models/return_slip_items_request.dart';
+import '../../../shared/repositories/borrowing_slips_repository.dart';
+import '../../../shared/models/borrowing_slip.dart';
+import '../../models/return_slip_items_request.dart';
 
 class BorrowingSlipReturnScreen extends StatelessWidget {
   final BorrowingSlip slip;

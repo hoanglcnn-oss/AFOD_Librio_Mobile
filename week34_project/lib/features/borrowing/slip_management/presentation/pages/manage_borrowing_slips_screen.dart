@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../../borrowing/shared/models/borrowing_slip.dart';
-import '../../../borrowing/shared/models/paginated_borrowing_slips.dart';
+import '../../../shared/repositories/borrowing_slips_repository.dart';
+import '../../../shared/models/borrowing_slip.dart';
+import '../../../shared/models/paginated_borrowing_slips.dart';
 import '../widgets/borrowing_slip_card.dart';
-import '../../../borrowing/approve_slip/presentation/widgets/slip_decision_dialog.dart';
+import '../../../approve_slip/presentation/widgets/slip_decision_dialog.dart';
 import 'borrowing_slip_detail_screen.dart';
 
 class ManageBorrowingSlipsScreen extends StatefulWidget {

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../../shared/models/borrowing_slip.dart';
 import '../../../shared/models/paginated_borrowing_slips.dart';
-import '../../../../borrowing_slips/presentation/widgets/borrowing_slip_card.dart';
+import '../../../slip_management/presentation/widgets/borrowing_slip_card.dart';
 import '../widgets/slip_decision_dialog.dart';
-import '../../../../borrowing_slips/presentation/pages/borrowing_slip_detail_screen.dart';
+import '../../../slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
 
 class PendingBorrowingSlipsScreen extends StatefulWidget {
   final BorrowingSlipsRepository repository;

@@ -6,7 +6,7 @@ import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
-import 'package:week34_project/features/borrowing_slips/presentation/pages/borrowing_slip_detail_screen.dart';
+import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
 import 'package:week34_project/features/members/data/member_resolver.dart';
 import 'package:week34_project/features/members/data/members_repository.dart';
 import 'package:week34_project/features/members/data/models/member.dart';

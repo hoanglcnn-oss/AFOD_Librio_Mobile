@@ -4,7 +4,7 @@ import 'package:week34_project/features/borrowing/shared/repositories/borrowing_
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing/create_slip/models/create_borrowing_slip_request.dart';
 import 'package:week34_project/features/borrowing/shared/models/paginated_borrowing_slips.dart';
-import 'package:week34_project/features/borrowing_slips/data/models/return_slip_items_request.dart';
+import 'package:week34_project/features/borrowing/return_slip/models/return_slip_items_request.dart';
 import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
 
 class FakeBorrowingRepository implements BorrowingSlipsRepository {
