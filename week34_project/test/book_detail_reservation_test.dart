@@ -11,6 +11,7 @@ import 'package:week34_project/features/books/data/books_repository.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/books/data/models/paginated_books.dart';
 import 'package:week34_project/features/books/presentation/pages/books_detail_screen.dart';
+import 'package:week34_project/features/books/presentation/widgets/book_reserve_dialog.dart';
 import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
 
 import 'fake/fake_auth_repository.dart';
@@ -331,6 +332,122 @@ void main() {
 
       expect(reservationsRepository.createCallCount, 1);
       expect(find.textContaining('Đặt trước thành công'), findsOneWidget);
+    });
+  });
+
+  group('BookReserveDialog Component', () {
+    const testBook = Book(
+      id: 'b-dialog',
+      isbn: '1112223334',
+      title: 'Domain-Driven Design',
+      authorName: 'Eric Evans',
+      categoryName: 'Software',
+      description: 'Tackling Complexity in the Heart of Software',
+      coverUrl: null,
+      status: 'AVAILABLE',
+      copiesAvailable: 1,
+      copiesTotal: 2,
+    );
+
+    testWidgets('Xác nhận không nhập ghi chú -> result.notes == null', (tester) async {
+      BookReserveDialogResult? dialogResult;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () async {
+                  dialogResult = await showDialog<BookReserveDialogResult>(
+                    context: context,
+                    builder: (_) => const BookReserveDialog(book: testBook),
+                  );
+                },
+                child: const Text('Open Dialog'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open Dialog'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Đặt trước sách'), findsOneWidget);
+      expect(
+        find.text('Bạn có muốn đặt trước cuốn sách "Domain-Driven Design"?'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Xác nhận đặt trước'));
+      await tester.pumpAndSettle();
+
+      expect(dialogResult, isNotNull);
+      expect(dialogResult!.notes, isNull);
+    });
+
+    testWidgets('Xác nhận có nhập ghi chú -> notes được trim', (tester) async {
+      BookReserveDialogResult? dialogResult;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () async {
+                  dialogResult = await showDialog<BookReserveDialogResult>(
+                    context: context,
+                    builder: (_) => const BookReserveDialog(book: testBook),
+                  );
+                },
+                child: const Text('Open Dialog'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open Dialog'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), '   Giữ sách giúp tôi vào buổi chiều   ');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Xác nhận đặt trước'));
+      await tester.pumpAndSettle();
+
+      expect(dialogResult, isNotNull);
+      expect(dialogResult!.notes, 'Giữ sách giúp tôi vào buổi chiều');
+    });
+
+    testWidgets('Bấm Hủy -> result == null', (tester) async {
+      BookReserveDialogResult? dialogResult;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () async {
+                  dialogResult = await showDialog<BookReserveDialogResult>(
+                    context: context,
+                    builder: (_) => const BookReserveDialog(book: testBook),
+                  );
+                },
+                child: const Text('Open Dialog'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open Dialog'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Hủy'));
+      await tester.pumpAndSettle();
+
+      expect(dialogResult, isNull);
     });
   });
 }

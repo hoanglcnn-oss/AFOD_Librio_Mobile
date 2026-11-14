@@ -15,6 +15,7 @@ import '../../../borrowing/reservations/data/api_reservations_repository.dart';
 import '../../../borrowing/reservations/data/reservations_repository.dart';
 import '../../data/books_repository.dart';
 import '../../data/models/book.dart';
+import '../widgets/book_reserve_dialog.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final String bookId;
@@ -102,51 +103,18 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       return;
     }
 
-    final notesController = TextEditingController();
-
-    final confirmed = await showDialog<bool>(
+    final result = await showDialog<BookReserveDialogResult>(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: const Text('Đặt trước sách'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Bạn có muốn đặt trước cuốn sách "${book.title}"?'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: notesController,
-              decoration: const InputDecoration(
-                labelText: 'Ghi chú (tùy chọn)',
-                border: OutlineInputBorder(),
-                hintText: 'Nhập ghi chú cho thư viện...',
-              ),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(false),
-            child: const Text('Hủy'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(true),
-            child: const Text('Xác nhận đặt trước'),
-          ),
-        ],
-      ),
+      builder: (_) => BookReserveDialog(book: book),
     );
 
-    if (confirmed != true || !mounted) return;
+    if (result == null || !mounted) return;
 
     _reservationsBloc.add(
       CreateReservationRequested(
         memberId: memberId,
         bookId: book.id,
-        notes: notesController.text.trim().isNotEmpty
-            ? notesController.text.trim()
-            : null,
+        notes: result.notes,
       ),
     );
   }
