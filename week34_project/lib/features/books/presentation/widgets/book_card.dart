@@ -22,7 +22,7 @@ class BookCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       color: selectionMode && isSelected
           ? Theme.of(context).colorScheme.primaryContainer
-          : null,
+          : const Color(0xFFF7FAFD),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: selectionMode && !book.canBorrow ? null : onTap,

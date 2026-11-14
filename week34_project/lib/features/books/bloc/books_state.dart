@@ -19,14 +19,32 @@ class BooksLoading extends BooksState {
 
 class BooksLoaded extends BooksState {
   final PaginatedBooks paginatedBooks;
+  final bool isLoadingMore;
+  final String? paginationError;
 
-  const BooksLoaded({required this.paginatedBooks});
+  const BooksLoaded({
+    required this.paginatedBooks,
+    this.isLoadingMore = false,
+    this.paginationError,
+  });
 
   /// Getter for backward compatibility
   PaginatedBooks get booksPage => paginatedBooks;
 
+  BooksLoaded copyWith({
+    PaginatedBooks? paginatedBooks,
+    bool? isLoadingMore,
+    String? paginationError,
+  }) {
+    return BooksLoaded(
+      paginatedBooks: paginatedBooks ?? this.paginatedBooks,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      paginationError: paginationError,
+    );
+  }
+
   @override
-  List<Object?> get props => [paginatedBooks];
+  List<Object?> get props => [paginatedBooks, isLoadingMore, paginationError];
 }
 
 class BooksFailure extends BooksState {

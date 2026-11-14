@@ -19,3 +19,7 @@ class SearchBooks extends BooksEvent {
   @override
   List<Object?> get props => [keyword];
 }
+
+class LoadMoreBooks extends BooksEvent {
+  const LoadMoreBooks();
+}

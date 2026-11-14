@@ -102,7 +102,7 @@ void main() {
         'Công Nghệ Phần Mềm & An Toàn Thông Tin Mạng Quốc Gia & Trí Tuệ Nhân Tạo',
     description:
         'Đoạn mô tả siêu dài kiểm tra tính co giãn linh hoạt của giao diện khi văn bản chiếm rất nhiều dòng, đảm bảo không xảy ra hiện tượng RenderFlex overflow ở bất kỳ viewport nào từ 360x800 đến 390x844 dp và kể cả khi text scale 150%. ' *
-            5,
+        5,
     coverUrl: null,
     status: 'AVAILABLE',
     copiesAvailable: 5,
@@ -127,33 +127,41 @@ void main() {
       authBloc.close();
     });
 
-    testWidgets('Kiểm tra Compact Side-by-side Hero & Availability Badge khi còn sách', (tester) async {
-      final repo = SingleBookFakeRepository(sampleBookAvailable);
+    testWidgets(
+      'Kiểm tra Compact Side-by-side Hero & Availability Badge khi còn sách',
+      (tester) async {
+        final repo = SingleBookFakeRepository(sampleBookAvailable);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: authBloc,
-            child: BookDetailScreen(
-              bookId: sampleBookAvailable.id,
-              repository: repo,
-              reservationsRepository: reservationsRepository,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: sampleBookAvailable.id,
+                repository: repo,
+                reservationsRepository: reservationsRepository,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Chi tiết sách'), findsOneWidget);
-      expect(find.text('Nhập môn Trí tuệ Nhân tạo và Học máy'), findsOneWidget);
-      expect(find.text('Tác giả: GS. TS. Nguyễn Văn An'), findsOneWidget);
-      expect(find.text('Khoa học Máy tính & AI'), findsOneWidget);
-      expect(find.text('ISBN: 978-604-0-12345-6'), findsOneWidget);
-      expect(find.text('Còn 4 / 6 cuốn'), findsOneWidget);
-      expect(find.byIcon(Icons.check_circle), findsOneWidget);
-    });
+        expect(find.text('Chi tiết sách'), findsOneWidget);
+        expect(
+          find.text('Nhập môn Trí tuệ Nhân tạo và Học máy'),
+          findsOneWidget,
+        );
+        expect(find.text('Tác giả: GS. TS. Nguyễn Văn An'), findsOneWidget);
+        expect(find.text('Khoa học Máy tính & AI'), findsOneWidget);
+        expect(find.text('ISBN: 978-604-0-12345-6'), findsOneWidget);
+        expect(find.text('Còn 4 / 6 cuốn'), findsOneWidget);
+        expect(find.byIcon(Icons.check_circle), findsOneWidget);
+      },
+    );
 
-    testWidgets('Kiểm tra Availability Badge khi hết sách khả dụng', (tester) async {
+    testWidgets('Kiểm tra Availability Badge khi hết sách khả dụng', (
+      tester,
+    ) async {
       final repo = SingleBookFakeRepository(sampleBookOutOfStock);
 
       await tester.pumpWidget(
@@ -224,15 +232,42 @@ void main() {
       expect(find.byIcon(Icons.expand_more), findsOneWidget);
     });
 
-    testWidgets('Kiểm tra khi sách không có mô tả -> Hiển thị Chưa có mô tả và không có nút Xem thêm', (tester) async {
-      final repo = SingleBookFakeRepository(sampleBookEmptyDesc);
+    testWidgets(
+      'Kiểm tra khi sách không có mô tả -> Hiển thị Chưa có mô tả và không có nút Xem thêm',
+      (tester) async {
+        final repo = SingleBookFakeRepository(sampleBookEmptyDesc);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: sampleBookEmptyDesc.id,
+                repository: repo,
+                reservationsRepository: reservationsRepository,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Chưa có mô tả'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('toggle_description_button')),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets('Kiểm tra khi mô tả ngắn (<= 3 dòng) -> Hiển thị mô tả và KHÔNG có nút Xem thêm', (tester) async {
+      final repo = SingleBookFakeRepository(sampleBookOutOfStock);
 
       await tester.pumpWidget(
         MaterialApp(
           home: BlocProvider<AuthBloc>.value(
             value: authBloc,
             child: BookDetailScreen(
-              bookId: sampleBookEmptyDesc.id,
+              bookId: sampleBookOutOfStock.id,
               repository: repo,
               reservationsRepository: reservationsRepository,
             ),
@@ -241,42 +276,76 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Chưa có mô tả'), findsOneWidget);
+      expect(find.text('Tài liệu chuyên sâu.'), findsOneWidget);
       expect(find.byKey(const ValueKey('toggle_description_button')), findsNothing);
+      expect(find.text('Xem thêm'), findsNothing);
     });
 
-    testWidgets('Kiểm tra Responsive Viewport 360x800 & 390x844 với nội dung dài', (tester) async {
-      final repo = SingleBookFakeRepository(sampleBookLongContent);
+    testWidgets(
+      'Kiểm tra khi mô tả ngắn (<= 3 dòng) -> Hiển thị mô tả và KHÔNG có nút Xem thêm',
+      (tester) async {
+        final repo = SingleBookFakeRepository(sampleBookOutOfStock);
 
-      // Test 360x800
-      tester.view.physicalSize = const Size(360, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: authBloc,
-            child: BookDetailScreen(
-              bookId: sampleBookLongContent.id,
-              repository: repo,
-              reservationsRepository: reservationsRepository,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: sampleBookOutOfStock.id,
+                repository: repo,
+                reservationsRepository: reservationsRepository,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
+        expect(find.text('Tài liệu chuyên sâu.'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('toggle_description_button')),
+          findsNothing,
+        );
+        expect(find.text('Xem thêm'), findsNothing);
+      },
+    );
 
-      // Test 390x844
-      tester.view.physicalSize = const Size(390, 844);
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-    });
+    testWidgets(
+      'Kiểm tra Responsive Viewport 360x800 & 390x844 với nội dung dài',
+      (tester) async {
+        final repo = SingleBookFakeRepository(sampleBookLongContent);
 
-    testWidgets('Kiểm tra Text Scaling 150% (TextScaler.linear(1.5))', (tester) async {
+        // Test 360x800
+        tester.view.physicalSize = const Size(360, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: sampleBookLongContent.id,
+                repository: repo,
+                reservationsRepository: reservationsRepository,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+
+        // Test 390x844
+        tester.view.physicalSize = const Size(390, 844);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets('Kiểm tra Text Scaling 150% (TextScaler.linear(1.5))', (
+      tester,
+    ) async {
       final repo = SingleBookFakeRepository(sampleBookAvailable);
 
       tester.view.physicalSize = const Size(390, 844);

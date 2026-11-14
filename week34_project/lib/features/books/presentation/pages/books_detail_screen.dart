@@ -88,7 +88,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       return;
     }
 
-    final resolver = widget.memberResolver ??
+    final resolver =
+        widget.memberResolver ??
         MemberResolver(membersRepository: ApiMembersRepository());
 
     final memberId = await resolver.resolve(
@@ -140,7 +141,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             future: _bookFuture,
             builder: (context, snapshot) {
               final isDone = snapshot.connectionState == ConnectionState.done;
-              final hasData = isDone && !snapshot.hasError && snapshot.data != null;
+              final hasData =
+                  isDone && !snapshot.hasError && snapshot.data != null;
               final book = snapshot.data;
 
               return Scaffold(
@@ -423,9 +425,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      book.canBorrow
-                          ? Icons.check_circle
-                          : Icons.error_outline,
+                      book.canBorrow ? Icons.check_circle : Icons.error_outline,
                       size: 14,
                       color: book.canBorrow
                           ? const Color(0xFF228B53)
@@ -476,11 +476,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         children: [
           Row(
             children: const [
-              Icon(
-                Icons.article_outlined,
-                size: 18,
-                color: Color(0xFF1A488E),
-              ),
+              Icon(Icons.article_outlined, size: 18, color: Color(0xFF1A488E)),
               SizedBox(width: 6),
               Text(
                 'Mô tả',
@@ -506,54 +502,75 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 fontStyle: FontStyle.italic,
               ),
             )
-          else ...[
-            Text(
-              book.description,
-              maxLines: _isDescriptionExpanded ? null : 3,
-              overflow: _isDescriptionExpanded
-                  ? TextOverflow.visible
-                  : TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF434751),
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 6),
-            InkWell(
-              key: const ValueKey('toggle_description_button'),
-              onTap: () {
-                setState(() {
-                  _isDescriptionExpanded = !_isDescriptionExpanded;
-                });
-              },
-              borderRadius: BorderRadius.circular(4),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+          else
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const textStyle = TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF434751),
+                  height: 1.5,
+                );
+
+                // Đo xem nội dung mô tả có vượt quá 3 dòng trên bề rộng màn hình thực tế hay không
+                final textPainter = TextPainter(
+                  text: TextSpan(text: book.description, style: textStyle),
+                  maxLines: 3,
+                  textDirection: Directionality.of(context),
+                )..layout(maxWidth: constraints.maxWidth);
+
+                final exceedsMaxLines = textPainter.didExceedMaxLines;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _isDescriptionExpanded ? 'Thu gọn' : 'Xem thêm',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A488E),
+                      book.description,
+                      maxLines: _isDescriptionExpanded ? null : 3,
+                      overflow: _isDescriptionExpanded
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
+                      style: textStyle,
+                    ),
+                    if (exceedsMaxLines) ...[
+                      const SizedBox(height: 6),
+                      InkWell(
+                        key: const ValueKey('toggle_description_button'),
+                        onTap: () {
+                          setState(() {
+                            _isDescriptionExpanded = !_isDescriptionExpanded;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _isDescriptionExpanded ? 'Thu gọn' : 'Xem thêm',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1A488E),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Icon(
+                                _isDescriptionExpanded
+                                    ? Icons.expand_less
+                                    : Icons.expand_more,
+                                size: 16,
+                                color: const Color(0xFF1A488E),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 2),
-                    Icon(
-                      _isDescriptionExpanded
-                          ? Icons.expand_less
-                          : Icons.expand_more,
-                      size: 16,
-                      color: const Color(0xFF1A488E),
-                    ),
+                    ],
                   ],
-                ),
-              ),
+                );
+              },
             ),
-          ],
         ],
       ),
     );
@@ -563,9 +580,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: Color(0xFFCDD8E5), width: 1),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFFCDD8E5), width: 1)),
         boxShadow: [
           BoxShadow(
             color: Color(0x0F17263D),
@@ -629,13 +644,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     onPressed: !book.canBorrow
                         ? null
                         : () async {
-                            final borrowed =
-                                await Navigator.of(context).push<bool>(
-                              MaterialPageRoute<bool>(
-                                builder: (_) =>
-                                    BorrowConfirmScreen(book: book),
-                              ),
-                            );
+                            final borrowed = await Navigator.of(context)
+                                .push<bool>(
+                                  MaterialPageRoute<bool>(
+                                    builder: (_) =>
+                                        BorrowConfirmScreen(book: book),
+                                  ),
+                                );
 
                             if (!mounted) return;
 
