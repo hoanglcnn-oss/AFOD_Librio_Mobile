@@ -12,6 +12,7 @@ abstract class BorrowingSlipsRemoteDataSource {
   Future<Map<String, dynamic>> getBorrowingSlips({
     required String memberId,
     required String token,
+    String? status,
     int page = 1,
     int limit = 10,
   });
@@ -93,12 +94,18 @@ class BorrowingSlipsRemoteDataSourceImpl
   Future<Map<String, dynamic>> getBorrowingSlips({
     required String memberId,
     required String token,
+    String? status,
     int page = 1,
     int limit = 10,
   }) async {
     final response = await _dio.get(
       ApiConstants.borrowingSlips,
-      queryParameters: {'memberId': memberId, 'page': page, 'limit': limit},
+      queryParameters: {
+        'memberId': memberId,
+        if (status != null && status.isNotEmpty) 'status': status,
+        'page': page,
+        'limit': limit,
+      },
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 

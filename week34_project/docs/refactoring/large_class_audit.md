@@ -320,7 +320,7 @@ Should the team choose to execute these decompositions, they should be performed
 | **`ReservationsBloc`** | 384 | Concurrency mechanisms (`_readRequestId`, `_writeEpoch`, `_isMutating`, `_cancelledReservationIds`) require unified in-memory coordination. Splitting creates race conditions. |
 | **`ApiBorrowingSlipsRepository`** | 350 | Highly cohesive, low-complexity implementation. Splitting interface should only be done in a major domain API epic. |
 | **`ReservationCard`** | 303 | Pure presentation widget; length is caused by standard Material Card styling. |
-| **`ManageBorrowingSlipsScreen`** | 283 | Already well-organized for a multi-status filterable librarian screen. |
+| **`ManageBorrowingSlipsScreen`** | 283 | Consolidated into unified `BorrowingSlipsScreen`. |
 | **`SlipDecisionDialog`** | 259 | Self-contained, modal dialog with focused BLoC integration. |
 
 ---

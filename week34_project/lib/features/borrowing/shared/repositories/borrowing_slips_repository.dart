@@ -8,6 +8,7 @@ abstract class BorrowingSlipsRepository {
 
   Future<PaginatedBorrowingSlips> getBorrowingSlips({
     required String memberId,
+    String? status,
     int page = 1,
     int limit = 10,
   });

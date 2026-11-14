@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../../borrowing/slip_management/presentation/pages/manage_borrowing_slips_screen.dart';
+import '../../../borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
 
 class LibrarianManageScreen extends StatelessWidget {
   final BorrowingSlipsRepository borrowingSlipsRepository;
@@ -15,7 +15,7 @@ class LibrarianManageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ManageBorrowingSlipsScreen(
+    return BorrowingSlipsScreen(
       repository: borrowingSlipsRepository,
     );
   }
