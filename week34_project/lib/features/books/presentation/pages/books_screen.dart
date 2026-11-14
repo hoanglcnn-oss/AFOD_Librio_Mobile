@@ -121,176 +121,182 @@ class _BooksScreenState extends State<BooksScreen> {
   Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFFF7FAFD),
-      child: Column(
-        children: [
-          // App bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectionMode
-                        ? 'Đã chọn ${_selectedBooks.length} đầu sách'
-                        : 'Danh sách sách',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF17263D),
-                      letterSpacing: -0.2,
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // App bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectionMode
+                          ? 'Đã chọn ${_selectedBooks.length} đầu sách'
+                          : 'Danh sách sách',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF17263D),
+                        letterSpacing: -0.3,
+                      ),
                     ),
                   ),
-                ),
-                if (!_selectionMode)
-                  OutlinedButton.icon(
-                    onPressed: _toggleSelectionMode,
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF1A488E),
-                      side: const BorderSide(color: Color(0xFFCDD8E5)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  const SizedBox(width: 12),
+                  if (!_selectionMode)
+                    OutlinedButton.icon(
+                      onPressed: _toggleSelectionMode,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF1A488E),
+                        side: const BorderSide(color: Color(0xFFCDD8E5)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        minimumSize: const Size(0, 36),
+                        elevation: 1,
+                        shadowColor: const Color(0x0A000000),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      minimumSize: const Size(0, 36),
-                      elevation: 1,
-                      shadowColor: const Color(0x0A000000),
-                    ),
-                    icon: const Icon(
-                      Icons.checklist,
-                      size: 18,
-                      color: Color(0xFF1A488E),
-                    ),
-                    label: const Text(
-                      'Chọn nhiều',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                      icon: const Icon(
+                        Icons.checklist,
+                        size: 18,
                         color: Color(0xFF1A488E),
                       ),
-                    ),
-                  )
-                else
-                  OutlinedButton.icon(
-                    onPressed: _toggleSelectionMode,
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF566B87),
-                      side: const BorderSide(color: Color(0xFFCDD8E5)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                      label: const Text(
+                        'Chọn nhiều',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A488E),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+                    )
+                  else
+                    OutlinedButton.icon(
+                      onPressed: _toggleSelectionMode,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF566B87),
+                        side: const BorderSide(color: Color(0xFFCDD8E5)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        minimumSize: const Size(0, 36),
                       ),
-                      minimumSize: const Size(0, 36),
-                    ),
-                    icon: const Icon(
-                      Icons.close,
-                      size: 18,
-                      color: Color(0xFF566B87),
-                    ),
-                    label: const Text(
-                      'Hủy',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                      icon: const Icon(
+                        Icons.close,
+                        size: 18,
                         color: Color(0xFF566B87),
                       ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          // Search bar
-          BookSearchBar(
-            controller: _searchController,
-            onSearch: _submitSearch,
-            onClear: _clearSearch,
-            onScanBarcode: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) =>
-                      BarcodeScannerScreen(repository: widget.repository),
-                ),
-              );
-            },
-          ),
-
-          // Result count
-          BlocBuilder<BooksBloc, BooksState>(
-            buildWhen: (previous, current) =>
-                previous.runtimeType != current.runtimeType ||
-                (previous is BooksLoaded &&
-                    current is BooksLoaded &&
-                    previous.paginatedBooks.books.length !=
-                        current.paginatedBooks.books.length),
-            builder: (context, state) {
-              if (state is BooksLoaded &&
-                  state.paginatedBooks.books.isNotEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text.rich(
-                      key: const Key('books_result_count'),
-                      TextSpan(
-                        style: const TextStyle(
-                          fontSize: 12,
+                      label: const Text(
+                        'Hủy',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           color: Color(0xFF566B87),
                         ),
-                        children: [
-                          const TextSpan(text: 'Hiển thị '),
-                          TextSpan(
-                            text: '${state.paginatedBooks.books.length}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF17263D),
-                            ),
-                          ),
-                          const TextSpan(text: ' sách'),
-                        ],
                       ),
                     ),
+                ],
+              ),
+            ),
+
+            // Search bar
+            BookSearchBar(
+              controller: _searchController,
+              onSearch: _submitSearch,
+              onClear: _clearSearch,
+              onScanBarcode: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        BarcodeScannerScreen(repository: widget.repository),
                   ),
                 );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-
-          Expanded(
-            child: BlocBuilder<BooksBloc, BooksState>(
-              builder: (context, state) {
-                return _buildBooksContent(context, state);
               },
             ),
-          ),
 
-          if (_selectionMode)
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _selectedBooks.isEmpty
-                        ? null
-                        : _confirmSelection,
-                    icon: const Icon(Icons.arrow_forward),
-                    label: Text('Tiếp tục (${_selectedBooks.length} sách)'),
+            // Result count
+            BlocBuilder<BooksBloc, BooksState>(
+              buildWhen: (previous, current) =>
+                  previous.runtimeType != current.runtimeType ||
+                  (previous is BooksLoaded &&
+                      current is BooksLoaded &&
+                      previous.paginatedBooks.books.length !=
+                          current.paginatedBooks.books.length),
+              builder: (context, state) {
+                if (state is BooksLoaded &&
+                    state.paginatedBooks.books.isNotEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 2),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text.rich(
+                        key: const Key('books_result_count'),
+                        TextSpan(
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF566B87),
+                          ),
+                          children: [
+                            const TextSpan(text: 'Hiển thị '),
+                            TextSpan(
+                              text: '${state.paginatedBooks.books.length}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF17263D),
+                              ),
+                            ),
+                            const TextSpan(text: ' sách'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+
+            Expanded(
+              child: BlocBuilder<BooksBloc, BooksState>(
+                builder: (context, state) {
+                  return _buildBooksContent(context, state);
+                },
+              ),
+            ),
+
+            if (_selectionMode)
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _selectedBooks.isEmpty
+                          ? null
+                          : _confirmSelection,
+                      icon: const Icon(Icons.arrow_forward),
+                      label: Text('Tiếp tục (${_selectedBooks.length} sách)'),
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
