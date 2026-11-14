@@ -5,9 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
-import 'package:week34_project/features/borrowing_slips/data/borrowing_slips_repository.dart';
-import 'package:week34_project/features/borrowing_slips/data/models/borrowing_slip.dart';
-import 'package:week34_project/features/borrowing_slips/presentation/pages/borrowing_slip_detail_screen.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
+import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_borrowing_repository.dart';
@@ -513,6 +513,73 @@ void main() {
         find.byKey(const ValueKey('cancel_pending_slip_button')),
         findsNothing,
       );
+    },
+  );
+
+  testWidgets(
+    'C5.5 | MEMBER hủy phiếu mượn không nhập lý do | Gửi reason null',
+    (tester) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeSlipDetail = BorrowingSlip(
+        id: 'slip-01',
+        slipNumber: 'SLIP-2026-0001',
+        memberId: 'mem-01',
+        status: 'PENDING_APPROVAL',
+        dueDate: DateTime.utc(2026, 11, 25),
+        items: const [],
+      );
+
+      await tester.pumpWidget(
+        createApp(repository, role: 'MEMBER', memberId: 'mem-01'),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey('cancel_pending_slip_button')),
+      );
+      await tester.pumpAndSettle();
+
+      // Không nhập lý do, bấm Xác nhận hủy trực tiếp
+      await tester.tap(
+        find.byKey(const ValueKey('confirm_cancel_slip_button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(repository.cancelSlipCallCount, 1);
+      expect(repository.lastCancelSlipReason, isNull);
+      expect(find.text('Đã hủy phiếu mượn thành công'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'C5.5 | MEMBER đóng dialog hủy phiếu | Không gọi cancel repository',
+    (tester) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeSlipDetail = BorrowingSlip(
+        id: 'slip-01',
+        slipNumber: 'SLIP-2026-0001',
+        memberId: 'mem-01',
+        status: 'PENDING_APPROVAL',
+        dueDate: DateTime.utc(2026, 11, 25),
+        items: const [],
+      );
+
+      await tester.pumpWidget(
+        createApp(repository, role: 'MEMBER', memberId: 'mem-01'),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey('cancel_pending_slip_button')),
+      );
+      await tester.pumpAndSettle();
+
+      // Bấm nút Đóng
+      await tester.tap(find.text('Đóng'));
+      await tester.pumpAndSettle();
+
+      expect(repository.cancelSlipCallCount, 0);
+      expect(find.byType(AlertDialog), findsNothing);
     },
   );
 }

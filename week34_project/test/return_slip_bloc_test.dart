@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week34_project/features/borrowing_slips/bloc/return_slip_bloc.dart';
-import 'package:week34_project/features/borrowing_slips/bloc/return_slip_event.dart';
-import 'package:week34_project/features/borrowing_slips/bloc/return_slip_state.dart';
-import 'package:week34_project/features/borrowing_slips/data/models/return_slip_items_request.dart';
+import 'package:week34_project/features/borrowing/return_slip/bloc/return_slip_bloc.dart';
+import 'package:week34_project/features/borrowing/return_slip/bloc/return_slip_event.dart';
+import 'package:week34_project/features/borrowing/return_slip/bloc/return_slip_state.dart';
+import 'package:week34_project/features/borrowing/return_slip/models/return_slip_items_request.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 

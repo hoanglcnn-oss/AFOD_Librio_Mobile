@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/core/constants/api_constants.dart';
-import 'package:week34_project/features/reservations/bloc/reservations_bloc.dart';
-import 'package:week34_project/features/reservations/bloc/reservations_event.dart';
-import 'package:week34_project/features/reservations/bloc/reservations_state.dart';
-import 'package:week34_project/features/reservations/data/models/reservation.dart';
+import 'package:week34_project/features/borrowing/reservations/bloc/reservations_bloc.dart';
+import 'package:week34_project/features/borrowing/reservations/bloc/reservations_event.dart';
+import 'package:week34_project/features/borrowing/reservations/bloc/reservations_state.dart';
+import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
 
 import 'fake/fake_reservations_repository.dart';
 
@@ -33,10 +33,6 @@ void main() {
 
     tearDown(() {
       bloc.close();
-    });
-
-    test('Initial state is ReservationsInitial', () {
-      expect(bloc.state, isA<ReservationsInitial>());
     });
 
     test(

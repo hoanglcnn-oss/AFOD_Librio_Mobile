@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    name="viewport" />
+  <meta content="mobile_stack" name="shell-type" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <style>
+    @layer base {
+
+      html,
+      body {
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        overscroll-behavior: none;
+      }
+
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+
+      main>:first-child {
+        margin-top: 0 !important;
+      }
+
+      main>:last-child {
+        margin-bottom: 0 !important;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script
+    id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "background": "#f7f9fb", "inverse-on-surface": "#eff1f3", "primary-fixed": "#dae2fd", "on-error": "#ffffff", "primary-container": "#131b2e", "tertiary-container": "#111c2d", "outline": "#76777d", "on-error-container": "#93000a", "error": "#ba1a1a", "secondary-fixed-dim": "#6bd8cb", "on-secondary-container": "#006f66", "secondary-fixed": "#89f5e7", "on-surface": "#191c1e", "secondary": "#006a61", "on-background": "#191c1e", "surface-variant": "#e0e3e5", "inverse-surface": "#2d3133", "on-primary-fixed-variant": "#3f465c", "outline-variant": "#c6c6cd", "surface-dim": "#d8dadc", "surface-container-high": "#e6e8ea", "error-container": "#ffdad6", "surface-container-low": "#f2f4f6", "on-primary-fixed": "#131b2e", "inverse-primary": "#bec6e0", "surface-container": "#eceef0", "on-primary-container": "#7c839b", "surface-container-lowest": "#ffffff", "on-secondary-fixed-variant": "#005049", "primary": "#000000", "tertiary": "#000000", "on-primary": "#ffffff", "surface": "#f7f9fb", "on-tertiary-container": "#79849a", "primary-fixed-dim": "#bec6e0", "surface-tint": "#565e74", "on-tertiary-fixed": "#111c2d", "on-surface-variant": "#45464d", "tertiary-fixed": "#d8e3fb", "on-secondary": "#ffffff", "surface-bright": "#f7f9fb", "on-secondary-fixed": "#00201d", "secondary-container": "#86f2e4", "on-tertiary-fixed-variant": "#3c475a", "surface-container-highest": "#e0e3e5", "on-tertiary": "#ffffff", "tertiary-fixed-dim": "#bcc7de" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-xl": "2rem", "gutter": "1rem", "space-sm": "0.5rem", "margin": "1rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "space-md": "1rem" }, "fontFamily": { "label-sm": ["Manrope"], "body-md": ["Manrope"], "label-md": ["Manrope"], "title-md": ["Manrope"], "title-sm": ["Manrope"], "body-lg": ["Manrope"], "body-sm": ["Manrope"], "headline-lg-mobile": ["Newsreader"], "headline-sm": ["Newsreader"], "headline-lg": ["Newsreader"], "headline-md": ["Newsreader"], "label-lg": ["Manrope"], "display-lg": ["Newsreader"], "title-lg": ["Manrope"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.03em", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "title-sm": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }], "headline-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "headline-md": ["22px", { "lineHeight": "30px", "fontWeight": "500" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }], "display-lg": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "title-lg": ["18px", { "lineHeight": "26px", "fontWeight": "600" }] } } } };</script>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+
+<body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen">
+  <header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <div class="h-14 px-3 flex items-center justify-between border-b border-[#CDD8E5] bg-[#ffffff]">
+      <div class="flex items-center gap-2"><button aria-label="Quay láº¡i"
+          class="w-10 h-10 flex items-center justify-center text-[#17263D] hover:bg-[#F0F4F9] rounded-lg transition-colors"
+          onclick="history.back()" type="button"><span
+            class="material-symbols-outlined text-[24px]">arrow_back</span></button>
+        <h1 class="text-[18px] font-semibold text-[#17263D] tracking-tight">Chi tiáº¿t sÃ¡ch</h1>
+      </div>
+      <div class="flex items-center"><button aria-label="Há»“ sÆ¡ cÃ¡ nhÃ¢n"
+          class="w-9 h-9 flex items-center justify-center rounded-full ring-1 ring-[#CDD8E5] overflow-hidden"
+          type="button"><img alt="Profile" class="w-full h-full object-cover"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrA2wNzxOfDuqq_KYOGttRYVH0ML4uC00XyWZLDm2mksOdnJcxTR3VmlQxsQVMdFx_tVqbqtU6IrOrsKnpTDa-4nsh-0QlFOZLloo_Ono39-e_dL3J61bAPyj-QRpyM_9CRaZxbL50NvwQS_vMXrv5oZBzBjJtKQd8732zTH6Zf_MPmScjNkdy442BlfLSMieRlrHfKXHgdyb82UuoiuMgGbMYOAICHthXtYloI3ki_B74QDePM6ISDw" /></button>
+      </div>
+    </div>
+  </header>
+  <main class="flex-1 flex flex-col relative w-full pt-16 pb-safe bg-surface">
+    <div class="flex flex-col w-full pb-32 max-w-lg mx-auto px-4"><!-- Centered Academic Book Cover Section -->
+      <div class="pt-5 pb-4 flex flex-col items-center justify-center">
+        <div
+          class="relative w-44 aspect-[2/3] rounded-lg overflow-hidden shadow-[0_8px_24px_rgba(23,38,61,0.18)] border border-[#CDD8E5] bg-white">
+          <img alt="BÃ¬a sÃ¡ch Nháº­p mÃ´n TrÃ­ tuá»‡ NhÃ¢n táº¡o vÃ  Há»c mÃ¡y" class="w-full h-full object-cover"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDArn8ySv4anzO8pIpDcCb4qBRf-T53WP-OIZokYuH1fGmNCLdCRVTJ_NjaRNWy9OC-LL4qyYQkmzX6JWheI5P3bO4Ki_h4m9lxWFgs_7l6871IY-zDyUoKLxdBmJjG7uaUONrb0d5pb4UCKKaXuokUniRDRRCAxjtLDD7ZyCK8e4k4b-5N2eAUlcCMAhgeU-2a2nAhk4w1RGW0dnNfV3d4CFfBXlbIug2d8VsXCkaSZgAeMWqUfhSwQ" />
+          <div
+            class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-[#17263D]/80 backdrop-blur-sm text-white font-medium text-[10px] tracking-wide">
+            TÃ¡i báº£n II</div>
+        </div>
+      </div><!-- Book Core Metadata Section -->
+      <div class="text-center px-2 mt-1">
+        <h2 class="text-[22px] font-bold text-[#17263D] leading-snug tracking-tight">Nháº­p mÃ´n TrÃ­ tuá»‡ NhÃ¢n táº¡o
+          vÃ  Há»c mÃ¡y</h2>
+        <p class="text-[15px] font-semibold text-[#1a488e] mt-1.5">TÃ¡c giáº£: GS. TS. Nguyá»…n VÄƒn An</p>
+        <div class="flex flex-wrap items-center justify-center gap-2 mt-3"><span
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#D8E4F1] text-[#00316e] text-[12px] font-semibold"><span
+              class="material-symbols-outlined text-[14px]">category</span>Thá»ƒ loáº¡i: Khoa há»c MÃ¡y tÃ­nh &amp;
+            AI</span><span
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#F0F4F9] text-[#566B87] text-[12px] font-medium border border-[#CDD8E5]"><span
+              class="material-symbols-outlined text-[14px]">tag</span>ISBN: 978-604-0-12345-6</span></div>
+      </div><!-- Dynamic Availability Status Banner (canBorrow: true) -->
+      <div class="mt-5">
+        <div class="bg-[#F0F9F4] border border-[#A7E3C0] rounded-xl p-3.5 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-full bg-[#E0F4EA] flex items-center justify-center text-[#228B53] flex-shrink-0">
+              <span class="material-symbols-outlined text-[20px]">check_circle</span></div>
+            <div>
+              <div class="flex items-center gap-2"><span class="text-[14px] font-bold text-[#196B3E]">CÃ²n 4 / 6
+                  cuá»‘n</span><span
+                  class="px-2 py-0.5 rounded-full bg-[#228B53] text-white text-[10px] font-semibold tracking-wide uppercase">CÃ³
+                  thá»ƒ mÆ°á»£n</span></div>
+              <p class="text-[12px] text-[#3B6E52] mt-0.5">Sáºµn sÃ ng phá»¥c vá»¥ táº¡i quáº§y Kho MÆ°á»£n GiÃ¡o TrÃ¬nh
+              </p>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0 pl-2"><span
+              class="material-symbols-outlined text-[20px] text-[#228B53]">menu_book</span></div>
+        </div>
+      </div><!-- Description Section ('MÃ´ táº£') -->
+      <div class="mt-6 bg-white border border-[#CDD8E5] rounded-xl p-4 shadow-sm">
+        <h3 class="text-[16px] font-bold text-[#17263D] pb-2 border-b border-[#F0F4F9] flex items-center gap-1.5"><span
+            class="material-symbols-outlined text-[18px] text-[#1a488e]">article</span>MÃ´ táº£</h3>
+        <div class="mt-3 text-[14px] text-[#434751] leading-relaxed space-y-2.5">
+          <p>GiÃ¡o trÃ¬nh chuáº©n hÃ³a toÃ n bá»™ khá»‘i kiáº¿n thá»©c cá»‘t lÃµi vÃ  hiá»‡n Ä‘áº¡i vá» TrÃ­ tuá»‡
+            NhÃ¢n táº¡o cÃ¹ng Há»c mÃ¡y á»©ng dá»¥ng, káº¿t há»£p cháº·t cháº½ giá»¯a cÆ¡ sá»Ÿ toÃ¡n há»c giáº£i
+            thuáº­t vÃ  hÆ°á»›ng dáº«n láº­p trÃ¬nh thá»±c nghiá»‡m.</p>
+          <p>Ná»™i dung Ä‘Æ°á»£c biÃªn soáº¡n chuáº©n theo Ä‘á» cÆ°Æ¡ng mÃ´n há»c chuyÃªn ngÃ nh CÃ´ng nghá»‡ ThÃ´ng
+            tin vÃ  Khoa há»c Dá»¯ liá»‡u, bao gá»“m cÃ¡c chá»§ Ä‘á» trá»ng tÃ¢m: khÃ´ng gian tÃ¬m kiáº¿m Heuristic,
+            há»c cÃ³ giÃ¡m sÃ¡t &amp; khÃ´ng giÃ¡m sÃ¡t, máº¡ng nÆ¡-ron truyá»n tháº³ng (MLP), máº¡ng tÃ­ch cháº­p
+            (CNN) vÃ  cÃ¡c mÃ´ hÃ¬nh há»c sÃ¢u Ä‘Æ°Æ¡ng Ä‘áº¡i.</p>
+        </div>
+      </div><!-- Academic Regulation Notice Card -->
+      <div class="mt-4 bg-[#F0F4F9] border border-[#CDD8E5] rounded-xl p-3.5 flex items-start gap-2.5"><span
+          class="material-symbols-outlined text-[18px] text-[#566B87] flex-shrink-0 mt-0.5">info</span>
+        <p class="text-[12px] text-[#566B87] leading-relaxed">Äá»™c giáº£ sinh viÃªn Ä‘Æ°á»£c mÆ°á»£n tá»‘i Ä‘a 14
+          ngÃ y/láº§n. Vui lÃ²ng xuáº¥t trÃ¬nh tháº» sinh viÃªn hoáº·c á»©ng dá»¥ng táº¡i quáº§y thÆ° viá»‡n Ä‘á»ƒ hoÃ n
+          táº¥t thá»§ tá»¥c bÃ n giao sÃ¡ch.</p>
+      </div>
+    </div><!-- Bottom Sticky Action Bar with Exactly Two Actions: 'Äáº·t trÆ°á»›c' & 'MÆ°á»£n sÃ¡ch' -->
+    <div
+      class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#CDD8E5] px-4 py-3 pb-safe shadow-[0_-4px_16px_rgba(23,38,61,0.06)]">
+      <div class="max-w-lg mx-auto flex items-center gap-3"><button
+          class="flex-1 h-12 rounded-lg border-2 border-[#1a488e] bg-white text-[#1a488e] font-semibold text-[15px] flex items-center justify-center gap-1.5 active:scale-[0.98] hover:bg-[#F0F4F9] transition-all"
+          id="reserveBtn" onclick="handleReserve()" type="button"><span
+            class="material-symbols-outlined text-[20px]">bookmark_add</span><span>Äáº·t
+            trÆ°á»›c</span></button><button
+          class="flex-1 h-12 rounded-lg bg-[#00316e] text-white font-semibold text-[15px] flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] hover:bg-[#1a488e] transition-all"
+          id="borrowBtn" onclick="handleBorrow()" type="button"><span
+            class="material-symbols-outlined text-[20px]">local_library</span><span>MÆ°á»£n sÃ¡ch</span></button></div>
+    </div><!-- Academic Dialog / Feedback Modal -->
+    <div class="hidden fixed inset-0 z-50 bg-[#17263D]/40 backdrop-blur-sm flex items-center justify-center p-4"
+      id="actionModal">
+      <div class="bg-white w-full max-w-sm rounded-xl p-5 shadow-xl border border-[#CDD8E5] flex flex-col text-center">
+        <div class="w-12 h-12 rounded-full bg-[#D8E4F1] text-[#00316e] flex items-center justify-center mx-auto mb-3">
+          <span class="material-symbols-outlined text-[26px]" id="modalIcon">bookmark</span></div>
+        <h4 class="text-[17px] font-bold text-[#17263D]" id="modalTitle">XÃ¡c nháº­n thao tÃ¡c</h4>
+        <p class="text-[13px] text-[#566B87] mt-1.5" id="modalBody">Thao tÃ¡c há»c thuáº­t Ä‘Ã£ Ä‘Æ°á»£c ghi nháº­n.
+        </p>
+        <div class="mt-5 flex gap-2"><button
+            class="flex-1 py-2.5 rounded-lg border border-[#CDD8E5] text-[#566B87] font-semibold text-[14px] hover:bg-[#F0F4F9]"
+            onclick="closeModal()" type="button">ÄÃ³ng</button><button
+            class="flex-1 py-2.5 rounded-lg bg-[#00316e] text-white font-semibold text-[14px]" onclick="closeModal()"
+            type="button">XÃ¡c nháº­n</button></div>
+      </div>
+    </div>
+    <script>function handleReserve() { const modal = document.getElementById('actionModal'); document.getElementById('modalIcon').textContent = 'bookmark_added'; document.getElementById('modalTitle').textContent = 'Äáº·t trÆ°á»›c sÃ¡ch'; document.getElementById('modalBody').textContent = 'Há»‡ thá»‘ng Ä‘Ã£ ghi nháº­n yÃªu cáº§u Ä‘áº·t trÆ°á»›c cuá»‘n "Nháº­p mÃ´n TrÃ­ tuá»‡ NhÃ¢n táº¡o vÃ  Há»c mÃ¡y". Vui lÃ²ng nháº­n sÃ¡ch trÆ°á»›c 17:00 ngÃ y mai.'; modal.classList.remove('hidden'); } function handleBorrow() { const modal = document.getElementById('actionModal'); document.getElementById('modalIcon').textContent = 'check_circle'; document.getElementById('modalTitle').textContent = 'XÃ¡c nháº­n mÆ°á»£n sÃ¡ch'; document.getElementById('modalBody').textContent = 'Báº¡n Ä‘Ã£ kÃ­ch hoáº¡t yÃªu cáº§u mÆ°á»£n cuá»‘n sÃ¡ch nÃ y. Vui lÃ²ng Ä‘áº¿n bÃ n thá»§ thÆ° Kho MÆ°á»£n Ä‘á»ƒ quÃ©t mÃ£ nháº­n sÃ¡ch.'; modal.classList.remove('hidden'); } function closeModal() { document.getElementById('actionModal').classList.add('hidden'); }</script>
+  </main>
+</body>
+
+</html>

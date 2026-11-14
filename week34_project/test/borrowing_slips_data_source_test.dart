@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/borrowing_slips/data/datasources/borrowing_slips_remote_data_source.dart';
+import 'package:week34_project/features/borrowing/shared/datasources/borrowing_slips_remote_data_source.dart';
 
 void main() {
   group('BorrowingSlipsRemoteDataSourceImpl', () {

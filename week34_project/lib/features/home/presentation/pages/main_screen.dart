@@ -39,15 +39,15 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(switch (_selectedIndex) {
-          0 => 'Librio Mobile',
-          1 => 'Sách đang mượn',
-          2 => 'Tài khoản',
-          _ => 'Librio Mobile',
-        }),
-      ),
-
+      appBar: _selectedIndex == 0
+          ? null
+          : AppBar(
+              title: Text(switch (_selectedIndex) {
+                1 => 'Sách đang mượn',
+                2 => 'Tài khoản',
+                _ => 'Librio Mobile',
+              }),
+            ),
       body: IndexedStack(
         index: _selectedIndex,
         children: [

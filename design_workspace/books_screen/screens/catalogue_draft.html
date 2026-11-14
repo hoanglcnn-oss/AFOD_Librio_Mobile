@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Danh sách sách - Librio</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Be Vietnam Pro"', 'sans-serif'],
+          },
+          colors: {
+            academic: {
+              slate: '#F7FAFD',
+              title: '#17263D',
+              primary: '#1A488E',
+              secondary: '#346699',
+              border: '#CDD8E5',
+              subtext: '#566B87',
+              categoryBg: '#D8E4F1',
+              categoryText: '#00316E',
+              availBg: '#E0F4EA',
+              availText: '#196B3E',
+              availBorder: '#BBF7D0',
+              unavailBg: '#FFDAD6',
+              unavailText: '#BA1A1A',
+              unavailBorder: '#FECACA',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+  </style>
+</link></head>
+<body class="bg-[#F7FAFD] min-h-screen text-[#17263D] flex justify-center p-0 m-0">
+<!-- Mobile Viewport 390x844 Frame -->
+<main class="w-[390px] min-h-[844px] bg-[#F7FAFD] flex flex-col relative shadow-xl overflow-hidden pb-8">
+<!-- Top App Bar / Header -->
+<header class="sticky top-0 z-20 bg-[#F7FAFD]/95 backdrop-blur-sm border-b border-[#CDD8E5] px-4 pt-12 pb-3.5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h1 class="text-[18px] font-bold text-[#17263D] tracking-tight">Danh sách sách</h1>
+</div>
+<button aria-label="Chọn nhiều tài liệu" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#CDD8E5] hover:bg-blue-50/50 active:bg-blue-100 transition-colors shadow-sm text-sm font-semibold text-[#1A488E]" type="button">
+<span class="material-symbols-outlined text-[18px] text-[#1A488E]">checklist</span>
+<span>Chọn nhiều</span>
+</button>
+</header>
+<!-- Search Section -->
+<section class="px-4 pt-4 pb-3">
+<div class="relative flex items-center h-12 w-full bg-white rounded-lg border border-[#CDD8E5] shadow-xs px-3 focus-within:border-[#1A488E] focus-within:ring-2 focus-within:ring-[#1A488E]/20 transition-all">
+<!-- Search prefix icon -->
+<span class="material-symbols-outlined text-[#566B87] text-[22px] mr-2 flex-shrink-0">search</span>
+<!-- Search Input box -->
+<input class="w-full h-full bg-transparent text-[14px] text-[#17263D] placeholder-[#566B87] focus:outline-none" id="searchInput" placeholder="Tìm theo tên sách, tác giả..." type="text" value=""/>
+<!-- Action Icons Suffix -->
+<div class="flex items-center gap-1.5 ml-2 flex-shrink-0">
+<button aria-label="Xóa tìm kiếm" class="p-1 rounded-full text-[#566B87] hover:text-[#17263D] hover:bg-slate-100 transition-colors" id="clearSearchBtn" title="Xóa nội dung tìm kiếm" type="button">
+<span class="material-symbols-outlined text-[20px]">clear</span>
+</button>
+<div class="h-4 w-[1px] bg-[#CDD8E5]"></div>
+<button aria-label="Quét mã ISBN" class="p-1 rounded-full text-[#1A488E] hover:bg-blue-50 transition-colors" title="Quét mã vạch ISBN" type="button">
+<span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+</button>
+</div>
+</div>
+<!-- Quick status indicator bar -->
+<div class="flex items-center justify-between mt-3 px-1 text-xs text-[#566B87]">
+<span>Hiển thị <strong class="text-[#17263D] font-semibold">6</strong> tài liệu giáo trình</span>
+<span class="flex items-center gap-1 font-medium">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          Kho mở tra cứu
+        </span>
+</div>
+</section>
+<!-- Book Cards List -->
+<section class="px-4 flex flex-col gap-3 pb-6 flex-1 overflow-y-auto">
+<!-- Card 1: Nhập môn Trí tuệ Nhân tạo và Học máy (Available) -->
+<article class="flex items-start gap-3 p-3 bg-white rounded-xl border border-[#CDD8E5] shadow-[0_2px_4px_rgba(23,38,61,0.04)] hover:border-[#1A488E]/60 transition-all cursor-pointer group active:scale-[0.99]">
+<!-- Cover Thumbnail (72x100, 2:3) -->
+<div class="w-[72px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border border-[#CDD8E5] bg-slate-100 relative shadow-xs">
+<img alt="Bìa sách Nhập môn Trí tuệ Nhân tạo và Học máy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="absolute bottom-1 right-1 px-1 py-0.2 bg-[#17263D]/80 text-[9px] font-semibold text-white rounded">AI</span>
+</div>
+<!-- Center Metadata -->
+<div class="flex-1 min-w-0 pr-1">
+<h2 class="text-[15px] font-bold text-[#17263D] line-clamp-2 leading-snug group-hover:text-[#1A488E] transition-colors">
+            Nhập môn Trí tuệ Nhân tạo và Học máy
+          </h2>
+<p class="text-xs text-[#1A488E] font-medium mt-1 truncate">
+            Tác giả: GS. TS. Nguyễn Văn An
+          </p>
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<!-- Category Badge -->
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#D8E4F1] text-[#00316E]">
+              Khoa học Máy tính
+            </span>
+<!-- Availability Badge: Còn 4 cuốn -->
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#E0F4EA] text-[#196B3E] border border-[#BBF7D0]">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+              Còn 4 cuốn
+            </span>
+</div>
+</div>
+<!-- Trailing Chevron -->
+<div class="self-center flex-shrink-0 text-[#566B87] group-hover:text-[#1A488E] group-hover:translate-x-0.5 transition-all">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</article>
+<!-- Card 2: Cấu trúc Dữ liệu và Giải thuật (Available) -->
+<article class="flex items-start gap-3 p-3 bg-white rounded-xl border border-[#CDD8E5] shadow-[0_2px_4px_rgba(23,38,61,0.04)] hover:border-[#1A488E]/60 transition-all cursor-pointer group active:scale-[0.99]">
+<!-- Cover Thumbnail (72x100, 2:3) -->
+<div class="w-[72px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border border-[#CDD8E5] bg-slate-100 relative shadow-xs">
+<img alt="Bìa sách Cấu trúc Dữ liệu và Giải thuật" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="absolute bottom-1 right-1 px-1 py-0.2 bg-[#17263D]/80 text-[9px] font-semibold text-white rounded">DSA</span>
+</div>
+<!-- Center Metadata -->
+<div class="flex-1 min-w-0 pr-1">
+<h2 class="text-[15px] font-bold text-[#17263D] line-clamp-2 leading-snug group-hover:text-[#1A488E] transition-colors">
+            Cấu trúc Dữ liệu và Giải thuật nâng cao
+          </h2>
+<p class="text-xs text-[#1A488E] font-medium mt-1 truncate">
+            Tác giả: PGS. TS. Đinh Mạnh Tường
+          </p>
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#D8E4F1] text-[#00316E]">
+              Thuật toán
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#E0F4EA] text-[#196B3E] border border-[#BBF7D0]">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+              Còn 2 cuốn
+            </span>
+</div>
+</div>
+<div class="self-center flex-shrink-0 text-[#566B87] group-hover:text-[#1A488E] group-hover:translate-x-0.5 transition-all">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</article>
+<!-- Card 3: Thiết kế Hệ thống Phân tán (Unavailable) -->
+<article class="flex items-start gap-3 p-3 bg-white rounded-xl border border-[#CDD8E5] shadow-[0_2px_4px_rgba(23,38,61,0.04)] hover:border-[#1A488E]/60 transition-all cursor-pointer group active:scale-[0.99]">
+<!-- Cover Thumbnail (72x100, 2:3) -->
+<div class="w-[72px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border border-[#CDD8E5] bg-slate-100 relative shadow-xs">
+<img alt="Bìa sách Thiết kế Hệ thống Phân tán" class="w-full h-full object-cover grayscale-[30%] group-hover:scale-105 transition-transform duration-300" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="absolute bottom-1 right-1 px-1 py-0.2 bg-[#BA1A1A]/85 text-[9px] font-semibold text-white rounded">HẾT</span>
+</div>
+<!-- Center Metadata -->
+<div class="flex-1 min-w-0 pr-1">
+<h2 class="text-[15px] font-bold text-[#17263D] line-clamp-2 leading-snug group-hover:text-[#1A488E] transition-colors">
+            Thiết kế Kiến trúc Hệ thống Phân tán
+          </h2>
+<p class="text-xs text-[#1A488E] font-medium mt-1 truncate">
+            Tác giả: TS. Trần Quang Vinh
+          </p>
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#D8E4F1] text-[#00316E]">
+              Hệ thống mạng
+            </span>
+<!-- Availability Badge: Không thể mượn -->
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FFDAD6] text-[#BA1A1A] border border-[#FECACA]">
+<span class="material-symbols-outlined text-[13px]">cancel</span>
+              Không thể mượn
+            </span>
+</div>
+</div>
+<div class="self-center flex-shrink-0 text-[#566B87] group-hover:text-[#1A488E] group-hover:translate-x-0.5 transition-all">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</article>
+<!-- Card 4: Giáo trình Mạng máy tính & Truyền thông dữ liệu (Available) -->
+<article class="flex items-start gap-3 p-3 bg-white rounded-xl border border-[#CDD8E5] shadow-[0_2px_4px_rgba(23,38,61,0.04)] hover:border-[#1A488E]/60 transition-all cursor-pointer group active:scale-[0.99]">
+<div class="w-[72px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border border-[#CDD8E5] bg-slate-100 relative shadow-xs">
+<img alt="Bìa sách Mạng máy tính" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="absolute bottom-1 right-1 px-1 py-0.2 bg-[#17263D]/80 text-[9px] font-semibold text-white rounded">NET</span>
+</div>
+<div class="flex-1 min-w-0 pr-1">
+<h2 class="text-[15px] font-bold text-[#17263D] line-clamp-2 leading-snug group-hover:text-[#1A488E] transition-colors">
+            Giáo trình Mạng máy tính &amp; Giao thức mạng
+          </h2>
+<p class="text-xs text-[#1A488E] font-medium mt-1 truncate">
+            Tác giả: ThS. Lê Hoàng Tuấn
+          </p>
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#D8E4F1] text-[#00316E]">
+              Kỹ thuật Mạng
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#E0F4EA] text-[#196B3E] border border-[#BBF7D0]">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+              Còn 6 cuốn
+            </span>
+</div>
+</div>
+<div class="self-center flex-shrink-0 text-[#566B87] group-hover:text-[#1A488E] group-hover:translate-x-0.5 transition-all">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</article>
+<!-- Card 5: Kỹ thuật Lập trình Di động Flutter & Dart (Available) -->
+<article class="flex items-start gap-3 p-3 bg-white rounded-xl border border-[#CDD8E5] shadow-[0_2px_4px_rgba(23,38,61,0.04)] hover:border-[#1A488E]/60 transition-all cursor-pointer group active:scale-[0.99]">
+<div class="w-[72px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border border-[#CDD8E5] bg-slate-100 relative shadow-xs">
+<img alt="Bìa sách Flutter &amp; Dart" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="absolute bottom-1 right-1 px-1 py-0.2 bg-[#17263D]/80 text-[9px] font-semibold text-white rounded">APP</span>
+</div>
+<div class="flex-1 min-w-0 pr-1">
+<h2 class="text-[15px] font-bold text-[#17263D] line-clamp-2 leading-snug group-hover:text-[#1A488E] transition-colors">
+            Phát triển Ứng dụng Di động với Flutter &amp; Dart
+          </h2>
+<p class="text-xs text-[#1A488E] font-medium mt-1 truncate">
+            Tác giả: TS. Phạm Thanh Hương
+          </p>
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#D8E4F1] text-[#00316E]">
+              Phần mềm
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#E0F4EA] text-[#196B3E] border border-[#BBF7D0]">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+              Còn 3 cuốn
+            </span>
+</div>
+</div>
+<div class="self-center flex-shrink-0 text-[#566B87] group-hover:text-[#1A488E] group-hover:translate-x-0.5 transition-all">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</article>
+<!-- Card 6: An toàn Thông tin & Mật mã học (Unavailable) -->
+<article class="flex items-start gap-3 p-3 bg-white rounded-xl border border-[#CDD8E5] shadow-[0_2px_4px_rgba(23,38,61,0.04)] hover:border-[#1A488E]/60 transition-all cursor-pointer group active:scale-[0.99]">
+<div class="w-[72px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border border-[#CDD8E5] bg-slate-100 relative shadow-xs">
+<img alt="Bìa sách An toàn Thông tin" class="w-full h-full object-cover grayscale-[30%] group-hover:scale-105 transition-transform duration-300" src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg"/>
+<span class="absolute bottom-1 right-1 px-1 py-0.2 bg-[#BA1A1A]/85 text-[9px] font-semibold text-white rounded">HẾT</span>
+</div>
+<div class="flex-1 min-w-0 pr-1">
+<h2 class="text-[15px] font-bold text-[#17263D] line-clamp-2 leading-snug group-hover:text-[#1A488E] transition-colors">
+            Cơ sở An toàn Thông tin và Mật mã học hiện đại
+          </h2>
+<p class="text-xs text-[#1A488E] font-medium mt-1 truncate">
+            Tác giả: PGS. TS. Vũ Đình Thành
+          </p>
+<div class="flex flex-wrap items-center gap-1.5 mt-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#D8E4F1] text-[#00316E]">
+              Bảo mật
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FFDAD6] text-[#BA1A1A] border border-[#FECACA]">
+<span class="material-symbols-outlined text-[13px]">cancel</span>
+              Không thể mượn
+            </span>
+</div>
+</div>
+<div class="self-center flex-shrink-0 text-[#566B87] group-hover:text-[#1A488E] group-hover:translate-x-0.5 transition-all">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</article>
+</section>
+</main>
+<script>
+    // Search input clear interaction
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    if (clearBtn && searchInput) {
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchInput.focus();
+      });
+    }
+  </script>
+</body>
+</html>

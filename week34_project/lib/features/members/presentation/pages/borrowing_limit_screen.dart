@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
-import 'package:week34_project/features/borrowing_slips/presentation/widgets/borrowing_slip_ui_helper.dart';
+import 'package:week34_project/features/borrowing/shared/widgets/borrowing_slip_ui_helper.dart';
 
 import '../../data/api_members_repository.dart';
 import '../../data/member_resolver.dart';

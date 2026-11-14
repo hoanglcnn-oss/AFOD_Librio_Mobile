@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/renewal/errors/renewal_error_mapper.dart';
+import 'package:week34_project/features/borrowing/renewal/errors/renewal_error_mapper.dart';
 
 void main() {
   group('RenewalErrorMapper', () {
@@ -158,74 +158,28 @@ void main() {
       });
     });
 
-    test('Fallback HTTP 400 khi không có backend message', () {
-      final error = DioException(
-        requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-        response: Response(
+    test('Fallback HTTP status codes khi không có backend message (400, 403, 404, 409, 500)', () {
+      final cases = [
+        (400, 'Yêu cầu gia hạn không hợp lệ. Vui lòng kiểm tra lại điều kiện gia hạn.'),
+        (403, 'Bạn không có quyền gia hạn hoặc sách không đủ điều kiện gia hạn.'),
+        (404, 'Không tìm thấy thông tin lượt mượn hoặc phiếu mượn.'),
+        (409, 'Yêu cầu gia hạn bị xung đột hoặc trạng thái phiếu đã thay đổi. Vui lòng tải lại.'),
+        (500, 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.'),
+      ];
+
+      for (final (statusCode, expectedMessage) in cases) {
+        final error = DioException(
           requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-          statusCode: 400,
-          data: null,
-        ),
-      );
+          response: Response(
+            requestOptions: RequestOptions(path: '/borrowings/1/renew'),
+            statusCode: statusCode,
+            data: null,
+          ),
+        );
 
-      final message = getRenewalErrorMessage(error);
-      expect(message, 'Yêu cầu gia hạn không hợp lệ. Vui lòng kiểm tra lại điều kiện gia hạn.');
-    });
-
-    test('Fallback HTTP 403 khi không có backend message', () {
-      final error = DioException(
-        requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-        response: Response(
-          requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-          statusCode: 403,
-          data: null,
-        ),
-      );
-
-      final message = getRenewalErrorMessage(error);
-      expect(message, 'Bạn không có quyền gia hạn hoặc sách không đủ điều kiện gia hạn.');
-    });
-
-    test('Fallback HTTP 409 khi không có backend message', () {
-      final error = DioException(
-        requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-        response: Response(
-          requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-          statusCode: 409,
-          data: null,
-        ),
-      );
-
-      final message = getRenewalErrorMessage(error);
-      expect(message, 'Yêu cầu gia hạn bị xung đột hoặc trạng thái phiếu đã thay đổi. Vui lòng tải lại.');
-    });
-
-    test('Fallback HTTP 404 khi không tìm thấy', () {
-      final error = DioException(
-        requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-        response: Response(
-          requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-          statusCode: 404,
-          data: null,
-        ),
-      );
-
-      final message = getRenewalErrorMessage(error);
-      expect(message, 'Không tìm thấy thông tin lượt mượn hoặc phiếu mượn.');
-    });
-
-    test('Fallback HTTP 500 khi server lỗi', () {
-      final error = DioException(
-        requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-        response: Response(
-          requestOptions: RequestOptions(path: '/borrowings/1/renew'),
-          statusCode: 500,
-          data: null,
-        ),
-      );
-
-      final message = getRenewalErrorMessage(error);
-      expect(message, 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.');
+        final message = getRenewalErrorMessage(error);
+        expect(message, expectedMessage);
+      }
     });
 
     test('Lỗi kết nối mạng: connectionTimeout, receiveTimeout, connectionError', () {

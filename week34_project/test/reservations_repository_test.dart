@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/core/constants/api_constants.dart';
-import 'package:week34_project/features/reservations/data/api_reservations_repository.dart';
-import 'package:week34_project/features/reservations/data/datasources/reservations_remote_data_source.dart';
-import 'package:week34_project/features/reservations/errors/reservation_error_mapper.dart';
+import 'package:week34_project/features/borrowing/reservations/data/api_reservations_repository.dart';
+import 'package:week34_project/features/borrowing/reservations/data/datasources/reservations_remote_data_source.dart';
+import 'package:week34_project/features/borrowing/reservations/errors/reservation_error_mapper.dart';
 
 import 'fake/fake_token_storage.dart';
 

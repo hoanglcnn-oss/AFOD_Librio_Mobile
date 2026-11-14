@@ -1,0 +1,187 @@
+import '../../renewal/models/renewal_eligibility.dart';
+
+class BorrowingSlipItem {
+  final String id;
+  final String bookId;
+  final String bookTitle;
+  final int quantity;
+  final String status;
+
+  final int returnedQuantity;
+  final int lostQuantity;
+  final DateTime? returnDate;
+  final String? returnCondition;
+  final double lateFee;
+  final double compensationFee;
+  final double fineAmount;
+
+  const BorrowingSlipItem({
+    required this.id,
+    required this.bookId,
+    required this.bookTitle,
+    required this.quantity,
+    required this.status,
+    this.returnedQuantity = 0,
+    this.lostQuantity = 0,
+    this.returnDate,
+    this.returnCondition,
+    this.lateFee = 0,
+    this.compensationFee = 0,
+    this.fineAmount = 0,
+  });
+
+  int get remainingQuantity => quantity - returnedQuantity - lostQuantity;
+
+  factory BorrowingSlipItem.fromJson(Map<String, dynamic> json) {
+    return BorrowingSlipItem(
+      id: json['id'] as String,
+      bookId: json['bookId'] as String,
+      bookTitle: json['bookTitle'] as String,
+      quantity: (json['quantity'] as num).toInt(),
+      status: json['status'] as String,
+      returnedQuantity: (json['returnedQuantity'] as num?)?.toInt() ?? 0,
+      lostQuantity: (json['lostQuantity'] as num?)?.toInt() ?? 0,
+      returnDate: _parseDate(json['returnDate']),
+      returnCondition: json['returnCondition'] as String?,
+      lateFee: (json['lateFee'] as num?)?.toDouble() ?? 0,
+      compensationFee: (json['compensationFee'] as num?)?.toDouble() ?? 0,
+      fineAmount: (json['fineAmount'] as num?)?.toDouble() ?? 0,
+    );
+  }
+}
+
+class BorrowingSlip {
+  final String id;
+  final String slipNumber;
+  final String memberId;
+  final String? memberName;
+  final String? memberCardNumber;
+  final String status;
+  final DateTime dueDate;
+  final List<BorrowingSlipItem> items;
+
+  final DateTime? borrowDate;
+  final DateTime? approvedAt;
+  final double totalFine;
+  final bool finePaid;
+  final DateTime? finePaidAt;
+  final int renewCount;
+  final RenewalEligibility? renewalEligibility;
+
+  const BorrowingSlip({
+    required this.id,
+    required this.slipNumber,
+    required this.memberId,
+    this.memberName,
+    this.memberCardNumber,
+    required this.status,
+    required this.dueDate,
+    required this.items,
+    this.borrowDate,
+    this.approvedAt,
+    this.totalFine = 0,
+    this.finePaid = false,
+    this.finePaidAt,
+    this.renewCount = 0,
+    this.renewalEligibility,
+  });
+
+  bool? get canRenew => renewalEligibility?.canRenew;
+  String? get renewalReasonCode => renewalEligibility?.reasonCode;
+  String? get renewalMessage => renewalEligibility?.message;
+
+  BorrowingSlip copyWith({
+    String? id,
+    String? slipNumber,
+    String? memberId,
+    String? memberName,
+    String? memberCardNumber,
+    String? status,
+    DateTime? dueDate,
+    List<BorrowingSlipItem>? items,
+    DateTime? borrowDate,
+    DateTime? approvedAt,
+    double? totalFine,
+    bool? finePaid,
+    DateTime? finePaidAt,
+    int? renewCount,
+    RenewalEligibility? renewalEligibility,
+  }) {
+    return BorrowingSlip(
+      id: id ?? this.id,
+      slipNumber: slipNumber ?? this.slipNumber,
+      memberId: memberId ?? this.memberId,
+      memberName: memberName ?? this.memberName,
+      memberCardNumber: memberCardNumber ?? this.memberCardNumber,
+      status: status ?? this.status,
+      dueDate: dueDate ?? this.dueDate,
+      items: items ?? this.items,
+      borrowDate: borrowDate ?? this.borrowDate,
+      approvedAt: approvedAt ?? this.approvedAt,
+      totalFine: totalFine ?? this.totalFine,
+      finePaid: finePaid ?? this.finePaid,
+      finePaidAt: finePaidAt ?? this.finePaidAt,
+      renewCount: renewCount ?? this.renewCount,
+      renewalEligibility: renewalEligibility ?? this.renewalEligibility,
+    );
+  }
+
+  factory BorrowingSlip.fromJson(Map<String, dynamic> raw) {
+    final json = raw['data'] is Map<String, dynamic>
+        ? raw['data'] as Map<String, dynamic>
+        : raw;
+
+    // Backend có thể trả member lồng nhau: json['member']['fullName']
+    // hoặc phẳng: json['memberName']
+    String? memberName;
+    String? memberCardNumber;
+
+    if (json['member'] is Map) {
+      final memberMap = json['member'] as Map;
+      memberName = (memberMap['fullName'] ?? memberMap['name']) as String?;
+      memberCardNumber =
+          (memberMap['cardNumber'] ?? memberMap['card']) as String?;
+    }
+
+    memberName ??= json['memberName'] as String?;
+    memberCardNumber ??= json['memberCardNumber'] as String?;
+
+    final renewalJson = json['renewalEligibility'] ?? json['eligibility'];
+    RenewalEligibility? renewalEligibility;
+    if (renewalJson is Map<String, dynamic>) {
+      renewalEligibility = RenewalEligibility.fromJson(renewalJson);
+    } else if (json.containsKey('canRenew')) {
+      renewalEligibility = RenewalEligibility.fromJson(json);
+    }
+
+    return BorrowingSlip(
+      id: json['id'] as String,
+      slipNumber: json['slipNumber'] as String,
+      memberId: json['memberId'] as String,
+      memberName: memberName,
+      memberCardNumber: memberCardNumber,
+      status: json['status'] as String,
+      dueDate: DateTime.parse(json['dueDate'] as String),
+      borrowDate: _parseDate(json['borrowDate']),
+      approvedAt: _parseDate(json['approvedAt']),
+      totalFine: (json['totalFine'] as num?)?.toDouble() ?? 0,
+      finePaid: json['finePaid'] as bool? ?? false,
+      finePaidAt: _parseDate(json['finePaidAt']),
+      renewCount: (json['renewCount'] as num?)?.toInt() ?? 0,
+      renewalEligibility: renewalEligibility,
+      items: (json['items'] as List<dynamic>? ?? [])
+          .map(
+            (item) => BorrowingSlipItem.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(),
+    );
+  }
+}
+
+typedef BorrowingSlipDetail = BorrowingSlip;
+
+
+DateTime? _parseDate(dynamic value) {
+  if (value == null) return null;
+  return DateTime.parse(value as String);
+}
