@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../../shared/models/paginated_borrowing_slips.dart';
-import '../widgets/borrowing_slip_card.dart';
+import '../widgets/slip_list_card.dart';
 import 'borrowing_slip_detail_screen.dart';
 
 class BorrowingSlipsScreen extends StatefulWidget {

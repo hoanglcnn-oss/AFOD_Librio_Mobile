@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/widgets/app_toast.dart';
-import '../../bloc/approve_slip_bloc.dart';
-import '../../bloc/approve_slip_event.dart';
-import '../../bloc/approve_slip_state.dart';
+import '../../../slip_management/bloc/slip_management_bloc.dart';
+import '../../../slip_management/bloc/slip_management_event.dart';
+import '../../../slip_management/bloc/slip_management_state.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../../shared/models/borrowing_slip.dart';
 

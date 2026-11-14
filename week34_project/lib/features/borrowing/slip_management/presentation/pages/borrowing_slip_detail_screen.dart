@@ -17,12 +17,12 @@ import '../../../renewal/presentation/widgets/slip_renewal_dialog.dart';
 import '../../../renewal/presentation/widgets/slip_renewal_section.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../../shared/models/borrowing_slip.dart';
-import '../widgets/borrowing_slip_item_card.dart';
-import '../widgets/cancel_slip_dialog.dart';
+import '../widgets/slip_detail_item_card.dart';
+import '../widgets/slip_action_dialog.dart';
 import '../widgets/slip_detail_actions.dart';
 import '../widgets/slip_detail_header.dart';
 import '../../../shared/widgets/borrowing_slip_ui_helper.dart';
-import '../../../approve_slip/presentation/widgets/slip_decision_dialog.dart';
+import '../../../pending_slips/presentation/widgets/slip_decision_dialog.dart';
 import '../../../return_slip/presentation/pages/borrowing_slip_return_screen.dart';
 import '../../../pay_slip_fine/presentation/pages/pay_slip_fine_screen.dart';
 
@@ -182,12 +182,18 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
   }
 
   Future<void> _processSlip(BorrowingSlip slip, {required bool approve}) async {
-    final shouldRefresh = await showSlipDecisionDialog(
-      context,
-      slip: slip,
-      repository: widget.repository,
-      approve: approve,
-    );
+    final shouldRefresh = approve
+        ? await showApproveSlipDialog(
+            context,
+            slip: slip,
+            repository: widget.repository,
+          )
+        : await showSlipDecisionDialog(
+            context,
+            slip: slip,
+            repository: widget.repository,
+            approve: false,
+          );
 
     if (!mounted) return;
 
@@ -205,10 +211,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     );
 
     if (result != null && mounted) {
-      await _cancelSlip(
-        slip,
-        reason: result.reason,
-      );
+      await _cancelSlip(slip, reason: result.reason);
     }
   }
 
@@ -232,7 +235,8 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
       if (!mounted) return;
       bool isTimeout = false;
       if (e is DioException) {
-        isTimeout = e.type == DioExceptionType.connectionTimeout ||
+        isTimeout =
+            e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.sendTimeout ||
             e.type == DioExceptionType.receiveTimeout ||
             e.type == DioExceptionType.connectionError;
@@ -290,7 +294,10 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     }
   }
 
-  Future<void> _openRenewDialog(BuildContext context, BorrowingSlip slip) async {
+  Future<void> _openRenewDialog(
+    BuildContext context,
+    BorrowingSlip slip,
+  ) async {
     final extraDays = await showDialog<int>(
       context: context,
       builder: (_) => SlipRenewalDialog(slip: slip),
@@ -298,11 +305,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
 
     if (extraDays != null && context.mounted) {
       _renewBloc.add(
-        RenewSlipRequested(
-          slip.id,
-          extraDays: extraDays,
-          currentSlip: slip,
-        ),
+        RenewSlipRequested(slip.id, extraDays: extraDays, currentSlip: slip),
       );
     }
   }
@@ -395,12 +398,14 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                   ? authState.user.role.toUpperCase()
                   : '';
 
-              final canManageSlip =
-                  AppRole.fromString(role).canManageBorrowingSlips;
+              final canManageSlip = AppRole.fromString(
+                role,
+              ).canManageBorrowingSlips;
 
               // Ưu tiên authState.user.memberId, sau đó dùng _resolvedMemberId từ MemberResolver
               // Fail-closed: Nếu không xác định được memberId thì isOwner = false
-              final currentMemberId = (authState is AuthAuthenticated &&
+              final currentMemberId =
+                  (authState is AuthAuthenticated &&
                       authState.user.memberId != null &&
                       authState.user.memberId!.trim().isNotEmpty)
                   ? authState.user.memberId!.trim()
@@ -409,7 +414,8 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
               final isOwner =
                   currentMemberId != null && currentMemberId == slip.memberId;
               final canUserRenew = canManageSlip || isOwner;
-              final canCancelSlip = isOwner &&
+              final canCancelSlip =
+                  isOwner &&
                   role == 'MEMBER' &&
                   slip.status.toUpperCase() == 'PENDING_APPROVAL';
               final isExcludedStatus = [
@@ -427,10 +433,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   children: [
-                    SlipDetailHeader(
-                      slip: slip,
-                      isOverdue: overdue,
-                    ),
+                    SlipDetailHeader(slip: slip, isOverdue: overdue),
                     if (!isExcludedStatus && canUserRenew) ...[
                       const SizedBox(height: 8),
                       SlipRenewalSection(

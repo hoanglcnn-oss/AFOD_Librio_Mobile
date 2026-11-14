@@ -53,3 +53,5 @@ class ApproveSlipLimitExceeded extends ApproveSlipState {
   @override
   List<Object?> get props => [message, code, details, remediation];
 }
+
+typedef SlipManagementState = ApproveSlipState;
