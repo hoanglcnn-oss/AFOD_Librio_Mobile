@@ -7,6 +7,7 @@ import 'package:week34_project/features/auth/data/models/user_profile.dart';
 import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
 import 'package:week34_project/features/borrowing/reservations/presentation/pages/my_reservations_screen.dart';
 import 'package:week34_project/features/borrowing/reservations/presentation/widgets/reservation_card.dart';
+import 'package:week34_project/features/borrowing/reservations/presentation/widgets/cancel_reservation_dialog.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_borrowing_repository.dart';
@@ -494,6 +495,125 @@ void main() {
       expect(fakeBorrowRepo.createSlipCallCount, 0);
       // Không chuyển reservation sang FULFILLED từ Flutter
       expect(reservationsRepository.reservations.first.status, 'READY');
+    });
+  });
+
+  group('CancelReservationDialog Component', () {
+    final sampleReservation = Reservation(
+      id: 'res-test',
+      memberId: 'mem-01',
+      bookId: 'book-01',
+      bookTitle: 'Refactoring',
+      reservedAt: DateTime.utc(2026, 1, 1),
+      status: 'PENDING',
+    );
+
+    testWidgets('Xác nhận không nhập lý do -> result.reason == null', (tester) async {
+      CancelReservationDialogResult? dialogResult;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () async {
+                  dialogResult = await showDialog<CancelReservationDialogResult>(
+                    context: context,
+                    builder: (_) => CancelReservationDialog(
+                      reservation: sampleReservation,
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hủy đặt trước'), findsOneWidget);
+      expect(
+        find.text('Bạn có chắc chắn muốn hủy đặt trước cuốn sách "Refactoring"?'),
+        findsOneWidget,
+      );
+
+      // Bấm Xác nhận hủy mà không nhập lý do
+      await tester.tap(find.text('Xác nhận hủy'));
+      await tester.pumpAndSettle();
+
+      expect(dialogResult, isNotNull);
+      expect(dialogResult!.reason, isNull);
+    });
+
+    testWidgets('Xác nhận có nhập lý do -> reason được trim', (tester) async {
+      CancelReservationDialogResult? dialogResult;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () async {
+                  dialogResult = await showDialog<CancelReservationDialogResult>(
+                    context: context,
+                    builder: (_) => CancelReservationDialog(
+                      reservation: sampleReservation,
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), '  Bận đột xuất  ');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Xác nhận hủy'));
+      await tester.pumpAndSettle();
+
+      expect(dialogResult, isNotNull);
+      expect(dialogResult!.reason, 'Bận đột xuất');
+    });
+
+    testWidgets('Bấm Đóng -> result == null', (tester) async {
+      CancelReservationDialogResult? dialogResult;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () async {
+                  dialogResult = await showDialog<CancelReservationDialogResult>(
+                    context: context,
+                    builder: (_) => CancelReservationDialog(
+                      reservation: sampleReservation,
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Đóng'));
+      await tester.pumpAndSettle();
+
+      expect(dialogResult, isNull);
     });
   });
 }

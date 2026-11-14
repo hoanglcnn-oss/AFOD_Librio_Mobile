@@ -19,6 +19,7 @@ import '../../data/api_reservations_repository.dart';
 import '../../data/models/reservation.dart';
 import '../../data/reservations_repository.dart';
 import '../widgets/reservation_card.dart';
+import '../widgets/cancel_reservation_dialog.dart';
 
 class MyReservationsScreen extends StatelessWidget {
   final String? memberId;
@@ -192,55 +193,19 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
       return;
     }
 
-    final reasonController = TextEditingController();
-
-    final confirmed = await showDialog<bool>(
+    final result = await showDialog<CancelReservationDialogResult>(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: const Text('Hủy đặt trước'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bạn có chắc chắn muốn hủy đặt trước cuốn sách "${reservation.bookTitle}"?',
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: reasonController,
-              decoration: const InputDecoration(
-                labelText: 'Lý do hủy (tùy chọn)',
-                border: OutlineInputBorder(),
-                hintText: 'Nhập lý do hủy...',
-              ),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(false),
-            child: const Text('Đóng'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogCtx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(dialogCtx).pop(true),
-            child: const Text('Xác nhận hủy'),
-          ),
-        ],
+      builder: (_) => CancelReservationDialog(
+        reservation: reservation,
       ),
     );
 
-    if (confirmed == true && mounted && _authenticatedMemberId != null) {
+    if (result != null && mounted && _authenticatedMemberId != null) {
       context.read<ReservationsBloc>().add(
             CancelReservationRequested(
               reservationId: reservation.id,
               memberId: _authenticatedMemberId!,
-              reason: reasonController.text.trim().isNotEmpty
-                  ? reasonController.text.trim()
-                  : null,
+              reason: result.reason,
             ),
           );
     }
