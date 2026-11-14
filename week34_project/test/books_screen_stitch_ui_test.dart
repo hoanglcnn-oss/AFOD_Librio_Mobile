@@ -285,6 +285,93 @@ void main() {
       expect(find.text('Robert C. Martin'), findsOneWidget);
       expect(find.text('Còn 3 cuốn'), findsOneWidget);
     });
+
+    testWidgets(
+      'Trong selectionMode: sách có thể mượn hiển thị Checkbox, sách không thể mượn hiển thị dấu trừ và giảm opacity',
+      (tester) async {
+        const unavailableBook = Book(
+          id: 'book-unavailable',
+          isbn: '9780000000000',
+          title: 'Algorithms Unavailable',
+          authorName: 'Cormen',
+          categoryName: 'Computer Science',
+          description: 'Unavailable book description.',
+          coverUrl: null,
+          status: 'UNAVAILABLE',
+          copiesAvailable: 0,
+          copiesTotal: 3,
+        );
+
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: Column(
+                children: [
+                  BookCard(
+                    book: sampleBook1,
+                    selectionMode: true,
+                    isSelected: false,
+                  ),
+                  BookCard(
+                    book: unavailableBook,
+                    selectionMode: true,
+                    isSelected: false,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        // 1. Sách có thể mượn hiển thị Checkbox
+        expect(find.byType(Checkbox), findsOneWidget);
+
+        // 2. Sách không thể mượn hiển thị indicator dấu trừ
+        expect(
+          find.byKey(const Key('book_card_unavailable_minus')),
+          findsOneWidget,
+        );
+        expect(find.byIcon(Icons.remove), findsOneWidget);
+
+        // 3. Opacity của card không thể mượn trong selectionMode là 0.6
+        final opacityFinder = find.ancestor(
+          of: find.byKey(const Key('book_card_unavailable_minus')),
+          matching: find.byType(Opacity),
+        );
+        expect(opacityFinder, findsOneWidget);
+        final opacityWidget = tester.widget<Opacity>(opacityFinder);
+        expect(opacityWidget.opacity, 0.6);
+      },
+    );
+
+    testWidgets(
+      'Nút "Chọn nhiều" có kích thước lớn hơn (minimumSize height 42)',
+      (tester) async {
+        final repo = ConfigurableBooksRepository();
+        final bloc = BooksBloc(booksRepository: repo);
+        addTearDown(bloc.close);
+
+        bloc.emit(
+          const BooksLoaded(
+            paginatedBooks: PaginatedBooks(
+              page: 1,
+              totalPages: 1,
+              hasNextPage: false,
+              books: [sampleBook1],
+            ),
+          ),
+        );
+
+        await tester.pumpWidget(createSubject(bloc: bloc, repository: repo));
+        await tester.pump();
+
+        final selectButton = tester.widget<OutlinedButton>(
+          find.widgetWithText(OutlinedButton, 'Chọn nhiều'),
+        );
+        expect(selectButton.style?.minimumSize?.resolve({})?.height, 42);
+      },
+    );
   });
 
   group('BooksBloc Pagination Events', () {

@@ -154,25 +154,25 @@ class _BooksScreenState extends State<BooksScreen> {
                         foregroundColor: const Color(0xFF1A488E),
                         side: const BorderSide(color: Color(0xFFCDD8E5)),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                          horizontal: 14,
+                          vertical: 8,
                         ),
-                        minimumSize: const Size(0, 36),
+                        minimumSize: const Size(0, 42),
                         elevation: 1,
                         shadowColor: const Color(0x0A000000),
                       ),
                       icon: const Icon(
                         Icons.checklist,
-                        size: 18,
+                        size: 20,
                         color: Color(0xFF1A488E),
                       ),
                       label: const Text(
                         'Chọn nhiều',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF1A488E),
                         ),
@@ -186,23 +186,23 @@ class _BooksScreenState extends State<BooksScreen> {
                         foregroundColor: const Color(0xFF566B87),
                         side: const BorderSide(color: Color(0xFFCDD8E5)),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                          horizontal: 14,
+                          vertical: 8,
                         ),
-                        minimumSize: const Size(0, 36),
+                        minimumSize: const Size(0, 42),
                       ),
                       icon: const Icon(
                         Icons.close,
-                        size: 18,
+                        size: 20,
                         color: Color(0xFF566B87),
                       ),
                       label: const Text(
                         'Hủy',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF566B87),
                         ),
