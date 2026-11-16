@@ -6,6 +6,7 @@ import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
+import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
 import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 
 import 'fake/fake_auth_repository.dart';
@@ -383,6 +384,42 @@ void main() {
               .onPressed,
           isNull,
         );
+      },
+    );
+
+    testWidgets(
+      'Mượn 1 sách | Hiển thị tiêu đề "Xác nhận mượn sách" và gửi thành công có 2 nút hành động',
+      (tester) async {
+        setLargeScreen(tester);
+
+        membersRepository.fakeDebtSummary = const MemberDebtSummary(
+          maxBorrowLimit: 5,
+          currentBorrowedCount: 1,
+          remainingBorrowLimit: 4,
+          canBorrow: true,
+          overdueCount: 0,
+          unpaidFineAmount: 0,
+        );
+
+        await tester.pumpWidget(createApp(books: [sampleBooks.first]));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Xác nhận mượn sách'), findsOneWidget);
+        expect(find.text('Clean Code'), findsOneWidget);
+
+        // Gửi phiếu
+        await tester.tap(find.widgetWithText(FilledButton, 'Gửi phiếu mượn'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Đã gửi phiếu mượn!'), findsOneWidget);
+        expect(find.text('Xem chi tiết phiếu mượn'), findsOneWidget);
+        expect(find.text('Quay về danh sách sách'), findsOneWidget);
+
+        // Bấm "Xem chi tiết phiếu mượn" -> pushReplacement mở BorrowingSlipDetailScreen
+        await tester.tap(find.text('Xem chi tiết phiếu mượn'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(BorrowingSlipDetailScreen), findsOneWidget);
       },
     );
   });
