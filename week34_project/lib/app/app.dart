@@ -9,7 +9,7 @@ import '../features/auth/data/api_auth_repository.dart';
 import '../features/auth/presentation/pages/login_screen.dart';
 import '../features/auth/data/models/app_role.dart';
 import '../features/home/presentation/pages/librarian_main_screen.dart';
-import '../features/home/presentation/pages/main_screen.dart';
+import '../features/home/presentation/pages/member_main_screen.dart';
 import '../core/storage/token_storage.dart';
 import '../core/widgets/app_scroll_behaviour.dart';
 
@@ -166,7 +166,7 @@ class _AuthGateState extends State<AuthGate> {
         final role = AppRole.fromString(state.user.role);
 
         return switch (role) {
-          AppRole.member => const MainScreen(),
+          AppRole.member => const MemberMainScreen(),
           AppRole.librarian || AppRole.admin => const LibrarianMainScreen(),
           AppRole.unknown => Scaffold(
             body: Center(

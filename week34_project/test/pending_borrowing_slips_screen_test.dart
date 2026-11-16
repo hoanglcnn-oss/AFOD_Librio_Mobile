@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing/shared/models/paginated_borrowing_slips.dart';
-import 'package:week34_project/features/borrowing/approve_slip/presentation/pages/pending_borrowing_slips_screen.dart';
+import 'package:week34_project/features/borrowing/pending_slips/presentation/pages/pending_borrowing_slips_screen.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 

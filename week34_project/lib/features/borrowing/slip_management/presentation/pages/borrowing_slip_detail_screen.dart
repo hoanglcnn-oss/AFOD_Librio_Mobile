@@ -14,15 +14,14 @@ import '../../../renewal/bloc/renew_slip_bloc.dart';
 import '../../../renewal/bloc/renew_slip_event.dart';
 import '../../../renewal/bloc/renew_slip_state.dart';
 import '../../../renewal/presentation/widgets/slip_renewal_dialog.dart';
-import '../../../renewal/presentation/widgets/slip_renewal_section.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../../shared/models/borrowing_slip.dart';
-import '../widgets/borrowing_slip_item_card.dart';
-import '../widgets/cancel_slip_dialog.dart';
-import '../widgets/slip_detail_actions.dart';
-import '../widgets/slip_detail_header.dart';
+import '../widgets/slip_action_dialog.dart';
+import '../widgets/slip_ticket_pass_card.dart';
+import '../widgets/slip_summary_card.dart';
+import '../widgets/slip_bottom_action_bar.dart';
 import '../../../shared/widgets/borrowing_slip_ui_helper.dart';
-import '../../../approve_slip/presentation/widgets/slip_decision_dialog.dart';
+import '../../../pending_slips/presentation/widgets/slip_decision_dialog.dart';
 import '../../../return_slip/presentation/pages/borrowing_slip_return_screen.dart';
 import '../../../pay_slip_fine/presentation/pages/pay_slip_fine_screen.dart';
 
@@ -182,12 +181,18 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
   }
 
   Future<void> _processSlip(BorrowingSlip slip, {required bool approve}) async {
-    final shouldRefresh = await showSlipDecisionDialog(
-      context,
-      slip: slip,
-      repository: widget.repository,
-      approve: approve,
-    );
+    final shouldRefresh = approve
+        ? await showApproveSlipDialog(
+            context,
+            slip: slip,
+            repository: widget.repository,
+          )
+        : await showSlipDecisionDialog(
+            context,
+            slip: slip,
+            repository: widget.repository,
+            approve: false,
+          );
 
     if (!mounted) return;
 
@@ -205,10 +210,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     );
 
     if (result != null && mounted) {
-      await _cancelSlip(
-        slip,
-        reason: result.reason,
-      );
+      await _cancelSlip(slip, reason: result.reason);
     }
   }
 
@@ -232,7 +234,8 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
       if (!mounted) return;
       bool isTimeout = false;
       if (e is DioException) {
-        isTimeout = e.type == DioExceptionType.connectionTimeout ||
+        isTimeout =
+            e.type == DioExceptionType.connectionTimeout ||
             e.type == DioExceptionType.sendTimeout ||
             e.type == DioExceptionType.receiveTimeout ||
             e.type == DioExceptionType.connectionError;
@@ -290,7 +293,10 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     }
   }
 
-  Future<void> _openRenewDialog(BuildContext context, BorrowingSlip slip) async {
+  Future<void> _openRenewDialog(
+    BuildContext context,
+    BorrowingSlip slip,
+  ) async {
     final extraDays = await showDialog<int>(
       context: context,
       builder: (_) => SlipRenewalDialog(slip: slip),
@@ -298,11 +304,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
 
     if (extraDays != null && context.mounted) {
       _renewBloc.add(
-        RenewSlipRequested(
-          slip.id,
-          extraDays: extraDays,
-          currentSlip: slip,
-        ),
+        RenewSlipRequested(slip.id, extraDays: extraDays, currentSlip: slip),
       );
     }
   }
@@ -358,17 +360,20 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
         }
       },
       builder: (context, renewState) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('Chi tiết phiếu mượn')),
-          body: FutureBuilder<BorrowingSlip>(
-            future: _future,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
+        return FutureBuilder<BorrowingSlip>(
+          future: _future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Chi tiết phiếu mượn')),
+                body: const Center(child: CircularProgressIndicator()),
+              );
+            }
 
-              if (snapshot.hasError) {
-                return Center(
+            if (snapshot.hasError) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Chi tiết phiếu mượn')),
+                body: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -379,114 +384,182 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                       ),
                     ],
                   ),
-                );
-              }
-
-              final slip = snapshot.data!;
-              final overdue = BorrowingSlipUiHelper.isOverdue(slip);
-
-              AuthBloc? authBloc;
-              try {
-                authBloc = context.read<AuthBloc>();
-              } catch (_) {}
-
-              final authState = authBloc?.state;
-              final role = authState is AuthAuthenticated
-                  ? authState.user.role.toUpperCase()
-                  : '';
-
-              final canManageSlip =
-                  AppRole.fromString(role).canManageBorrowingSlips;
-
-              // Ưu tiên authState.user.memberId, sau đó dùng _resolvedMemberId từ MemberResolver
-              // Fail-closed: Nếu không xác định được memberId thì isOwner = false
-              final currentMemberId = (authState is AuthAuthenticated &&
-                      authState.user.memberId != null &&
-                      authState.user.memberId!.trim().isNotEmpty)
-                  ? authState.user.memberId!.trim()
-                  : _resolvedMemberId;
-
-              final isOwner =
-                  currentMemberId != null && currentMemberId == slip.memberId;
-              final canUserRenew = canManageSlip || isOwner;
-              final canCancelSlip = isOwner &&
-                  role == 'MEMBER' &&
-                  slip.status.toUpperCase() == 'PENDING_APPROVAL';
-              final isExcludedStatus = [
-                'COMPLETED',
-                'REJECTED',
-                'CANCELLED',
-              ].contains(slip.status.toUpperCase());
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                  _refresh();
-                  await _future;
-                },
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    SlipDetailHeader(
-                      slip: slip,
-                      isOverdue: overdue,
-                    ),
-                    if (!isExcludedStatus && canUserRenew) ...[
-                      const SizedBox(height: 8),
-                      SlipRenewalSection(
-                        slip: slip,
-                        renewState: renewState,
-                        onRenewPressed: () => _openRenewDialog(context, slip),
-                        onCheckEligibility: () {
-                          _renewBloc.add(CheckSlipRenewalRequested(slip.id));
-                        },
-                      ),
-                    ],
-                    const SizedBox(height: 20),
-                    Text(
-                      'Danh sách sách',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    for (final item in slip.items)
-                      BorrowingSlipItemCard(item: item, isOverdue: overdue),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    Text(
-                      'Tổng tiền phạt: '
-                      '${BorrowingSlipUiHelper.formatMoney(slip.totalFine)}',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    if (slip.totalFine > 0)
-                      Text(
-                        slip.finePaid
-                            ? 'Đã thanh toán tiền phạt'
-                            : 'Chưa thanh toán tiền phạt',
-                        style: TextStyle(
-                          color: slip.finePaid
-                              ? Colors.green
-                              : Theme.of(context).colorScheme.error,
-                        ),
-                      ),
-                    SlipDetailActions(
-                      slip: slip,
-                      canManageSlip: canManageSlip,
-                      canCancelSlip: canCancelSlip,
-                      isCancelling: _isCancelling,
-                      onApprove: () => _processSlip(slip, approve: true),
-                      onReject: () => _processSlip(slip, approve: false),
-                      onCancel: () => _confirmCancelSlip(slip),
-                      onReturn: () => _openReturn(slip),
-                      onPayFine: () => _openPayFine(slip),
-                      onRefresh: _refresh,
-                    ),
-                  ],
                 ),
               );
-            },
-          ),
+            }
+
+            final slip = snapshot.data!;
+            final overdue = BorrowingSlipUiHelper.isOverdue(slip);
+
+            AuthBloc? authBloc;
+            try {
+              authBloc = context.read<AuthBloc>();
+            } catch (_) {}
+
+            final authState = authBloc?.state;
+            final role = authState is AuthAuthenticated
+                ? authState.user.role.toUpperCase()
+                : '';
+
+            final canManageSlip = AppRole.fromString(
+              role,
+            ).canManageBorrowingSlips;
+
+            // Ưu tiên authState.user.memberId, sau đó dùng _resolvedMemberId từ MemberResolver
+            // Fail-closed: Nếu không xác định được memberId thì isOwner = false
+            final currentMemberId =
+                (authState is AuthAuthenticated &&
+                    authState.user.memberId != null &&
+                    authState.user.memberId!.trim().isNotEmpty)
+                ? authState.user.memberId!.trim()
+                : _resolvedMemberId;
+
+            final isOwner =
+                currentMemberId != null && currentMemberId == slip.memberId;
+            final isMember = role == 'MEMBER';
+            final isExcludedStatus = [
+              'COMPLETED',
+              'REJECTED',
+              'CANCELLED',
+            ].contains(slip.status.toUpperCase());
+            final canMemberRenew =
+                isOwner &&
+                isMember &&
+                !isExcludedStatus &&
+                (slip.status.toUpperCase() == 'BORROWED' ||
+                    slip.status.toUpperCase() == 'PARTIAL_RETURNED');
+            final canCancelSlip =
+                isOwner &&
+                role == 'MEMBER' &&
+                slip.status.toUpperCase() == 'PENDING_APPROVAL';
+
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final isTablet = constraints.maxWidth >= 768;
+
+                final actionBar = SlipBottomActionBar(
+                  slip: slip,
+                  canManageSlip: canManageSlip,
+                  canCancelSlip: canCancelSlip,
+                  isCancelling: _isCancelling,
+                  canRenew: canMemberRenew,
+                  renewState: renewState,
+                  isCard: isTablet,
+                  onApprove: () => _processSlip(slip, approve: true),
+                  onReject: () => _processSlip(slip, approve: false),
+                  onCancel: () => _confirmCancelSlip(slip),
+                  onReturn: () => _openReturn(slip),
+                  onPayFine: () => _openPayFine(slip),
+                  onRenew: () => _openRenewDialog(context, slip),
+                  onCheckEligibility: () {
+                    _renewBloc.add(
+                      CheckSlipRenewalRequested(slip.id),
+                    );
+                  },
+                  onRefresh: _refresh,
+                );
+
+                return Scaffold(
+                  appBar: AppBar(
+                    title: const Text('Chi tiết phiếu mượn'),
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        tooltip: 'Làm mới',
+                        onPressed: _refresh,
+                      ),
+                    ],
+                  ),
+                  body: RefreshIndicator(
+                    onRefresh: () async {
+                      _refresh();
+                      await _future;
+                    },
+                    child: isTablet
+                        ? _buildTabletLayout(
+                            context,
+                            slip: slip,
+                            overdue: overdue,
+                            actionBar: actionBar,
+                          )
+                        : _buildMobileLayout(
+                            context,
+                            slip: slip,
+                            overdue: overdue,
+                          ),
+                  ),
+                  bottomNavigationBar: isTablet ? null : actionBar,
+                );
+              },
+            );
+          },
         );
       },
+    );
+  }
+
+  Widget _buildMobileLayout(
+    BuildContext context, {
+    required BorrowingSlip slip,
+    required bool overdue,
+  }) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      children: [
+        SlipTicketPassCard(
+          slip: slip,
+          isOverdue: overdue,
+        ),
+        const SizedBox(height: 16),
+        SlipSummaryCard(slip: slip),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(
+    BuildContext context, {
+    required BorrowingSlip slip,
+    required bool overdue,
+    required SlipBottomActionBar actionBar,
+  }) {
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(16),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1100),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Cột trái: Thẻ vé Ticket Pass
+              Expanded(
+                flex: 7,
+                child: SlipTicketPassCard(
+                  slip: slip,
+                  isOverdue: overdue,
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Cột phải: Bảng thao tác hành động (nếu có) + Tổng kết phiếu
+              Expanded(
+                flex: 5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (actionBar.hasActions) ...[
+                      actionBar,
+                      const SizedBox(height: 16),
+                    ],
+                    SlipSummaryCard(slip: slip),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

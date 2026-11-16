@@ -287,6 +287,70 @@ void main() {
   );
 
   testWidgets(
+    'BorrowingSlipDetailScreen | Vượt hạn mức -> Bấm Từ chối -> Mở form với lý do prefilled -> Xác nhận từ chối thành công',
+    (tester) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeSlipDetail = BorrowingSlip(
+        id: 'slip-01',
+        slipNumber: 'SLIP-2026-0001',
+        memberId: 'mem-01',
+        status: 'PENDING_APPROVAL',
+        dueDate: DateTime.utc(2026, 11, 25),
+        items: const [
+          BorrowingSlipItem(
+            id: 'it-1',
+            bookId: 'b-1',
+            bookTitle: 'Clean Code',
+            quantity: 1,
+            status: 'PENDING',
+          ),
+        ],
+      );
+      repository.approveSlipException = const BorrowLimitExceededException(
+        message: 'Độc giả đã vượt quá hạn mức mượn sách',
+        code: 'BORROW_LIMIT_EXCEEDED',
+        details: {'maxBorrowLimit': 5, 'currentBorrowedCount': 5},
+      );
+
+      await tester.pumpWidget(createApp(repository, role: 'LIBRARIAN'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Duyệt phiếu'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Xác nhận duyệt'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('reject_exceeded_slip_button')),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(const ValueKey('reject_exceeded_slip_button')),
+      );
+      await tester.pumpAndSettle();
+
+      // Kiểm tra view từ chối mở ra với text prefill
+      expect(find.text('Từ chối phiếu mượn'), findsOneWidget);
+      expect(
+        find.textContaining('Vượt hạn mức mượn sách (5/5 cuốn)'),
+        findsOneWidget,
+      );
+
+      // Bấm xác nhận từ chối
+      await tester.tap(
+        find.byKey(const ValueKey('confirm_reject_from_exceeded_button')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(repository.rejectSlipCallCount, 1);
+      expect(repository.lastRejectionReason, contains('5/5 cuốn'));
+      expect(find.text('Đã từ chối phiếu'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'C5.5 | MEMBER xem phiếu PENDING_APPROVAL của mình | Hiển thị nút Hủy phiếu mượn',
     (tester) async {
       final repository = FakeBorrowingRepository();

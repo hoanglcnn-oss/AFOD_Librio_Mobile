@@ -2,8 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../shared/repositories/borrowing_slips_repository.dart';
-import 'approve_slip_event.dart';
-import 'approve_slip_state.dart';
+import 'slip_management_event.dart';
+import 'slip_management_state.dart';
+
+typedef SlipManagementBloc = ApproveSlipBloc;
 
 class ApproveSlipBloc extends Bloc<ApproveSlipEvent, ApproveSlipState> {
   final BorrowingSlipsRepository repository;

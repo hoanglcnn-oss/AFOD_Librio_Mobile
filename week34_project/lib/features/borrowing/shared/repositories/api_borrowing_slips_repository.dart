@@ -61,6 +61,7 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
   @override
   Future<PaginatedBorrowingSlips> getBorrowingSlips({
     required String memberId,
+    String? status,
     int page = 1,
     int limit = 10,
   }) async {
@@ -77,6 +78,7 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
     final data = await _remoteDataSource.getBorrowingSlips(
       memberId: memberId.trim(),
       token: token,
+      status: status,
       page: page,
       limit: limit,
     );

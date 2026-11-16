@@ -109,14 +109,31 @@ class FakeBorrowingRepository implements BorrowingSlipsRepository {
     );
   }
 
+  int getBorrowingSlipsCallCount = 0;
+  String? lastGetSlipsStatus;
+  String? lastGetSlipsMemberId;
+
   @override
   Future<PaginatedBorrowingSlips> getBorrowingSlips({
     required String memberId,
+    String? status,
     int page = 1,
     int limit = 10,
   }) async {
+    getBorrowingSlipsCallCount++;
+    lastGetSlipsMemberId = memberId;
+    lastGetSlipsStatus = status;
+
     if (shouldFail) {
       throw Exception('Không thể tải danh sách phiếu mượn');
+    }
+
+    if (fakeAllSlipsBuilder != null) {
+      return fakeAllSlipsBuilder!(status, page, limit);
+    }
+
+    if (fakeAllSlipsPage != null) {
+      return fakeAllSlipsPage!;
     }
 
     return PaginatedBorrowingSlips(

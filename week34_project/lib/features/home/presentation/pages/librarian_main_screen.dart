@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
-import 'librarian_manage_screen.dart';
-import '../../../borrowing/approve_slip/presentation/pages/pending_borrowing_slips_screen.dart';
+import '../../../borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
+import '../../../borrowing/pending_slips/presentation/pages/pending_borrowing_slips_screen.dart';
 
 class LibrarianMainScreen extends StatefulWidget {
   const LibrarianMainScreen({super.key});
@@ -32,8 +32,8 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
         index: _selectedIndex,
         children: [
           PendingBorrowingSlipsScreen(repository: _borrowingSlipsRepository),
-          LibrarianManageScreen(
-            borrowingSlipsRepository: _borrowingSlipsRepository,
+          BorrowingSlipsScreen(
+            repository: _borrowingSlipsRepository,
           ),
           const ProfileScreen(),
         ],
