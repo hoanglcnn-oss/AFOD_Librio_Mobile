@@ -67,6 +67,7 @@ flutter build appbundle --dart-define=API_BASE_URL=https://api.leorank.site/api
 ```text
 lib/
 ├── app/
+│   └── router/
 ├── core/
 │   ├── constants/
 │   ├── network/
@@ -97,10 +98,10 @@ lib/
 
 ### 4.1. `app/`
 
-Chứa cấu hình và khởi tạo ứng dụng:
-- Cấu hình `MaterialApp`, theme và font chữ.
-- Khởi tạo các Bloc cấp ứng dụng (như `AuthBloc`).
-- Kiểm tra trạng thái xác thực và điều hướng đến màn hình phù hợp.
+Chứa cấu hình, điểm vào và điều hướng cấp ứng dụng:
+- Cấu hình `MaterialApp.router`, theme và font chữ toàn cục.
+- Khởi tạo các BLoC cấp ứng dụng (như `AuthBloc`).
+- **`router/`**: Quản lý điều hướng tập trung (`GoRouter`) và định danh route (`route_names.dart`), tự động kiểm tra trạng thái xác thực và phân quyền màn hình theo vai trò người dùng (Member / Librarian / Admin). Các luồng chi tiết bên trong feature vẫn sử dụng `Navigator.push()` linh hoạt.
 
 ### 4.2. `core/` (Application-level Shared)
 
