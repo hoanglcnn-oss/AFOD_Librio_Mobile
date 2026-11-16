@@ -14,7 +14,7 @@ import 'fake/fake_borrowing_repository.dart';
 import 'fake/fake_members_repository.dart';
 import 'fake/fake_reservations_repository.dart';
 import 'fake/fake_token_storage.dart';
-import 'package:week34_project/features/borrowing/create_slip/presentation/pages/borrow_confirm_screen.dart';
+import 'package:week34_project/features/borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
 import 'package:week34_project/features/members/data/models/member.dart';
 
 void main() {
@@ -492,6 +492,11 @@ void main() {
     testWidgets(
       'C5.5 | Nhấn Tạo phiếu mượn trên READY reservation | Mở BorrowConfirmScreen, không tự gọi POST',
       (tester) async {
+        tester.view.physicalSize = const Size(800, 1600);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
         final fakeBorrowRepo = FakeBorrowingRepository();
         final sampleMember = Member(
           id: 'mem-01',
@@ -537,8 +542,8 @@ void main() {
         await tester.tap(find.text('Tạo phiếu mượn'));
         await tester.pumpAndSettle();
 
-        // Màn hình BorrowConfirmScreen được mở
-        expect(find.byType(BorrowConfirmScreen), findsOneWidget);
+        // Màn hình BorrowingSlipConfirmScreen được mở
+        expect(find.byType(BorrowingSlipConfirmScreen), findsOneWidget);
         expect(find.text('Xác nhận mượn sách'), findsOneWidget);
         expect(find.text('Design Patterns'), findsOneWidget);
         expect(find.text('Gửi phiếu mượn'), findsOneWidget);

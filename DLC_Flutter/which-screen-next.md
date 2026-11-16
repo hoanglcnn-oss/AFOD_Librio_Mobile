@@ -11,6 +11,8 @@ Thứ tự	Screen / nhóm màn	Mức ưu tiên	Mục tiêu redesign
 10	ProfileScreen + Borrowing Limit	P1	Hồ sơ độc giả, hạn mức, công nợ
 11	Login / Register / Forgot Password	P2	Đồng nhất thiết kế auth
 
+1 2 5 6 7 Xong
+
 Nhóm LIBRARIAN nên có roadmap riêng
 Các màn quản lý thủ thư có cách sử dụng khác MEMBER, nên t không muốn ép chung một kiểu bố cục:
 - ManageBorrowingSlipsScreen

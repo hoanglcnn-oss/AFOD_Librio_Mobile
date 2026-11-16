@@ -15,6 +15,7 @@ import '../../bloc/borrowing_slip_state.dart';
 import '../../../shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../data/models/create_borrowing_slip_request.dart';
+import '../../../slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
 import '../widgets/borrow_debt_summary_card.dart';
 import '../widgets/borrow_slip_form_card.dart';
 
@@ -40,6 +41,8 @@ class BorrowingSlipConfirmScreen extends StatelessWidget {
       child: _SlipConfirmContent(
         books: books,
         membersRepository: membersRepository ?? ApiMembersRepository(),
+        borrowingSlipsRepository:
+            borrowingSlipsRepository ?? ApiBorrowingSlipsRepository(),
       ),
     );
   }
@@ -48,10 +51,12 @@ class BorrowingSlipConfirmScreen extends StatelessWidget {
 class _SlipConfirmContent extends StatefulWidget {
   final List<Book> books;
   final MembersRepository membersRepository;
+  final BorrowingSlipsRepository borrowingSlipsRepository;
 
   const _SlipConfirmContent({
     required this.books,
     required this.membersRepository,
+    required this.borrowingSlipsRepository,
   });
 
   @override
@@ -147,7 +152,13 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Xác nhận phiếu mượn')),
+      appBar: AppBar(
+        title: Text(
+          widget.books.length == 1
+              ? 'Xác nhận mượn sách'
+              : 'Xác nhận phiếu mượn',
+        ),
+      ),
       body: BlocBuilder<BorrowingSlipBloc, BorrowingSlipState>(
         builder: (context, state) {
           if (state is BorrowingSlipSuccess) {
@@ -286,9 +297,33 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
               const SizedBox(height: 8),
               Text('${state.slip.items.length} đầu sách'),
               const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Quay về danh sách sách'),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  key: const ValueKey('view_slip_detail_button'),
+                  icon: const Icon(Icons.receipt_long),
+                  label: const Text('Xem chi tiết phiếu mượn'),
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (_) => BorrowingSlipDetailScreen(
+                          slipId: state.slip.id,
+                          repository: widget.borrowingSlipsRepository,
+                          membersRepository: widget.membersRepository,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  key: const ValueKey('return_to_books_button'),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Quay về danh sách sách'),
+                ),
               ),
             ],
           ),
