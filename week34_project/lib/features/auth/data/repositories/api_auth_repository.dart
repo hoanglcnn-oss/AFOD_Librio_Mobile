@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 
-import 'datasources/auth_remote_data_source.dart';
+import '../datasources/auth_remote_data_source.dart';
 import 'auth_repository.dart';
-import 'models/auth_response.dart';
+import '../models/auth_response.dart';
 
 class ApiAuthRepository implements AuthRepository {
   final AuthRemoteDataSource _remoteDataSource;

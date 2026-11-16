@@ -1,4 +1,4 @@
-import 'package:week34_project/features/books/data/books_repository.dart';
+import 'package:week34_project/features/books/data/repositories/books_repository.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/books/data/models/paginated_books.dart';
 

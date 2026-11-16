@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/storage/token_storage.dart';
-import 'datasources/members_remote_data_source.dart';
+import '../../../../../core/storage/token_storage.dart';
+import '../datasources/members_remote_data_source.dart';
 import 'members_repository.dart';
-import 'models/member.dart';
-import 'models/member_debt_summary.dart';
+import '../models/member.dart';
+import '../models/member_debt_summary.dart';
 
-class ApiMembersRepository implements MembersRepository {
+class ApiMembersRepository extends MembersRepository {
   final MembersRemoteDataSource _remoteDataSource;
   final TokenStorage _tokenStorage;
 

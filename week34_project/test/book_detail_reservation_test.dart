@@ -7,7 +7,7 @@ import 'package:week34_project/core/constants/api_constants.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
-import 'package:week34_project/features/books/data/books_repository.dart';
+import 'package:week34_project/features/books/data/repositories/books_repository.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/books/data/models/paginated_books.dart';
 import 'package:week34_project/features/books/presentation/pages/books_detail_screen.dart';

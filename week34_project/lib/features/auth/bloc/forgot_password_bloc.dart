@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/auth_repository.dart';
+import '../data/repositories/auth_repository.dart';
 import 'forgot_password_event.dart';
 import 'forgot_password_state.dart';
 

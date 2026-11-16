@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/auth/bloc/auth_event.dart';
 import '../features/auth/bloc/auth_state.dart';
-import '../features/auth/data/api_auth_repository.dart';
+import '../features/auth/data/repositories/api_auth_repository.dart';
 import '../features/auth/presentation/pages/login_screen.dart';
 import '../features/auth/data/models/app_role.dart';
 import '../features/home/presentation/pages/librarian_main_screen.dart';

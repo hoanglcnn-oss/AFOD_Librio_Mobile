@@ -1,5 +1,5 @@
-import 'models/paginated_reservations.dart';
-import 'models/reservation.dart';
+import '../models/paginated_reservations.dart';
+import '../models/reservation.dart';
 
 abstract class ReservationsRepository {
   Future<Reservation> createReservation({
@@ -14,9 +14,7 @@ abstract class ReservationsRepository {
     int limit = 10,
   });
 
-  Future<Reservation> getReservationById({
-    required String reservationId,
-  });
+  Future<Reservation> getReservationById({required String reservationId});
 
   Future<Reservation> cancelReservation({
     required String reservationId,

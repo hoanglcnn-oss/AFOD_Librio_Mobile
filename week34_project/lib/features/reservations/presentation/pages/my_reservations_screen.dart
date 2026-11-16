@@ -5,26 +5,24 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/app_toast.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
-import '../../../books/data/books_repository.dart';
+import '../../../books/data/repositories/books_repository.dart';
 import '../../../books/data/models/book.dart';
 import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
 import '../../../borrowing/create_slip/presentation/pages/borrow_confirm_screen.dart';
-import '../../../members/data/api_members_repository.dart';
-import '../../../members/data/member_resolver.dart';
-import '../../../members/data/members_repository.dart';
+import '../../../members/data/repositories/api_members_repository.dart';
+import '../../../members/data/repositories/members_repository.dart';
 import '../../bloc/reservations_bloc.dart';
 import '../../bloc/reservations_event.dart';
 import '../../bloc/reservations_state.dart';
-import '../../data/api_reservations_repository.dart';
+import '../../data/repositories/api_reservations_repository.dart';
 import '../../data/models/reservation.dart';
-import '../../data/reservations_repository.dart';
+import '../../data/repositories/reservations_repository.dart';
 import '../widgets/reservation_card.dart';
 import '../widgets/cancel_reservation_dialog.dart';
 
 class MyReservationsScreen extends StatelessWidget {
   final String? memberId;
   final ReservationsRepository? repository;
-  final MemberResolver? memberResolver;
   final BooksRepository? booksRepository;
   final BorrowingSlipsRepository? borrowingSlipsRepository;
   final MembersRepository? membersRepository;
@@ -33,7 +31,6 @@ class MyReservationsScreen extends StatelessWidget {
     super.key,
     this.memberId,
     this.repository,
-    this.memberResolver,
     this.booksRepository,
     this.borrowingSlipsRepository,
     this.membersRepository,
@@ -47,7 +44,6 @@ class MyReservationsScreen extends StatelessWidget {
       ),
       child: _MyReservationsView(
         memberId: memberId,
-        memberResolver: memberResolver,
         booksRepository: booksRepository,
         borrowingSlipsRepository: borrowingSlipsRepository,
         membersRepository: membersRepository,
@@ -58,14 +54,12 @@ class MyReservationsScreen extends StatelessWidget {
 
 class _MyReservationsView extends StatefulWidget {
   final String? memberId;
-  final MemberResolver? memberResolver;
   final BooksRepository? booksRepository;
   final BorrowingSlipsRepository? borrowingSlipsRepository;
   final MembersRepository? membersRepository;
 
   const _MyReservationsView({
     this.memberId,
-    this.memberResolver,
     this.booksRepository,
     this.borrowingSlipsRepository,
     this.membersRepository,
@@ -105,12 +99,11 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
       }
 
       final user = authState.user;
-      final resolver =
-          widget.memberResolver ??
-          MemberResolver(membersRepository: ApiMembersRepository());
+      final membersRepo =
+          widget.membersRepository ?? ApiMembersRepository();
 
       // Luôn xác thực và lấy memberId từ user đã đăng nhập
-      _authenticatedMemberId = await resolver.resolve(
+      _authenticatedMemberId = await membersRepo.resolveMemberId(
         memberId: user.memberId,
         email: user.email,
         role: user.role,

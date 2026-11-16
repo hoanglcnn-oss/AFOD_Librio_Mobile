@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:week34_project/features/reservations/data/models/paginated_reservations.dart';
 import 'package:week34_project/features/reservations/data/models/reservation.dart';
-import 'package:week34_project/features/reservations/data/reservations_repository.dart';
+import 'package:week34_project/features/reservations/data/repositories/reservations_repository.dart';
 
 class FakeReservationsRepository implements ReservationsRepository {
   List<Reservation> reservations = [];

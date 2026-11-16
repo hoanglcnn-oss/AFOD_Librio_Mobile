@@ -6,9 +6,8 @@ import '../../../../../core/widgets/app_toast.dart';
 import '../../../../auth/bloc/auth_bloc.dart';
 import '../../../../auth/bloc/auth_state.dart';
 import '../../../../auth/data/models/app_role.dart';
-import '../../../../members/data/api_members_repository.dart';
-import '../../../../members/data/member_resolver.dart';
-import '../../../../members/data/members_repository.dart';
+import '../../../../members/data/repositories/api_members_repository.dart';
+import '../../../../members/data/repositories/members_repository.dart';
 import '../../../renewal/errors/renewal_error_mapper.dart';
 import '../../../renewal/bloc/renew_slip_bloc.dart';
 import '../../../renewal/bloc/renew_slip_event.dart';
@@ -30,7 +29,6 @@ class BorrowingSlipDetailScreen extends StatefulWidget {
   final BorrowingSlipsRepository repository;
   final RenewSlipBloc? renewSlipBloc;
   final MembersRepository? membersRepository;
-  final MemberResolver? memberResolver;
 
   const BorrowingSlipDetailScreen({
     super.key,
@@ -38,7 +36,6 @@ class BorrowingSlipDetailScreen extends StatefulWidget {
     required this.repository,
     this.renewSlipBloc,
     this.membersRepository,
-    this.memberResolver,
   });
 
   @override
@@ -50,7 +47,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
   late Future<BorrowingSlip> _future;
   late final RenewSlipBloc _renewBloc;
   late final bool _isCustomBloc;
-  late final MemberResolver _memberResolver;
+  late final MembersRepository _membersRepository;
   String? _resolvedMemberId;
   bool _isResolvingMember = false;
   bool _isCancelling = false;
@@ -61,11 +58,8 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
     _isCustomBloc = widget.renewSlipBloc != null;
     _renewBloc =
         widget.renewSlipBloc ?? RenewSlipBloc(repository: widget.repository);
-    _memberResolver =
-        widget.memberResolver ??
-        MemberResolver(
-          membersRepository: widget.membersRepository ?? ApiMembersRepository(),
-        );
+    _membersRepository =
+        widget.membersRepository ?? ApiMembersRepository();
     _load();
   }
 
@@ -102,11 +96,11 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
         return;
       }
 
-      // 2. Dùng MemberResolver nếu chưa có liên kết (user.memberId == null)
+      // 2. Tra cứu mã độc giả nếu chưa có liên kết (user.memberId == null)
       if (user.role.toUpperCase() == 'MEMBER') {
         _isResolvingMember = true;
         try {
-          final resolved = await _memberResolver.resolve(
+          final resolved = await _membersRepository.resolveMemberId(
             memberId: user.memberId,
             email: user.email,
             role: user.role,
@@ -452,9 +446,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                   onPayFine: () => _openPayFine(slip),
                   onRenew: () => _openRenewDialog(context, slip),
                   onCheckEligibility: () {
-                    _renewBloc.add(
-                      CheckSlipRenewalRequested(slip.id),
-                    );
+                    _renewBloc.add(CheckSlipRenewalRequested(slip.id));
                   },
                   onRefresh: _refresh,
                 );
@@ -507,10 +499,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       children: [
-        SlipTicketPassCard(
-          slip: slip,
-          isOverdue: overdue,
-        ),
+        SlipTicketPassCard(slip: slip, isOverdue: overdue),
         const SizedBox(height: 16),
         SlipSummaryCard(slip: slip),
         const SizedBox(height: 16),
@@ -536,10 +525,7 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
               // Cột trái: Thẻ vé Ticket Pass
               Expanded(
                 flex: 7,
-                child: SlipTicketPassCard(
-                  slip: slip,
-                  isOverdue: overdue,
-                ),
+                child: SlipTicketPassCard(slip: slip, isOverdue: overdue),
               ),
               const SizedBox(width: 16),
               // Cột phải: Bảng thao tác hành động (nếu có) + Tổng kết phiếu

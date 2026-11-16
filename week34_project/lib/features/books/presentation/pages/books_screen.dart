@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/books_bloc.dart';
 import '../../bloc/books_event.dart';
 import '../../bloc/books_state.dart';
-import '../../data/books_repository.dart';
+import '../../data/repositories/books_repository.dart';
 import '../../data/models/book.dart';
 import '../widgets/book_card.dart';
 import '../widgets/book_search_bar.dart';

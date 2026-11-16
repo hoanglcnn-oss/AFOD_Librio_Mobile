@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 
-import 'datasources/books_remote_data_source.dart';
+import '../datasources/books_remote_data_source.dart';
 import 'books_repository.dart';
-import 'models/paginated_books.dart';
+import '../models/paginated_books.dart';
 
 class ApiBooksRepository implements BooksRepository {
   final BooksRemoteDataSource _remoteDataSource;

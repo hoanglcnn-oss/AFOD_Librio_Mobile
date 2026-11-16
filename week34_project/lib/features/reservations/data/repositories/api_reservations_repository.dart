@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import '../../../core/storage/token_storage.dart';
-import 'datasources/reservations_remote_data_source.dart';
-import 'models/paginated_reservations.dart';
-import 'models/reservation.dart';
+import '../../../../core/storage/token_storage.dart';
+import '../datasources/reservations_remote_data_source.dart';
+import '../models/paginated_reservations.dart';
+import '../models/reservation.dart';
 import 'reservations_repository.dart';
 
 class ApiReservationsRepository implements ReservationsRepository {

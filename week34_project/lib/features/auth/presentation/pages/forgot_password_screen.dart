@@ -5,7 +5,7 @@ import 'package:week34_project/core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/forgot_password_bloc.dart';
 import 'package:week34_project/features/auth/bloc/forgot_password_event.dart';
 import 'package:week34_project/features/auth/bloc/forgot_password_state.dart';
-import 'package:week34_project/features/auth/data/api_auth_repository.dart';
+import 'package:week34_project/features/auth/data/repositories/api_auth_repository.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});

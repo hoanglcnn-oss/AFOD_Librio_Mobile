@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/books/bloc/books_bloc.dart';
 import 'package:week34_project/features/books/bloc/books_event.dart';
 import 'package:week34_project/features/books/bloc/books_state.dart';
-import 'package:week34_project/features/books/data/books_repository.dart';
+import 'package:week34_project/features/books/data/repositories/books_repository.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/books/data/models/paginated_books.dart';
 import 'package:week34_project/features/books/presentation/pages/books_screen.dart';

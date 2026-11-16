@@ -5,9 +5,8 @@ import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/borrowing/shared/widgets/borrowing_slip_ui_helper.dart';
 
-import '../../data/api_members_repository.dart';
-import '../../data/member_resolver.dart';
-import '../../data/members_repository.dart';
+import '../../data/repositories/api_members_repository.dart';
+import '../../data/repositories/members_repository.dart';
 import '../../data/models/member_debt_summary.dart';
 
 class BorrowingLimitScreen extends StatefulWidget {
@@ -64,8 +63,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
 
     final user = authState.user;
     try {
-      final resolver = MemberResolver(membersRepository: _repository);
-      final memberId = await resolver.resolve(
+      final memberId = await _repository.resolveMemberId(
         memberId: user.memberId,
         email: user.email,
         role: user.role,

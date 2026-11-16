@@ -5,9 +5,8 @@ import '../../../../../core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
-import 'package:week34_project/features/members/data/api_members_repository.dart';
-import 'package:week34_project/features/members/data/member_resolver.dart';
-import 'package:week34_project/features/members/data/members_repository.dart';
+import 'package:week34_project/features/members/data/repositories/api_members_repository.dart';
+import 'package:week34_project/features/members/data/repositories/members_repository.dart';
 import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 
 import '../../bloc/borrowing_slip_bloc.dart';
@@ -87,9 +86,11 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     if (authState is! AuthAuthenticated) return null;
 
     final user = authState.user;
-    return MemberResolver(
-      membersRepository: widget.membersRepository,
-    ).resolve(memberId: user.memberId, email: user.email, role: user.role);
+    return widget.membersRepository.resolveMemberId(
+      memberId: user.memberId,
+      email: user.email,
+      role: user.role,
+    );
   }
 
   void _loadDebtSummary(String memberId) {
