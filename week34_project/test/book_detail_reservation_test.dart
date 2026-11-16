@@ -12,7 +12,7 @@ import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/books/data/models/paginated_books.dart';
 import 'package:week34_project/features/books/presentation/pages/books_detail_screen.dart';
 import 'package:week34_project/features/books/presentation/widgets/book_reserve_dialog.dart';
-import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
+import 'package:week34_project/features/reservations/data/models/reservation.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_reservations_repository.dart';
@@ -24,7 +24,11 @@ class CustomFakeBooksRepository implements BooksRepository {
   CustomFakeBooksRepository(this.book);
 
   @override
-  Future<PaginatedBooks> getBooks({int page = 1, int limit = 10, String? search}) async {
+  Future<PaginatedBooks> getBooks({
+    int page = 1,
+    int limit = 10,
+    String? search,
+  }) async {
     return PaginatedBooks(
       page: 1,
       totalPages: 1,
@@ -119,119 +123,138 @@ void main() {
       expect(find.text('Đặt trước'), findsOneWidget);
     });
 
-    testWidgets('Khi sách hết bản khả dụng | Nút Mượn sách bị disabled, nút Đặt trước vẫn enabled', (tester) async {
-      final booksRepo = CustomFakeBooksRepository(outOfStockBook);
+    testWidgets(
+      'Khi sách hết bản khả dụng | Nút Mượn sách bị disabled, nút Đặt trước vẫn enabled',
+      (tester) async {
+        final booksRepo = CustomFakeBooksRepository(outOfStockBook);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: authBloc,
-            child: BookDetailScreen(
-              bookId: 'b-2',
-              repository: booksRepo,
-              reservationsRepository: reservationsRepository,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: 'b-2',
+                repository: booksRepo,
+                reservationsRepository: reservationsRepository,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      final borrowButton = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('borrow_book_button')),
-      );
-      expect(borrowButton.onPressed, isNull);
+        final borrowButton = tester.widget<FilledButton>(
+          find.byKey(const ValueKey('borrow_book_button')),
+        );
+        expect(borrowButton.onPressed, isNull);
 
-      final reserveButton = tester.widget<OutlinedButton>(
-        find.byKey(const ValueKey('reserve_book_button')),
-      );
-      expect(reserveButton.onPressed, isNotNull);
-    });
+        final reserveButton = tester.widget<OutlinedButton>(
+          find.byKey(const ValueKey('reserve_book_button')),
+        );
+        expect(reserveButton.onPressed, isNotNull);
+      },
+    );
 
-    testWidgets('Bấm Đặt trước mở Dialog xác nhận và gửi request thành công với PENDING', (tester) async {
-      final booksRepo = CustomFakeBooksRepository(outOfStockBook);
+    testWidgets(
+      'Bấm Đặt trước mở Dialog xác nhận và gửi request thành công với PENDING',
+      (tester) async {
+        final booksRepo = CustomFakeBooksRepository(outOfStockBook);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: authBloc,
-            child: BookDetailScreen(
-              bookId: 'b-2',
-              repository: booksRepo,
-              reservationsRepository: reservationsRepository,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: 'b-2',
+                repository: booksRepo,
+                reservationsRepository: reservationsRepository,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Bấm nút Đặt trước
-      await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
-      await tester.pumpAndSettle();
+        // Bấm nút Đặt trước
+        await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
+        await tester.pumpAndSettle();
 
-      // Kiểm tra dialog
-      expect(find.text('Đặt trước sách'), findsOneWidget);
-      expect(find.textContaining('Bạn có muốn đặt trước cuốn sách "Out of Stock Book"?'), findsOneWidget);
+        // Kiểm tra dialog
+        expect(find.text('Đặt trước sách'), findsOneWidget);
+        expect(
+          find.textContaining(
+            'Bạn có muốn đặt trước cuốn sách "Out of Stock Book"?',
+          ),
+          findsOneWidget,
+        );
 
-      // Bấm Hủy
-      await tester.tap(find.text('Hủy'));
-      await tester.pumpAndSettle();
-      expect(reservationsRepository.createCallCount, 0);
+        // Bấm Hủy
+        await tester.tap(find.text('Hủy'));
+        await tester.pumpAndSettle();
+        expect(reservationsRepository.createCallCount, 0);
 
-      // Mở lại và nhập ghi chú
-      await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
-      await tester.pumpAndSettle();
+        // Mở lại và nhập ghi chú
+        await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
+        await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), 'Ghi chú cho bạn đọc');
-      await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), 'Ghi chú cho bạn đọc');
+        await tester.pumpAndSettle();
 
-      // Xác nhận đặt trước
-      await tester.tap(find.text('Xác nhận đặt trước'));
-      await tester.pumpAndSettle();
+        // Xác nhận đặt trước
+        await tester.tap(find.text('Xác nhận đặt trước'));
+        await tester.pumpAndSettle();
 
-      expect(reservationsRepository.createCallCount, 1);
-      expect(find.textContaining('Đặt trước thành công (Đang chờ sách)'), findsOneWidget);
-    });
+        expect(reservationsRepository.createCallCount, 1);
+        expect(
+          find.textContaining('Đặt trước thành công (Đang chờ sách)'),
+          findsOneWidget,
+        );
+      },
+    );
 
-    testWidgets('Khi Backend trả về trạng thái READY | Hiển thị thông báo Sách đã sẵn sàng nhận', (tester) async {
-      final booksRepo = CustomFakeBooksRepository(availableBook);
+    testWidgets(
+      'Khi Backend trả về trạng thái READY | Hiển thị thông báo Sách đã sẵn sàng nhận',
+      (tester) async {
+        final booksRepo = CustomFakeBooksRepository(availableBook);
 
-      final readyRepository = FakeReservationsRepository();
-      readyRepository.reservations = [
-        Reservation(
-          id: 'res-ready',
-          reservationCode: 'RSV-RDY',
-          memberId: 'mem-01',
-          bookId: 'b-1',
-          bookTitle: 'Flutter in Action',
-          status: 'READY',
-          reservedAt: DateTime.now(),
-        ),
-      ];
+        final readyRepository = FakeReservationsRepository();
+        readyRepository.reservations = [
+          Reservation(
+            id: 'res-ready',
+            reservationCode: 'RSV-RDY',
+            memberId: 'mem-01',
+            bookId: 'b-1',
+            bookTitle: 'Flutter in Action',
+            status: 'READY',
+            reservedAt: DateTime.now(),
+          ),
+        ];
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: authBloc,
-            child: BookDetailScreen(
-              bookId: 'b-1',
-              repository: booksRepo,
-              reservationsRepository: readyRepository,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: 'b-1',
+                repository: booksRepo,
+                reservationsRepository: readyRepository,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Xác nhận đặt trước'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Xác nhận đặt trước'));
+        await tester.pumpAndSettle();
 
-      expect(find.textContaining('Đặt trước thành công'), findsOneWidget);
-    });
+        expect(find.textContaining('Đặt trước thành công'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Xử lý xung đột 409 | Hiển thị thông báo lỗi từ backend', (tester) async {
+    testWidgets('Xử lý xung đột 409 | Hiển thị thông báo lỗi từ backend', (
+      tester,
+    ) async {
       final booksRepo = CustomFakeBooksRepository(outOfStockBook);
 
       reservationsRepository.createError = DioException(
@@ -263,43 +286,54 @@ void main() {
       await tester.tap(find.text('Xác nhận đặt trước'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Bạn đã có lượt đặt trước đang chờ cho sách này.'), findsOneWidget);
+      expect(
+        find.text('Bạn đã có lượt đặt trước đang chờ cho sách này.'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('POST timeout không xác minh được | Hiển thị kết quả chưa xác định và hướng dẫn kiểm tra danh sách', (tester) async {
-      final booksRepo = CustomFakeBooksRepository(outOfStockBook);
+    testWidgets(
+      'POST timeout không xác minh được | Hiển thị kết quả chưa xác định và hướng dẫn kiểm tra danh sách',
+      (tester) async {
+        final booksRepo = CustomFakeBooksRepository(outOfStockBook);
 
-      reservationsRepository.createError = DioException(
-        requestOptions: RequestOptions(path: ApiConstants.reservations),
-        type: DioExceptionType.connectionTimeout,
-      );
+        reservationsRepository.createError = DioException(
+          requestOptions: RequestOptions(path: ApiConstants.reservations),
+          type: DioExceptionType.connectionTimeout,
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: authBloc,
-            child: BookDetailScreen(
-              bookId: 'b-2',
-              repository: booksRepo,
-              reservationsRepository: reservationsRepository,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: 'b-2',
+                repository: booksRepo,
+                reservationsRepository: reservationsRepository,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
-      await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('reserve_book_button')));
+        await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Xác nhận đặt trước'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Xác nhận đặt trước'));
+        await tester.pumpAndSettle();
 
-      expect(reservationsRepository.createCallCount, 1); // Không tự retry POST
-      expect(find.textContaining('chưa được xác định'), findsOneWidget);
-      expect(find.textContaining('danh sách đặt trước'), findsOneWidget);
-    });
+        expect(
+          reservationsRepository.createCallCount,
+          1,
+        ); // Không tự retry POST
+        expect(find.textContaining('chưa được xác định'), findsOneWidget);
+        expect(find.textContaining('danh sách đặt trước'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Chặn double submit khi đang trong quá trình đặt trước', (tester) async {
+    testWidgets('Chặn double submit khi đang trong quá trình đặt trước', (
+      tester,
+    ) async {
       final booksRepo = CustomFakeBooksRepository(availableBook);
 
       reservationsRepository.createCompleter = Completer<void>();
@@ -349,7 +383,9 @@ void main() {
       copiesTotal: 2,
     );
 
-    testWidgets('Xác nhận không nhập ghi chú -> result.notes == null', (tester) async {
+    testWidgets('Xác nhận không nhập ghi chú -> result.notes == null', (
+      tester,
+    ) async {
       BookReserveDialogResult? dialogResult;
 
       await tester.pumpWidget(
@@ -410,7 +446,10 @@ void main() {
       await tester.tap(find.text('Open Dialog'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), '   Giữ sách giúp tôi vào buổi chiều   ');
+      await tester.enterText(
+        find.byType(TextField),
+        '   Giữ sách giúp tôi vào buổi chiều   ',
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Xác nhận đặt trước'));

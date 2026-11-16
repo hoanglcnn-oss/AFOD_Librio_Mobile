@@ -13,7 +13,7 @@ import '../../bloc/borrowing_slip_event.dart';
 import '../../bloc/borrowing_slip_state.dart';
 import '../../../shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
-import '../../models/create_borrowing_slip_request.dart';
+import '../../data/models/create_borrowing_slip_request.dart';
 import '../widgets/borrow_confirm_card.dart';
 import 'borrow_result_screen.dart';
 

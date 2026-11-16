@@ -1,40 +1,40 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
+import 'package:week34_project/features/borrowing/renewal/data/models/renewal_eligibility.dart';
 
 void main() {
   group('RenewalEligibility', () {
-    test('Parse eligibility hợp lệ | canRenew = true, reasonCode và message là null', () {
-      final json = {
-        'canRenew': true,
-        'reasonCode': null,
-        'message': null,
-      };
+    test(
+      'Parse eligibility hợp lệ | canRenew = true, reasonCode và message là null',
+      () {
+        final json = {'canRenew': true, 'reasonCode': null, 'message': null};
 
-      final eligibility = RenewalEligibility.fromJson(json);
+        final eligibility = RenewalEligibility.fromJson(json);
 
-      expect(eligibility.canRenew, isTrue);
-      expect(eligibility.reasonCode, isNull);
-      expect(eligibility.message, isNull);
-    });
+        expect(eligibility.canRenew, isTrue);
+        expect(eligibility.reasonCode, isNull);
+        expect(eligibility.message, isNull);
+      },
+    );
 
-    test('Parse eligibility bị chặn | canRenew = false kèm reasonCode và message', () {
-      final json = {
-        'canRenew': false,
-        'reasonCode': 'MAX_RENEWALS_REACHED',
-        'message': 'Đã đạt số lần gia hạn tối đa cho phép',
-      };
+    test(
+      'Parse eligibility bị chặn | canRenew = false kèm reasonCode và message',
+      () {
+        final json = {
+          'canRenew': false,
+          'reasonCode': 'MAX_RENEWALS_REACHED',
+          'message': 'Đã đạt số lần gia hạn tối đa cho phép',
+        };
 
-      final eligibility = RenewalEligibility.fromJson(json);
+        final eligibility = RenewalEligibility.fromJson(json);
 
-      expect(eligibility.canRenew, isFalse);
-      expect(eligibility.reasonCode, 'MAX_RENEWALS_REACHED');
-      expect(eligibility.message, 'Đã đạt số lần gia hạn tối đa cho phép');
-    });
+        expect(eligibility.canRenew, isFalse);
+        expect(eligibility.reasonCode, 'MAX_RENEWALS_REACHED');
+        expect(eligibility.message, 'Đã đạt số lần gia hạn tối đa cho phép');
+      },
+    );
 
     test('Parse eligibility thiếu trường tùy chọn | Fallback an toàn', () {
-      final json = {
-        'canRenew': true,
-      };
+      final json = {'canRenew': true};
 
       final eligibility = RenewalEligibility.fromJson(json);
 
@@ -68,10 +68,7 @@ void main() {
       expect(eligibility1.message, 'Sách đã quá hạn');
 
       final nested2 = {
-        'eligibility': {
-          'canRenew': true,
-          'reason': null,
-        },
+        'eligibility': {'canRenew': true, 'reason': null},
       };
 
       final eligibility2 = RenewalEligibility.fromJson(nested2);
@@ -80,4 +77,3 @@ void main() {
     });
   });
 }
-

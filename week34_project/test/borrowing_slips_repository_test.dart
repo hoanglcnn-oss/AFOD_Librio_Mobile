@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:week34_project/features/borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
-import 'package:week34_project/features/borrowing/create_slip/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowing/create_slip/data/models/create_borrowing_slip_request.dart';
 import 'fake/fake_token_storage.dart';
 
 void main() {
@@ -696,10 +696,7 @@ void main() {
                   data: {
                     'code': 'BORROW_LIMIT_EXCEEDED',
                     'message': 'Độc giả đã vượt quá hạn mức mượn sách',
-                    'details': {
-                      'maxBorrowLimit': 5,
-                      'currentBorrowedCount': 5,
-                    },
+                    'details': {'maxBorrowLimit': 5, 'currentBorrowedCount': 5},
                   },
                 ),
               ),
@@ -816,19 +813,28 @@ void main() {
     expect(() => repository.renewSlip(slipId: '  '), throwsArgumentError);
   });
 
-  test('renewSlip | extraDays không hợp lệ (< 1 hoặc > 14) | throw ArgumentError', () async {
-    final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
-    final tokenStorage = FakeTokenStorage();
-    await tokenStorage.saveToken('test-token');
+  test(
+    'renewSlip | extraDays không hợp lệ (< 1 hoặc > 14) | throw ArgumentError',
+    () async {
+      final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('test-token');
 
-    final repository = ApiBorrowingSlipsRepository(
-      dio: dio,
-      tokenStorage: tokenStorage,
-    );
+      final repository = ApiBorrowingSlipsRepository(
+        dio: dio,
+        tokenStorage: tokenStorage,
+      );
 
-    expect(() => repository.renewSlip(slipId: 'slip-01', extraDays: 0), throwsArgumentError);
-    expect(() => repository.renewSlip(slipId: 'slip-01', extraDays: 15), throwsArgumentError);
-  });
+      expect(
+        () => repository.renewSlip(slipId: 'slip-01', extraDays: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => repository.renewSlip(slipId: 'slip-01', extraDays: 15),
+        throwsArgumentError,
+      );
+    },
+  );
 
   test('getBorrowingSlipById | Parse được eligibility từ backend', () async {
     final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));

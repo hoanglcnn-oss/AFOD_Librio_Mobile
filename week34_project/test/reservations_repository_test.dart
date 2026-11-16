@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/core/constants/api_constants.dart';
-import 'package:week34_project/features/borrowing/reservations/data/api_reservations_repository.dart';
-import 'package:week34_project/features/borrowing/reservations/data/datasources/reservations_remote_data_source.dart';
-import 'package:week34_project/features/borrowing/reservations/errors/reservation_error_mapper.dart';
+import 'package:week34_project/features/reservations/data/api_reservations_repository.dart';
+import 'package:week34_project/features/reservations/data/datasources/reservations_remote_data_source.dart';
+import 'package:week34_project/features/reservations/errors/reservation_error_mapper.dart';
 
 import 'fake/fake_token_storage.dart';
 
@@ -37,7 +37,7 @@ class FakeReservationsRemoteDataSource implements ReservationsRemoteDataSource {
         'bookTitle': 'Dart in Action',
         'status': 'PENDING',
         'reservedAt': '2026-11-13T10:00:00Z',
-      }
+      },
     ],
     'meta': {
       'page': 1,
@@ -45,7 +45,7 @@ class FakeReservationsRemoteDataSource implements ReservationsRemoteDataSource {
       'totalItems': 1,
       'totalPages': 1,
       'hasNextPage': false,
-    }
+    },
   };
 
   Map<String, dynamic> fakeDetailResponse = {
@@ -132,56 +132,59 @@ void main() {
       );
     });
 
-    test('createReservation sends memberId, bookId, notes, and token', () async {
-      final res = await repository.createReservation(
-        memberId: 'mem-10',
-        bookId: 'b-10',
-        notes: 'Cần gấp trước thứ sáu',
-      );
+    test(
+      'createReservation sends memberId, bookId, notes, and token',
+      () async {
+        final res = await repository.createReservation(
+          memberId: 'mem-10',
+          bookId: 'b-10',
+          notes: 'Cần gấp trước thứ sáu',
+        );
 
-      expect(remoteDataSource.lastToken, 'valid-jwt-token');
-      expect(remoteDataSource.lastCreatedData?['memberId'], 'mem-10');
-      expect(remoteDataSource.lastCreatedData?['bookId'], 'b-10');
-      expect(remoteDataSource.lastCreatedData?['notes'], 'Cần gấp trước thứ sáu');
-      expect(res.id, 'res-10');
-      expect(res.reservationCode, 'RSV-10');
-      expect(res.reservedAt, DateTime.parse('2026-11-13T10:00:00Z'));
-      expect(res.bookTitle, 'Dart in Action');
-    });
+        expect(remoteDataSource.lastToken, 'valid-jwt-token');
+        expect(remoteDataSource.lastCreatedData?['memberId'], 'mem-10');
+        expect(remoteDataSource.lastCreatedData?['bookId'], 'b-10');
+        expect(
+          remoteDataSource.lastCreatedData?['notes'],
+          'Cần gấp trước thứ sáu',
+        );
+        expect(res.id, 'res-10');
+        expect(res.reservationCode, 'RSV-10');
+        expect(res.reservedAt, DateTime.parse('2026-11-13T10:00:00Z'));
+        expect(res.bookTitle, 'Dart in Action');
+      },
+    );
 
-    test('createReservation throws StateError when token is null or empty', () async {
-      tokenStorage = FakeTokenStorage()..savedToken = null;
-      repository = ApiReservationsRepository(
-        remoteDataSource: remoteDataSource,
-        tokenStorage: tokenStorage,
-      );
+    test(
+      'createReservation throws StateError when token is null or empty',
+      () async {
+        tokenStorage = FakeTokenStorage()..savedToken = null;
+        repository = ApiReservationsRepository(
+          remoteDataSource: remoteDataSource,
+          tokenStorage: tokenStorage,
+        );
 
-      expect(
-        () => repository.createReservation(
-          memberId: 'mem-1',
-          bookId: 'b-1',
-        ),
-        throwsA(isA<StateError>()),
-      );
-    });
+        expect(
+          () => repository.createReservation(memberId: 'mem-1', bookId: 'b-1'),
+          throwsA(isA<StateError>()),
+        );
+      },
+    );
 
-    test('createReservation throws ArgumentError on empty memberId or bookId', () async {
-      expect(
-        () => repository.createReservation(
-          memberId: '',
-          bookId: 'b-1',
-        ),
-        throwsA(isA<ArgumentError>()),
-      );
+    test(
+      'createReservation throws ArgumentError on empty memberId or bookId',
+      () async {
+        expect(
+          () => repository.createReservation(memberId: '', bookId: 'b-1'),
+          throwsA(isA<ArgumentError>()),
+        );
 
-      expect(
-        () => repository.createReservation(
-          memberId: 'mem-1',
-          bookId: '  ',
-        ),
-        throwsA(isA<ArgumentError>()),
-      );
-    });
+        expect(
+          () => repository.createReservation(memberId: 'mem-1', bookId: '  '),
+          throwsA(isA<ArgumentError>()),
+        );
+      },
+    );
 
     test('getReservations sends pagination and memberId query', () async {
       final result = await repository.getReservations(
@@ -198,26 +201,27 @@ void main() {
     });
 
     test('getReservationById fetches detail with token', () async {
-      final res = await repository.getReservationById(
-        reservationId: 'res-10',
-      );
+      final res = await repository.getReservationById(reservationId: 'res-10');
 
       expect(remoteDataSource.lastGetId, 'res-10');
       expect(remoteDataSource.lastToken, 'valid-jwt-token');
       expect(res.isReady, isTrue);
     });
 
-    test('cancelReservation sends cancel request with reason and token', () async {
-      final res = await repository.cancelReservation(
-        reservationId: 'res-10',
-        reason: 'Không cần nữa',
-      );
+    test(
+      'cancelReservation sends cancel request with reason and token',
+      () async {
+        final res = await repository.cancelReservation(
+          reservationId: 'res-10',
+          reason: 'Không cần nữa',
+        );
 
-      expect(remoteDataSource.lastCancelId, 'res-10');
-      expect(remoteDataSource.lastCancelReason, 'Không cần nữa');
-      expect(remoteDataSource.lastToken, 'valid-jwt-token');
-      expect(res.isCancelled, isTrue);
-    });
+        expect(remoteDataSource.lastCancelId, 'res-10');
+        expect(remoteDataSource.lastCancelReason, 'Không cần nữa');
+        expect(remoteDataSource.lastToken, 'valid-jwt-token');
+        expect(res.isCancelled, isTrue);
+      },
+    );
   });
 
   group('ReservationErrorMapper', () {

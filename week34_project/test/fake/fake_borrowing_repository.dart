@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
-import 'package:week34_project/features/borrowing/create_slip/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowing/create_slip/data/models/create_borrowing_slip_request.dart';
 import 'package:week34_project/features/borrowing/shared/models/paginated_borrowing_slips.dart';
-import 'package:week34_project/features/borrowing/return_slip/models/return_slip_items_request.dart';
-import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
+import 'package:week34_project/features/borrowing/return_slip/data/models/return_slip_items_request.dart';
+import 'package:week34_project/features/borrowing/renewal/data/models/renewal_eligibility.dart';
 
 class FakeBorrowingRepository implements BorrowingSlipsRepository {
   bool shouldFail;
@@ -48,7 +48,7 @@ class FakeBorrowingRepository implements BorrowingSlipsRepository {
   bool shouldFailGetPendingSlips = false;
   PaginatedBorrowingSlips? fakePendingSlipsPage;
   PaginatedBorrowingSlips Function(int page, int limit)?
-      fakePendingSlipsBuilder;
+  fakePendingSlipsBuilder;
   DioException? getPendingSlipsError;
 
   int getAllSlipsCallCount = 0;
@@ -57,7 +57,7 @@ class FakeBorrowingRepository implements BorrowingSlipsRepository {
   bool shouldFailGetAllSlips = false;
   PaginatedBorrowingSlips? fakeAllSlipsPage;
   PaginatedBorrowingSlips Function(String? status, int page, int limit)?
-      fakeAllSlipsBuilder;
+  fakeAllSlipsBuilder;
   DioException? getAllSlipsError;
 
   BorrowingSlip? fakeSlipDetail;
@@ -425,7 +425,8 @@ class FakeBorrowingRepository implements BorrowingSlipsRepository {
       return fakeRenewSlipResult!;
     }
 
-    final oldDueDate = fakeDueDate ??
+    final oldDueDate =
+        fakeDueDate ??
         fakeSlipDetail?.dueDate ??
         DateTime.now().add(const Duration(days: 14));
     final newDueDate = oldDueDate.add(Duration(days: extraDays));
@@ -486,7 +487,8 @@ class FakeBorrowingRepository implements BorrowingSlipsRepository {
       memberName: fakeSlipDetail?.memberName,
       memberCardNumber: fakeSlipDetail?.memberCardNumber,
       status: 'CANCELLED',
-      dueDate: fakeSlipDetail?.dueDate ??
+      dueDate:
+          fakeSlipDetail?.dueDate ??
           DateTime.now().add(const Duration(days: 14)),
       items: fakeSlipDetail?.items ?? const [],
     );

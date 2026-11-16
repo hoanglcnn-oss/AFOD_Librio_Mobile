@@ -15,7 +15,7 @@ import '../../bloc/borrowing_slip_event.dart';
 import '../../bloc/borrowing_slip_state.dart';
 import '../../../shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
-import '../../models/create_borrowing_slip_request.dart';
+import '../../data/models/create_borrowing_slip_request.dart';
 import '../widgets/borrow_debt_summary_card.dart';
 import '../widgets/borrow_slip_form_card.dart';
 
@@ -194,14 +194,16 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                       debtSnapshot.connectionState != ConnectionState.done;
                   final isDebtError = debtSnapshot.hasError;
 
-                  final isExceedingLimit = debtSummary != null &&
+                  final isExceedingLimit =
+                      debtSummary != null &&
                       totalSelected > debtSummary.remainingBorrowLimit;
                   final canBorrowCondition =
                       debtSummary != null && debtSummary.canBorrow;
 
                   final isDaysValid = _days >= 1 && _days <= 30;
 
-                  final canSubmit = !isDebtLoading &&
+                  final canSubmit =
+                      !isDebtLoading &&
                       !isDebtError &&
                       debtSummary != null &&
                       canBorrowCondition &&
@@ -211,7 +213,8 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                   String? notAllowedReason;
                   if (debtSummary != null) {
                     if (!debtSummary.canBorrow) {
-                      notAllowedReason = debtSummary.reasonIfNotAllowed ??
+                      notAllowedReason =
+                          debtSummary.reasonIfNotAllowed ??
                           'Tài khoản hiện không đủ điều kiện mượn sách';
                     } else if (isExceedingLimit) {
                       notAllowedReason =

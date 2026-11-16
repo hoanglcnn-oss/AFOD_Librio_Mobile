@@ -1,55 +1,64 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/borrowing/reservations/data/models/paginated_reservations.dart';
-import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
+import 'package:week34_project/features/reservations/data/models/paginated_reservations.dart';
+import 'package:week34_project/features/reservations/data/models/reservation.dart';
 
 void main() {
   group('Reservation Model', () {
-    test('Parse thực tế theo Backend contract: reservationCode và reservedAt', () {
-      final json = {
-        'id': 'res-backend-001',
-        'reservationCode': 'RSV-2026-0001',
-        'memberId': 'mem-101',
-        'bookId': 'b-202',
-        'bookTitle': 'Lập trình Flutter chuyên sâu',
-        'status': 'PENDING',
-        'reservedAt': '2026-11-13T08:30:00.000Z',
-        'notes': 'Nhận sách vào buổi chiều',
-      };
+    test(
+      'Parse thực tế theo Backend contract: reservationCode và reservedAt',
+      () {
+        final json = {
+          'id': 'res-backend-001',
+          'reservationCode': 'RSV-2026-0001',
+          'memberId': 'mem-101',
+          'bookId': 'b-202',
+          'bookTitle': 'Lập trình Flutter chuyên sâu',
+          'status': 'PENDING',
+          'reservedAt': '2026-11-13T08:30:00.000Z',
+          'notes': 'Nhận sách vào buổi chiều',
+        };
 
-      final res = Reservation.fromJson(json);
+        final res = Reservation.fromJson(json);
 
-      expect(res.id, 'res-backend-001');
-      expect(res.reservationCode, 'RSV-2026-0001');
-      expect(res.reservationNumber, 'RSV-2026-0001'); // Alias
-      expect(res.memberId, 'mem-101');
-      expect(res.bookId, 'b-202');
-      expect(res.bookTitle, 'Lập trình Flutter chuyên sâu');
-      expect(res.status, 'PENDING');
-      expect(res.isPending, isTrue);
-      expect(res.isReady, isFalse);
-      expect(res.canCancel, isTrue);
-      expect(res.statusLabel, 'Đang chờ sách');
-      expect(res.reservedAt, DateTime.parse('2026-11-13T08:30:00.000Z'));
-      expect(res.reservationDate, DateTime.parse('2026-11-13T08:30:00.000Z')); // Alias
-      expect(res.notes, 'Nhận sách vào buổi chiều');
-    });
+        expect(res.id, 'res-backend-001');
+        expect(res.reservationCode, 'RSV-2026-0001');
+        expect(res.reservationNumber, 'RSV-2026-0001'); // Alias
+        expect(res.memberId, 'mem-101');
+        expect(res.bookId, 'b-202');
+        expect(res.bookTitle, 'Lập trình Flutter chuyên sâu');
+        expect(res.status, 'PENDING');
+        expect(res.isPending, isTrue);
+        expect(res.isReady, isFalse);
+        expect(res.canCancel, isTrue);
+        expect(res.statusLabel, 'Đang chờ sách');
+        expect(res.reservedAt, DateTime.parse('2026-11-13T08:30:00.000Z'));
+        expect(
+          res.reservationDate,
+          DateTime.parse('2026-11-13T08:30:00.000Z'),
+        ); // Alias
+        expect(res.notes, 'Nhận sách vào buổi chiều');
+      },
+    );
 
-    test('Không dùng DateTime.now() để che dữ liệu thời gian thiếu/sai -> reservedAt là null', () {
-      final json = {
-        'id': 'res-no-date',
-        'reservationCode': 'RSV-NODATE',
-        'memberId': 'mem-1',
-        'bookId': 'b-1',
-        'bookTitle': 'Sách không có ngày',
-        'status': 'PENDING',
-      };
+    test(
+      'Không dùng DateTime.now() để che dữ liệu thời gian thiếu/sai -> reservedAt là null',
+      () {
+        final json = {
+          'id': 'res-no-date',
+          'reservationCode': 'RSV-NODATE',
+          'memberId': 'mem-1',
+          'bookId': 'b-1',
+          'bookTitle': 'Sách không có ngày',
+          'status': 'PENDING',
+        };
 
-      final res = Reservation.fromJson(json);
+        final res = Reservation.fromJson(json);
 
-      expect(res.id, 'res-no-date');
-      expect(res.reservedAt, isNull);
-      expect(res.reservationDate, isNull);
-    });
+        expect(res.id, 'res-no-date');
+        expect(res.reservedAt, isNull);
+        expect(res.reservationDate, isNull);
+      },
+    );
 
     test('Giữ fallback tương thích: reservationNumber và createdAt', () {
       final json = {
@@ -166,7 +175,7 @@ void main() {
           'bookTitle': 'Microservices Patterns',
           'status': 'PENDING',
           'reservedAt': '2026-11-12T10:00:00Z',
-        }
+        },
       };
 
       final res = Reservation.fromJson(raw);
@@ -196,7 +205,7 @@ void main() {
             'bookTitle': 'Book 2',
             'status': 'READY',
             'reservedAt': '2026-11-11T10:00:00Z',
-          }
+          },
         ],
         'meta': {
           'page': 1,
@@ -204,7 +213,7 @@ void main() {
           'totalItems': 2,
           'totalPages': 1,
           'hasNextPage': false,
-        }
+        },
       };
 
       final paginated = PaginatedReservations.fromJson(json);
@@ -228,7 +237,7 @@ void main() {
             'bookTitle': 'Book 1',
             'status': 'PENDING',
             'reservedAt': '2026-11-12T10:00:00Z',
-          }
+          },
         ],
         'page': 2,
         'limit': 5,

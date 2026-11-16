@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../../../core/storage/token_storage.dart';
+import '../../../core/storage/token_storage.dart';
 import 'datasources/reservations_remote_data_source.dart';
 import 'models/paginated_reservations.dart';
 import 'models/reservation.dart';
@@ -13,9 +13,9 @@ class ApiReservationsRepository implements ReservationsRepository {
     ReservationsRemoteDataSource? remoteDataSource,
     TokenStorage? tokenStorage,
     Dio? dio,
-  })  : _remoteDataSource =
-            remoteDataSource ?? ReservationsRemoteDataSourceImpl(dio: dio),
-        _tokenStorage = tokenStorage ?? TokenStorage();
+  }) : _remoteDataSource =
+           remoteDataSource ?? ReservationsRemoteDataSourceImpl(dio: dio),
+       _tokenStorage = tokenStorage ?? TokenStorage();
 
   @override
   Future<Reservation> createReservation({

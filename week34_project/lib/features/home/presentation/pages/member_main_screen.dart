@@ -8,7 +8,7 @@ import '../../../books/bloc/books_bloc.dart';
 import '../../../books/bloc/books_event.dart';
 import '../../../books/data/api_books_repository.dart';
 import '../../../books/presentation/pages/books_screen.dart';
-import '../../../borrowing/reservations/presentation/pages/my_reservations_screen.dart';
+import '../../../reservations/presentation/pages/my_reservations_screen.dart';
 import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
 import '../../../members/data/api_members_repository.dart';
@@ -126,10 +126,7 @@ class _MemberMainScreenState extends State<MemberMainScreen> {
 class _MemberBorrowingsTab extends StatefulWidget {
   final VoidCallback onReturnSucceeded;
 
-  const _MemberBorrowingsTab({
-    super.key,
-    required this.onReturnSucceeded,
-  });
+  const _MemberBorrowingsTab({super.key, required this.onReturnSucceeded});
 
   @override
   State<_MemberBorrowingsTab> createState() => _MemberBorrowingsTabState();
@@ -153,9 +150,7 @@ class _MemberBorrowingsTabState extends State<_MemberBorrowingsTab> {
 
     final user = authState.user;
 
-    final resolver = MemberResolver(
-      membersRepository: ApiMembersRepository(),
-    );
+    final resolver = MemberResolver(membersRepository: ApiMembersRepository());
 
     return resolver.resolve(
       memberId: user.memberId,

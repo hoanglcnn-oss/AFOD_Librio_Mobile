@@ -7,10 +7,7 @@ import '../../../shared/widgets/borrowing_slip_ui_helper.dart';
 class SlipSummaryCard extends StatelessWidget {
   final BorrowingSlip slip;
 
-  const SlipSummaryCard({
-    super.key,
-    required this.slip,
-  });
+  const SlipSummaryCard({super.key, required this.slip});
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +113,7 @@ class SlipSummaryCard extends StatelessWidget {
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
-                  'Tổng tiền phạt: ${BorrowingSlipUiHelper.formatMoney(slip.totalFine)}',
+                  BorrowingSlipUiHelper.formatMoney(slip.totalFine),
                   textAlign: TextAlign.end,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -152,8 +149,8 @@ class SlipSummaryCard extends StatelessWidget {
                     color: slip.finePaid
                         ? const Color(0xFF16A34A)
                         : (slip.totalFine > 0
-                            ? theme.colorScheme.error
-                            : const Color(0xFF64748B)),
+                              ? theme.colorScheme.error
+                              : const Color(0xFF64748B)),
                   ),
                 ),
               ),
@@ -174,11 +171,7 @@ class SlipSummaryCard extends StatelessWidget {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.check_circle,
-                    color: Color(0xFF059669),
-                    size: 20,
-                  ),
+                  Icon(Icons.check_circle, color: Color(0xFF059669), size: 20),
                   SizedBox(width: 8),
                   Flexible(
                     child: Text(

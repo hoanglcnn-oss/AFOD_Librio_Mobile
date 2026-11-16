@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:week34_project/features/borrowing/reservations/data/models/paginated_reservations.dart';
-import 'package:week34_project/features/borrowing/reservations/data/models/reservation.dart';
-import 'package:week34_project/features/borrowing/reservations/data/reservations_repository.dart';
+import 'package:week34_project/features/reservations/data/models/paginated_reservations.dart';
+import 'package:week34_project/features/reservations/data/models/reservation.dart';
+import 'package:week34_project/features/reservations/data/reservations_repository.dart';
 
 class FakeReservationsRepository implements ReservationsRepository {
   List<Reservation> reservations = [];
@@ -91,15 +91,16 @@ class FakeReservationsRepository implements ReservationsRepository {
       throw getError!;
     }
 
-    final filtered =
-        reservations.where((r) => r.memberId == memberId).toList();
+    final filtered = reservations.where((r) => r.memberId == memberId).toList();
 
     final startIndex = (page - 1) * limit;
     final items = (startIndex < filtered.length)
         ? filtered.skip(startIndex).take(limit).toList()
         : <Reservation>[];
 
-    final totalPages = (filtered.isEmpty) ? 1 : (filtered.length / limit).ceil();
+    final totalPages = (filtered.isEmpty)
+        ? 1
+        : (filtered.length / limit).ceil();
 
     return PaginatedReservations(
       items: items,

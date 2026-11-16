@@ -127,7 +127,7 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
                   if (widget.approve)
                     const Text(
                       'Duyệt phiếu sẽ xuất kho và '
-                      'chuyển trạng thái sang BORROWED.',
+                      'chuyển trạng thái sang "Đã mượn".',
                     )
                   else
                     TextField(
@@ -156,10 +156,9 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .errorContainer
-                            .withValues(alpha: 0.2),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.errorContainer.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: Theme.of(context).colorScheme.error,
