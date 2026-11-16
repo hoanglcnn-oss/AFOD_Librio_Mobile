@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/models/paginated_reservations.dart';
-import '../data/reservations_repository.dart';
+import '../data/repositories/reservations_repository.dart';
 import '../errors/reservation_error_mapper.dart';
 import 'reservations_event.dart';
 import 'reservations_state.dart';
@@ -17,7 +17,7 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
   final Set<String> _cancelledReservationIds = {};
 
   ReservationsBloc({required this.reservationsRepository})
-      : super(const ReservationsInitial()) {
+    : super(const ReservationsInitial()) {
     on<LoadReservations>(_onLoadReservations);
     on<RefreshReservations>(_onRefreshReservations);
     on<CancelReservationRequested>(_onCancelReservationRequested);
@@ -69,10 +69,12 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
         hasNextPage: paginated.hasNextPage,
       );
 
-      emit(ReservationsLoaded(
-        paginated: reconciledPaginated,
-        memberId: event.memberId,
-      ));
+      emit(
+        ReservationsLoaded(
+          paginated: reconciledPaginated,
+          memberId: event.memberId,
+        ),
+      );
     } catch (e) {
       if (reqReadId != _readRequestId ||
           reqWriteEpoch != _writeEpoch ||
@@ -80,12 +82,14 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
         return;
       }
 
-      emit(ReservationsFailure(
-        ReservationErrorMapper.mapError(
-          e,
-          fallback: 'Không thể tải danh sách đặt trước.',
+      emit(
+        ReservationsFailure(
+          ReservationErrorMapper.mapError(
+            e,
+            fallback: 'Không thể tải danh sách đặt trước.',
+          ),
         ),
-      ));
+      );
     }
   }
 
@@ -149,10 +153,12 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
         hasNextPage: paginated.hasNextPage,
       );
 
-      emit(ReservationsLoaded(
-        paginated: reconciledPaginated,
-        memberId: event.memberId,
-      ));
+      emit(
+        ReservationsLoaded(
+          paginated: reconciledPaginated,
+          memberId: event.memberId,
+        ),
+      );
     } catch (e) {
       if (reqReadId != _readRequestId ||
           reqWriteEpoch != _writeEpoch ||
@@ -163,12 +169,14 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
       if (current is! ReservationsLoaded &&
           current is! ReservationCancelSuccess &&
           current is! ReservationCancelFailure) {
-        emit(ReservationsFailure(
-          ReservationErrorMapper.mapError(
-            e,
-            fallback: 'Không thể làm mới danh sách đặt trước.',
+        emit(
+          ReservationsFailure(
+            ReservationErrorMapper.mapError(
+              e,
+              fallback: 'Không thể làm mới danh sách đặt trước.',
+            ),
           ),
-        ));
+        );
       }
     } finally {
       event.completer?.complete();
@@ -194,18 +202,20 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
     _isMutating = true;
     ++_writeEpoch;
 
-    emit(ReservationCancelling(
-      paginated: currentPaginated,
-      memberId: event.memberId,
-      reservationId: event.reservationId,
-    ));
+    emit(
+      ReservationCancelling(
+        paginated: currentPaginated,
+        memberId: event.memberId,
+        reservationId: event.reservationId,
+      ),
+    );
 
     try {
-      final cancelledReservation =
-          await reservationsRepository.cancelReservation(
-        reservationId: event.reservationId,
-        reason: event.reason,
-      );
+      final cancelledReservation = await reservationsRepository
+          .cancelReservation(
+            reservationId: event.reservationId,
+            reason: event.reason,
+          );
 
       _cancelledReservationIds.add(event.reservationId);
 
@@ -248,11 +258,13 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
       }
 
       // Luôn phát ReservationCancelSuccess khi PATCH thành công
-      emit(ReservationCancelSuccess(
-        paginated: finalPaginated,
-        memberId: event.memberId,
-        message: 'Hủy đặt trước thành công',
-      ));
+      emit(
+        ReservationCancelSuccess(
+          paginated: finalPaginated,
+          memberId: event.memberId,
+          message: 'Hủy đặt trước thành công',
+        ),
+      );
     } catch (e) {
       if (ReservationErrorMapper.isTimeout(e)) {
         // Timeout: KHÔNG TỰ RETRY MUTATION; kiểm tra lại backend
@@ -297,27 +309,33 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
               );
             } catch (_) {}
 
-            emit(ReservationCancelSuccess(
-              paginated: finalPaginated,
-              memberId: event.memberId,
-              message: 'Đã xác nhận hủy đặt trước thành công',
-            ));
+            emit(
+              ReservationCancelSuccess(
+                paginated: finalPaginated,
+                memberId: event.memberId,
+                message: 'Đã xác nhận hủy đặt trước thành công',
+              ),
+            );
             return;
           }
         } catch (_) {}
 
-        emit(ReservationCancelFailure(
-          paginated: currentPaginated,
-          memberId: event.memberId,
-          message:
-              'Hết thời gian kết nối tới máy chủ. Vui lòng kiểm tra lại trạng thái.',
-        ));
+        emit(
+          ReservationCancelFailure(
+            paginated: currentPaginated,
+            memberId: event.memberId,
+            message:
+                'Hết thời gian kết nối tới máy chủ. Vui lòng kiểm tra lại trạng thái.',
+          ),
+        );
       } else {
-        emit(ReservationCancelFailure(
-          paginated: currentPaginated,
-          memberId: event.memberId,
-          message: ReservationErrorMapper.mapError(e),
-        ));
+        emit(
+          ReservationCancelFailure(
+            paginated: currentPaginated,
+            memberId: event.memberId,
+            message: ReservationErrorMapper.mapError(e),
+          ),
+        );
       }
     } finally {
       _isMutating = false;
@@ -350,22 +368,24 @@ class ReservationsBloc extends Bloc<ReservationsEvent, ReservationsState> {
           ? 'Sách đã sẵn sàng nhận'
           : 'Đang chờ sách';
 
-      emit(ReservationCreateSuccess(
-        reservation: reservation,
-        message: 'Đặt trước thành công ($statusText)',
-      ));
+      emit(
+        ReservationCreateSuccess(
+          reservation: reservation,
+          message: 'Đặt trước thành công ($statusText)',
+        ),
+      );
     } catch (e) {
       if (ReservationErrorMapper.isTimeout(e)) {
         // Timeout: KHÔNG TỰ RETRY POST
         // Không coi reservation có reservedAt gần requestStartTime là bằng chứng chắc chắn POST vừa thành công.
         // Báo kết quả chưa xác định, không tự retry POST.
-        emit(const ReservationCreateFailure(
-          'Kết quả đặt trước chưa được xác định do mất kết nối. Vui lòng kiểm tra lại trong danh sách đặt trước.',
-        ));
+        emit(
+          const ReservationCreateFailure(
+            'Kết quả đặt trước chưa được xác định do mất kết nối. Vui lòng kiểm tra lại trong danh sách đặt trước.',
+          ),
+        );
       } else {
-        emit(ReservationCreateFailure(
-          ReservationErrorMapper.mapError(e),
-        ));
+        emit(ReservationCreateFailure(ReservationErrorMapper.mapError(e)));
       }
     } finally {
       _isMutating = false;

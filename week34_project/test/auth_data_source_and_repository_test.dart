@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:week34_project/features/auth/data/api_auth_repository.dart';
+import 'package:week34_project/features/auth/data/repositories/api_auth_repository.dart';
 import 'package:week34_project/features/auth/data/datasources/auth_remote_data_source.dart';
 
 void main() {

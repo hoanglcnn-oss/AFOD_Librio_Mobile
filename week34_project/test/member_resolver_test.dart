@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week34_project/features/members/data/member_resolver.dart';
 import 'package:week34_project/features/members/data/models/member.dart';
 
 import 'fake/fake_members_repository.dart';
@@ -15,16 +14,14 @@ void main() {
     membershipExpiry: DateTime.utc(2027, 10, 28),
   );
 
-  group('MemberResolver', () {
+  group('MembersRepository.resolveMemberId', () {
     // Event | Điều kiện đầu vào | Kết quả được kiểm chứng
     test(
-      'resolve | Role MEMBER và có memberId | trả ID trực tiếp, không gọi Repository',
+      'resolveMemberId | Role MEMBER và có memberId | trả ID trực tiếp, không gọi Repository',
       () async {
         final repository = FakeMembersRepository();
 
-        final resolver = MemberResolver(membersRepository: repository);
-
-        final result = await resolver.resolve(
+        final result = await repository.resolveMemberId(
           memberId: 'mem-01',
           email: 'an@example.com',
           role: 'MEMBER',
@@ -36,13 +33,11 @@ void main() {
     );
 
     test(
-      'resolve | Role MEMBER thiếu memberId | tìm bằng email, trả đúng ID',
+      'resolveMemberId | Role MEMBER thiếu memberId | tìm bằng email, trả đúng ID',
       () async {
         final repository = FakeMembersRepository(members: [sampleMember]);
 
-        final resolver = MemberResolver(membersRepository: repository);
-
-        final result = await resolver.resolve(
+        final result = await repository.resolveMemberId(
           memberId: null,
           email: 'AN@EXAMPLE.COM',
           role: 'MEMBER',
@@ -53,12 +48,10 @@ void main() {
       },
     );
 
-    test('resolve | Không tìm thấy Member | trả null', () async {
-      final resolver = MemberResolver(
-        membersRepository: FakeMembersRepository(),
-      );
+    test('resolveMemberId | Không tìm thấy Member | trả null', () async {
+      final repository = FakeMembersRepository();
 
-      final result = await resolver.resolve(
+      final result = await repository.resolveMemberId(
         memberId: null,
         email: 'unknown@example.com',
         role: 'MEMBER',
@@ -68,13 +61,11 @@ void main() {
     });
 
     test(
-      'resolve | Role ADMIN dù có memberId | trả null, không gọi Repository',
+      'resolveMemberId | Role ADMIN dù có memberId | trả null, không gọi Repository',
       () async {
         final repository = FakeMembersRepository(members: [sampleMember]);
 
-        final resolver = MemberResolver(membersRepository: repository);
-
-        final result = await resolver.resolve(
+        final result = await repository.resolveMemberId(
           memberId: 'mem-01',
           email: 'an@example.com',
           role: 'ADMIN',
@@ -86,14 +77,12 @@ void main() {
     );
 
     test(
-      'resolve | Repository ném lỗi | truyền exception lên tầng gọi',
+      'resolveMemberId | Repository ném lỗi | truyền exception lên tầng gọi',
       () async {
-        final resolver = MemberResolver(
-          membersRepository: FakeMembersRepository(shouldFail: true),
-        );
+        final repository = FakeMembersRepository(shouldFail: true);
 
         await expectLater(
-          resolver.resolve(
+          repository.resolveMemberId(
             memberId: null,
             email: 'an@example.com',
             role: 'MEMBER',

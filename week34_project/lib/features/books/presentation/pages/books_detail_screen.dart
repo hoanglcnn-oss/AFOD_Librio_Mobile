@@ -6,14 +6,14 @@ import '../../../../core/widgets/app_toast.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
 import '../../../borrowing/create_slip/presentation/pages/borrow_confirm_screen.dart';
-import '../../../members/data/api_members_repository.dart';
-import '../../../members/data/member_resolver.dart';
-import '../../../borrowing/reservations/bloc/reservations_bloc.dart';
-import '../../../borrowing/reservations/bloc/reservations_event.dart';
-import '../../../borrowing/reservations/bloc/reservations_state.dart';
-import '../../../borrowing/reservations/data/api_reservations_repository.dart';
-import '../../../borrowing/reservations/data/reservations_repository.dart';
-import '../../data/books_repository.dart';
+import '../../../members/data/repositories/api_members_repository.dart';
+import '../../../members/data/repositories/members_repository.dart';
+import '../../../reservations/bloc/reservations_bloc.dart';
+import '../../../reservations/bloc/reservations_event.dart';
+import '../../../reservations/bloc/reservations_state.dart';
+import '../../../reservations/data/repositories/api_reservations_repository.dart';
+import '../../../reservations/data/repositories/reservations_repository.dart';
+import '../../data/repositories/books_repository.dart';
 import '../../data/models/book.dart';
 import '../widgets/book_reserve_dialog.dart';
 
@@ -22,7 +22,7 @@ class BookDetailScreen extends StatefulWidget {
   final BooksRepository repository;
   final ReservationsRepository? reservationsRepository;
   final ReservationsBloc? reservationsBloc;
-  final MemberResolver? memberResolver;
+  final MembersRepository? membersRepository;
 
   const BookDetailScreen({
     super.key,
@@ -30,7 +30,7 @@ class BookDetailScreen extends StatefulWidget {
     required this.repository,
     this.reservationsRepository,
     this.reservationsBloc,
-    this.memberResolver,
+    this.membersRepository,
   });
 
   @override
@@ -88,11 +88,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       return;
     }
 
-    final resolver =
-        widget.memberResolver ??
-        MemberResolver(membersRepository: ApiMembersRepository());
+    final membersRepo =
+        widget.membersRepository ?? ApiMembersRepository();
 
-    final memberId = await resolver.resolve(
+    final memberId = await membersRepo.resolveMemberId(
       memberId: user.memberId,
       email: user.email,
       role: user.role,

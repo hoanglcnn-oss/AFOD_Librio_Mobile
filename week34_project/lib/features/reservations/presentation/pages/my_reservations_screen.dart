@@ -2,29 +2,27 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/widgets/app_toast.dart';
-import '../../../../auth/bloc/auth_bloc.dart';
-import '../../../../auth/bloc/auth_state.dart';
-import '../../../../books/data/books_repository.dart';
-import '../../../../books/data/models/book.dart';
-import '../../../shared/repositories/borrowing_slips_repository.dart';
-import '../../../create_slip/presentation/pages/borrow_confirm_screen.dart';
-import '../../../../members/data/api_members_repository.dart';
-import '../../../../members/data/member_resolver.dart';
-import '../../../../members/data/members_repository.dart';
+import '../../../../core/widgets/app_toast.dart';
+import '../../../auth/bloc/auth_bloc.dart';
+import '../../../auth/bloc/auth_state.dart';
+import '../../../books/data/repositories/books_repository.dart';
+import '../../../books/data/models/book.dart';
+import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
+import '../../../borrowing/create_slip/presentation/pages/borrow_confirm_screen.dart';
+import '../../../members/data/repositories/api_members_repository.dart';
+import '../../../members/data/repositories/members_repository.dart';
 import '../../bloc/reservations_bloc.dart';
 import '../../bloc/reservations_event.dart';
 import '../../bloc/reservations_state.dart';
-import '../../data/api_reservations_repository.dart';
+import '../../data/repositories/api_reservations_repository.dart';
 import '../../data/models/reservation.dart';
-import '../../data/reservations_repository.dart';
+import '../../data/repositories/reservations_repository.dart';
 import '../widgets/reservation_card.dart';
 import '../widgets/cancel_reservation_dialog.dart';
 
 class MyReservationsScreen extends StatelessWidget {
   final String? memberId;
   final ReservationsRepository? repository;
-  final MemberResolver? memberResolver;
   final BooksRepository? booksRepository;
   final BorrowingSlipsRepository? borrowingSlipsRepository;
   final MembersRepository? membersRepository;
@@ -33,7 +31,6 @@ class MyReservationsScreen extends StatelessWidget {
     super.key,
     this.memberId,
     this.repository,
-    this.memberResolver,
     this.booksRepository,
     this.borrowingSlipsRepository,
     this.membersRepository,
@@ -47,7 +44,6 @@ class MyReservationsScreen extends StatelessWidget {
       ),
       child: _MyReservationsView(
         memberId: memberId,
-        memberResolver: memberResolver,
         booksRepository: booksRepository,
         borrowingSlipsRepository: borrowingSlipsRepository,
         membersRepository: membersRepository,
@@ -58,14 +54,12 @@ class MyReservationsScreen extends StatelessWidget {
 
 class _MyReservationsView extends StatefulWidget {
   final String? memberId;
-  final MemberResolver? memberResolver;
   final BooksRepository? booksRepository;
   final BorrowingSlipsRepository? borrowingSlipsRepository;
   final MembersRepository? membersRepository;
 
   const _MyReservationsView({
     this.memberId,
-    this.memberResolver,
     this.booksRepository,
     this.borrowingSlipsRepository,
     this.membersRepository,
@@ -105,11 +99,11 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
       }
 
       final user = authState.user;
-      final resolver = widget.memberResolver ??
-          MemberResolver(membersRepository: ApiMembersRepository());
+      final membersRepo =
+          widget.membersRepository ?? ApiMembersRepository();
 
       // Luôn xác thực và lấy memberId từ user đã đăng nhập
-      _authenticatedMemberId = await resolver.resolve(
+      _authenticatedMemberId = await membersRepo.resolveMemberId(
         memberId: user.memberId,
         email: user.email,
         role: user.role,
@@ -119,8 +113,8 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
       // nhưng TUYỆT ĐỐI KHÔNG dùng làm bằng chứng ownership!
       _displayMemberId =
           (widget.memberId != null && widget.memberId!.trim().isNotEmpty)
-              ? widget.memberId!.trim()
-              : _authenticatedMemberId;
+          ? widget.memberId!.trim()
+          : _authenticatedMemberId;
 
       if (!mounted) return;
 
@@ -149,22 +143,16 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
   void _loadData() {
     if (_displayMemberId == null) return;
     context.read<ReservationsBloc>().add(
-          LoadReservations(
-            memberId: _displayMemberId!,
-            page: _page,
-          ),
-        );
+      LoadReservations(memberId: _displayMemberId!, page: _page),
+    );
   }
 
   Future<void> _onRefresh() async {
     if (_displayMemberId == null) return;
     final completer = Completer<void>();
     context.read<ReservationsBloc>().add(
-          RefreshReservations(
-            _displayMemberId!,
-            completer: completer,
-          ),
-        );
+      RefreshReservations(_displayMemberId!, completer: completer),
+    );
     await completer.future;
   }
 
@@ -174,11 +162,8 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
       _page = newPage;
     });
     context.read<ReservationsBloc>().add(
-          LoadReservations(
-            memberId: _displayMemberId!,
-            page: newPage,
-          ),
-        );
+      LoadReservations(memberId: _displayMemberId!, page: newPage),
+    );
   }
 
   Future<void> _showCancelDialog(Reservation reservation) async {
@@ -195,19 +180,17 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
 
     final result = await showDialog<CancelReservationDialogResult>(
       context: context,
-      builder: (_) => CancelReservationDialog(
-        reservation: reservation,
-      ),
+      builder: (_) => CancelReservationDialog(reservation: reservation),
     );
 
     if (result != null && mounted && _authenticatedMemberId != null) {
       context.read<ReservationsBloc>().add(
-            CancelReservationRequested(
-              reservationId: reservation.id,
-              memberId: _authenticatedMemberId!,
-              reason: result.reason,
-            ),
-          );
+        CancelReservationRequested(
+          reservationId: reservation.id,
+          memberId: _authenticatedMemberId!,
+          reason: result.reason,
+        ),
+      );
     }
   }
 
@@ -248,10 +231,7 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
             membersRepository: widget.membersRepository,
           );
           if (authBloc != null) {
-            return BlocProvider<AuthBloc>.value(
-              value: authBloc,
-              child: screen,
-            );
+            return BlocProvider<AuthBloc>.value(value: authBloc, child: screen);
           }
           return screen;
         },
@@ -265,9 +245,7 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Đặt trước của tôi'),
-      ),
+      appBar: AppBar(title: const Text('Đặt trước của tôi')),
       body: _buildBody(),
     );
   }
@@ -366,8 +344,9 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
           );
         }
 
-        final cancellingId =
-            state is ReservationCancelling ? state.reservationId : null;
+        final cancellingId = state is ReservationCancelling
+            ? state.reservationId
+            : null;
 
         return RefreshIndicator(
           onRefresh: _onRefresh,
@@ -381,7 +360,8 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
                   itemBuilder: (context, index) {
                     final item = reservations[index];
                     // Không tin memberId từ UI, chỉ so với _authenticatedMemberId
-                    final isOwner = _authenticatedMemberId != null &&
+                    final isOwner =
+                        _authenticatedMemberId != null &&
                         _authenticatedMemberId!.isNotEmpty &&
                         item.memberId == _authenticatedMemberId;
 
@@ -390,8 +370,9 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
                       isOwner: isOwner,
                       isCancelling: cancellingId == item.id,
                       onCancel: () => _showCancelDialog(item),
-                      onCreateSlip:
-                          item.isReady ? () => _handleCreateSlip(item) : null,
+                      onCreateSlip: item.isReady
+                          ? () => _handleCreateSlip(item)
+                          : null,
                     );
                   },
                 ),
@@ -405,8 +386,9 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
                     children: [
                       IconButton(
                         tooltip: 'Trang trước',
-                        onPressed:
-                            _page <= 1 ? null : () => _changePage(_page - 1),
+                        onPressed: _page <= 1
+                            ? null
+                            : () => _changePage(_page - 1),
                         icon: const Icon(Icons.chevron_left),
                       ),
                       Text('Trang $_page/${paginated.totalPages}'),

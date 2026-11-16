@@ -1,4 +1,4 @@
-import 'package:week34_project/features/auth/data/auth_repository.dart';
+import 'package:week34_project/features/auth/data/repositories/auth_repository.dart';
 import 'package:week34_project/features/auth/data/models/auth_response.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 

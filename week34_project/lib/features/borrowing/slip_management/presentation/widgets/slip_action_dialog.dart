@@ -195,12 +195,14 @@ class _ApproveSlipDialogContentState extends State<_ApproveSlipDialogContent> {
                   onPressed: submitting
                       ? null
                       : () => context.read<ApproveSlipBloc>().add(
-                            RejectSlipRequested(
-                              slipId: widget.slip.id,
-                              reason: _reasonController.text,
-                            ),
+                          RejectSlipRequested(
+                            slipId: widget.slip.id,
+                            reason: _reasonController.text,
                           ),
-                  child: Text(submitting ? 'Đang xử lý...' : 'Xác nhận từ chối'),
+                        ),
+                  child: Text(
+                    submitting ? 'Đang xử lý...' : 'Xác nhận từ chối',
+                  ),
                 ),
               ],
             ),
@@ -223,7 +225,7 @@ class _ApproveSlipDialogContentState extends State<_ApproveSlipDialogContent> {
                   const SizedBox(height: 16),
                   const Text(
                     'Duyệt phiếu sẽ xuất kho và '
-                    'chuyển trạng thái sang BORROWED.',
+                    'chuyển trạng thái sang "đã mượn".',
                   ),
                   if (state is ApproveSlipFailure &&
                       !state.requiresRefresh) ...[
@@ -330,8 +332,9 @@ class _ApproveSlipDialogContentState extends State<_ApproveSlipDialogContent> {
                       : () {
                           setState(() {
                             _isRejectMode = true;
-                            _reasonController.text =
-                                _buildPrefilledReason(state);
+                            _reasonController.text = _buildPrefilledReason(
+                              state,
+                            );
                           });
                         },
                   child: const Text('Từ chối'),

@@ -1,11 +1,11 @@
-import 'members_repository.dart';
+import '../models/member.dart';
+import '../models/member_debt_summary.dart';
 
-class MemberResolver {
-  final MembersRepository membersRepository;
+abstract class MembersRepository {
+  Future<Member?> findByEmail(String email);
+  Future<MemberDebtSummary> getDebtSummary(String memberId);
 
-  const MemberResolver({required this.membersRepository});
-
-  Future<String?> resolve({
+  Future<String?> resolveMemberId({
     required String? memberId,
     required String email,
     required String role,
@@ -21,7 +21,7 @@ class MemberResolver {
     }
 
     // Fallback: tra cứu bằng email.
-    final member = await membersRepository.findByEmail(email);
+    final member = await findByEmail(email);
 
     if (member == null) {
       return null;

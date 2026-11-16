@@ -1,44 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../features/auth/bloc/auth_bloc.dart';
-import '../features/auth/bloc/auth_event.dart';
-import '../features/auth/bloc/auth_state.dart';
-import '../features/auth/data/api_auth_repository.dart';
-import '../features/auth/presentation/pages/login_screen.dart';
-import '../features/auth/data/models/app_role.dart';
-import '../features/home/presentation/pages/librarian_main_screen.dart';
-import '../features/home/presentation/pages/member_main_screen.dart';
 import '../core/storage/token_storage.dart';
 import '../core/widgets/app_scroll_behaviour.dart';
+import '../features/auth/bloc/auth_bloc.dart';
+import '../features/auth/bloc/auth_event.dart';
+import '../features/auth/data/repositories/api_auth_repository.dart';
+import 'router/app_router.dart';
 
-class DofaApp extends StatelessWidget {
-  const DofaApp({super.key});
+class DofaApp extends StatefulWidget {
+  final AuthBloc? authBloc;
+
+  const DofaApp({super.key, this.authBloc});
+
+  @override
+  State<DofaApp> createState() => _DofaAppState();
+}
+
+class _DofaAppState extends State<DofaApp> {
+  late final AuthBloc _authBloc;
+  late final bool _isCustomAuthBloc;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _isCustomAuthBloc = widget.authBloc != null;
+    _authBloc = widget.authBloc ??
+        (AuthBloc(
+          authRepository: ApiAuthRepository(),
+          tokenStorage: TokenStorage(),
+        )..add(const RestoreSessionRequested()));
+    _router = createAppRouter(_authBloc);
+  }
+
+  @override
+  void dispose() {
+    _router.dispose();
+    if (!_isCustomAuthBloc) {
+      _authBloc.close();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>(
-      create: (context) => AuthBloc(
-        authRepository: ApiAuthRepository(),
-        tokenStorage: TokenStorage(),
-      )..add(const RestoreSessionRequested()),
-      child: MaterialApp(
+    return BlocProvider<AuthBloc>.value(
+      value: _authBloc,
+      child: MaterialApp.router(
+        routerConfig: _router,
         scrollBehavior: const AppScrollBehavior(),
         debugShowCheckedModeBanner: false,
-        // builder: (context, child) {
-        //   return MediaQuery(
-        //     data: MediaQuery.of(context)
-        //         .copyWith(textScaler: const TextScaler.linear(1.5)),
-        //     child: child ?? const SizedBox.shrink(),
-        //   );
-        // },
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0F172A)),
           scaffoldBackgroundColor: const Color(0xFFF8FAFC),
           textTheme: GoogleFonts.manropeTextTheme(),
-
           appBarTheme: const AppBarTheme(
             backgroundColor: Color(0xFFF8FAFC),
             foregroundColor: Color(0xFF0F172A),
@@ -88,111 +107,7 @@ class DofaApp extends StatelessWidget {
             errorStyle: const TextStyle(color: Color(0xFFBA1A1A), fontSize: 12),
           ),
         ),
-        home: const AuthGate(),
       ),
-    );
-  }
-}
-
-class AuthGate extends StatefulWidget {
-  const AuthGate({super.key});
-
-  @override
-  State<AuthGate> createState() => _AuthGateState();
-}
-
-class _AuthGateState extends State<AuthGate> {
-  late bool _isAuthenticated;
-
-  @override
-  void initState() {
-    super.initState();
-    _isAuthenticated = context.read<AuthBloc>().state is AuthAuthenticated;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthAuthenticated) {
-          setState(() {
-            _isAuthenticated = true;
-          });
-        } else if (state is AuthUnauthenticated) {
-          setState(() {
-            _isAuthenticated = false;
-          });
-        }
-      },
-      builder: (context, state) {
-        if (state is AuthInitial || state is AuthRestoring) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (state is AuthSessionFailure) {
-          return Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<AuthBloc>().add(
-                        const RestoreSessionRequested(),
-                      );
-                    },
-                    child: const Text('Thử lại'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        if (!_isAuthenticated) {
-          return const LoginScreen();
-        }
-
-        if (state is! AuthAuthenticated) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final role = AppRole.fromString(state.user.role);
-
-        return switch (role) {
-          AppRole.member => const MemberMainScreen(),
-          AppRole.librarian || AppRole.admin => const LibrarianMainScreen(),
-          AppRole.unknown => Scaffold(
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Vai trò tài khoản chưa được hỗ trợ.',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(const LogoutRequested());
-                      },
-                      child: const Text('Đăng xuất'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        };
-      },
     );
   }
 }

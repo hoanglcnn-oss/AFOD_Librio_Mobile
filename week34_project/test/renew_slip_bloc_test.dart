@@ -5,7 +5,7 @@ import 'package:week34_project/features/borrowing/renewal/bloc/renew_slip_bloc.d
 import 'package:week34_project/features/borrowing/renewal/bloc/renew_slip_event.dart';
 import 'package:week34_project/features/borrowing/renewal/bloc/renew_slip_state.dart';
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
-import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
+import 'package:week34_project/features/borrowing/renewal/data/models/renewal_eligibility.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 
@@ -226,51 +226,45 @@ void main() {
       },
     );
 
-    test(
-      'HTTP 409 Conflict | Hiển thị lý do và lấy lại eligibility',
-      () async {
-        final repository = FakeBorrowingRepository();
-        repository.fakeSlipDetail = BorrowingSlip(
-          id: 'slip-01',
-          slipNumber: 'SLIP-2026-0001',
-          memberId: 'mem-01',
-          status: 'BORROWED',
-          dueDate: DateTime.utc(2026, 11, 15),
-          renewCount: 0,
-          renewalEligibility: const RenewalEligibility(canRenew: true),
-          items: const [],
-        );
+    test('HTTP 409 Conflict | Hiển thị lý do và lấy lại eligibility', () async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeSlipDetail = BorrowingSlip(
+        id: 'slip-01',
+        slipNumber: 'SLIP-2026-0001',
+        memberId: 'mem-01',
+        status: 'BORROWED',
+        dueDate: DateTime.utc(2026, 11, 15),
+        renewCount: 0,
+        renewalEligibility: const RenewalEligibility(canRenew: true),
+        items: const [],
+      );
 
-        repository.renewSlipError = DioException(
-          requestOptions: RequestOptions(path: '/borrowing-slips/slip-01/renew'),
-          response: Response(
-            requestOptions: RequestOptions(
-              path: '/borrowing-slips/slip-01/renew',
-            ),
-            statusCode: 409,
-            data: {
-              'message': 'Sách trong phiếu vừa có độc giả khác đặt trước',
-              'reasonCode': 'ACTIVE_RESERVATION',
-            },
+      repository.renewSlipError = DioException(
+        requestOptions: RequestOptions(path: '/borrowing-slips/slip-01/renew'),
+        response: Response(
+          requestOptions: RequestOptions(
+            path: '/borrowing-slips/slip-01/renew',
           ),
-          type: DioExceptionType.badResponse,
-        );
+          statusCode: 409,
+          data: {
+            'message': 'Sách trong phiếu vừa có độc giả khác đặt trước',
+            'reasonCode': 'ACTIVE_RESERVATION',
+          },
+        ),
+        type: DioExceptionType.badResponse,
+      );
 
-        final bloc = RenewSlipBloc(repository: repository);
+      final bloc = RenewSlipBloc(repository: repository);
 
-        bloc.add(const RenewSlipRequested('slip-01'));
+      bloc.add(const RenewSlipRequested('slip-01'));
 
-        await bloc.stream.firstWhere((s) => s is RenewSlipFailure);
+      await bloc.stream.firstWhere((s) => s is RenewSlipFailure);
 
-        final failure = bloc.state as RenewSlipFailure;
-        expect(
-          failure.message,
-          'Sách trong phiếu vừa có độc giả khác đặt trước',
-        );
+      final failure = bloc.state as RenewSlipFailure;
+      expect(failure.message, 'Sách trong phiếu vừa có độc giả khác đặt trước');
 
-        await bloc.close();
-      },
-    );
+      await bloc.close();
+    });
 
     test(
       'Timeout mạng nhưng Backend đã gia hạn | GET lại kiểm tra thấy dueDate/renewCount tăng -> RenewSlipSuccess',
@@ -304,7 +298,9 @@ void main() {
 
         // Mô phỏng: request PATCH timeout, nhưng backend đã thực thi xong
         repository.renewSlipError = DioException(
-          requestOptions: RequestOptions(path: '/borrowing-slips/slip-01/renew'),
+          requestOptions: RequestOptions(
+            path: '/borrowing-slips/slip-01/renew',
+          ),
           type: DioExceptionType.connectionTimeout,
         );
 
@@ -339,7 +335,9 @@ void main() {
         repository.fakeSlipDetail = initialSlip;
 
         repository.renewSlipError = DioException(
-          requestOptions: RequestOptions(path: '/borrowing-slips/slip-01/renew'),
+          requestOptions: RequestOptions(
+            path: '/borrowing-slips/slip-01/renew',
+          ),
           type: DioExceptionType.receiveTimeout,
         );
 
@@ -350,10 +348,7 @@ void main() {
         await bloc.stream.firstWhere((s) => s is RenewSlipFailure);
 
         final failure = bloc.state as RenewSlipFailure;
-        expect(
-          failure.message,
-          contains('Không thể xác nhận kết quả gia hạn'),
-        );
+        expect(failure.message, contains('Không thể xác nhận kết quả gia hạn'));
 
         await bloc.close();
       },

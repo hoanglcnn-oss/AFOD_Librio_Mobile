@@ -7,10 +7,9 @@ import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
-import 'package:week34_project/features/members/data/member_resolver.dart';
-import 'package:week34_project/features/members/data/members_repository.dart';
+import 'package:week34_project/features/members/data/repositories/members_repository.dart';
 import 'package:week34_project/features/members/data/models/member.dart';
-import 'package:week34_project/features/borrowing/renewal/models/renewal_eligibility.dart';
+import 'package:week34_project/features/borrowing/renewal/data/models/renewal_eligibility.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_borrowing_repository.dart';
@@ -41,7 +40,6 @@ void main() {
     String userId = 'acc-01',
     String? memberId = 'mem-01',
     MembersRepository? membersRepository,
-    MemberResolver? memberResolver,
   }) {
     authBloc.emit(
       AuthAuthenticated(
@@ -66,7 +64,6 @@ void main() {
             slipId: 'slip-01',
             repository: repository,
             membersRepository: membersRepository,
-            memberResolver: memberResolver,
           ),
         ),
       ),
@@ -112,7 +109,10 @@ void main() {
 
         expect(find.text('Gia hạn phiếu mượn'), findsOneWidget);
         expect(find.text('Xác nhận gia hạn'), findsOneWidget);
-        expect(find.text('7 ngày (mặc định)'), findsOneWidget); // Giá trị mặc định 7 ngày
+        expect(
+          find.text('7 ngày (mặc định)'),
+          findsOneWidget,
+        ); // Giá trị mặc định 7 ngày
 
         // Bấm Xác nhận gia hạn
         await tester.tap(find.text('Xác nhận gia hạn'));
@@ -260,44 +260,43 @@ void main() {
       },
     );
 
-    testWidgets(
-      'MEMBER chỉ thấy thao tác phù hợp, không thấy nút quản lý',
-      (tester) async {
-        final repository = FakeBorrowingRepository();
-        repository.fakeSlipDetail = BorrowingSlip(
-          id: 'slip-01',
-          slipNumber: 'SLIP-2026-0001',
-          memberId: 'mem-01',
-          status: 'BORROWED',
-          dueDate: DateTime.utc(2026, 11, 15),
-          renewCount: 0,
-          totalFine: 20000,
-          finePaid: false,
-          renewalEligibility: const RenewalEligibility(canRenew: true),
-          items: const [
-            BorrowingSlipItem(
-              id: 'it-1',
-              bookId: 'b-1',
-              bookTitle: 'Clean Code',
-              quantity: 1,
-              status: 'BORROWING',
-            ),
-          ],
-        );
+    testWidgets('MEMBER chỉ thấy thao tác phù hợp, không thấy nút quản lý', (
+      tester,
+    ) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeSlipDetail = BorrowingSlip(
+        id: 'slip-01',
+        slipNumber: 'SLIP-2026-0001',
+        memberId: 'mem-01',
+        status: 'BORROWED',
+        dueDate: DateTime.utc(2026, 11, 15),
+        renewCount: 0,
+        totalFine: 20000,
+        finePaid: false,
+        renewalEligibility: const RenewalEligibility(canRenew: true),
+        items: const [
+          BorrowingSlipItem(
+            id: 'it-1',
+            bookId: 'b-1',
+            bookTitle: 'Clean Code',
+            quantity: 1,
+            status: 'BORROWING',
+          ),
+        ],
+      );
 
-        await tester.pumpWidget(createApp(repository, role: 'MEMBER'));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(createApp(repository, role: 'MEMBER'));
+      await tester.pumpAndSettle();
 
-        // MEMBER thấy nút Gia hạn cho phiếu của mình
-        expect(find.text('Gia hạn'), findsOneWidget);
+      // MEMBER thấy nút Gia hạn cho phiếu của mình
+      expect(find.text('Gia hạn'), findsOneWidget);
 
-        // MEMBER KHÔNG thấy các thao tác của thủ thư
-        expect(find.text('Duyệt phiếu'), findsNothing);
-        expect(find.text('Từ chối'), findsNothing);
-        expect(find.text('Xác nhận trả sách'), findsNothing);
-        expect(find.text('Ghi nhận đã thu tiền phạt'), findsNothing);
-      },
-    );
+      // MEMBER KHÔNG thấy các thao tác của thủ thư
+      expect(find.text('Duyệt phiếu'), findsNothing);
+      expect(find.text('Từ chối'), findsNothing);
+      expect(find.text('Xác nhận trả sách'), findsNothing);
+      expect(find.text('Ghi nhận đã thu tiền phạt'), findsNothing);
+    });
 
     testWidgets(
       'P1: user.id != user.memberId | Trùng user.memberId thì hiện nút Gia hạn',
@@ -569,29 +568,46 @@ void main() {
         await tester.tap(find.text('Số ngày khác'));
         await tester.pumpAndSettle();
 
-        expect(find.byKey(const ValueKey('renew_custom_input')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('renew_custom_input')),
+          findsOneWidget,
+        );
 
         // Khi chưa nhập số, nút Xác nhận bị disable
-        final confirmBtnFinder = find.byKey(const ValueKey('confirm_renew_button'));
+        final confirmBtnFinder = find.byKey(
+          const ValueKey('confirm_renew_button'),
+        );
         expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNull);
         expect(find.text('---'), findsOneWidget);
 
         // Nhập 0 (không hợp lệ) -> vẫn disabled
-        await tester.enterText(find.byKey(const ValueKey('renew_custom_input')), '0');
+        await tester.enterText(
+          find.byKey(const ValueKey('renew_custom_input')),
+          '0',
+        );
         await tester.pumpAndSettle();
         expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNull);
         expect(find.text('Số ngày phải từ 1 đến 14'), findsOneWidget);
 
         // Nhập 15 (vượt quá 14) -> disabled
-        await tester.enterText(find.byKey(const ValueKey('renew_custom_input')), '15');
+        await tester.enterText(
+          find.byKey(const ValueKey('renew_custom_input')),
+          '15',
+        );
         await tester.pumpAndSettle();
         expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNull);
         expect(find.text('Số ngày phải từ 1 đến 14'), findsOneWidget);
 
         // Nhập 5 (hợp lệ) -> enabled, hạn trả dự kiến 20/11/2026
-        await tester.enterText(find.byKey(const ValueKey('renew_custom_input')), '5');
+        await tester.enterText(
+          find.byKey(const ValueKey('renew_custom_input')),
+          '5',
+        );
         await tester.pumpAndSettle();
-        expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNotNull);
+        expect(
+          tester.widget<FilledButton>(confirmBtnFinder).onPressed,
+          isNotNull,
+        );
         expect(find.text('20/11/2026'), findsOneWidget);
 
         // Xác nhận

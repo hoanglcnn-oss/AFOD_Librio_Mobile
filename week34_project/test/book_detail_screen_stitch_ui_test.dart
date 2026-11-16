@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
-import 'package:week34_project/features/books/data/books_repository.dart';
+import 'package:week34_project/features/books/data/repositories/books_repository.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
 import 'package:week34_project/features/books/data/models/paginated_books.dart';
 import 'package:week34_project/features/books/presentation/pages/books_detail_screen.dart';
@@ -259,27 +259,33 @@ void main() {
       },
     );
 
-    testWidgets('Kiểm tra khi mô tả ngắn (<= 3 dòng) -> Hiển thị mô tả và KHÔNG có nút Xem thêm', (tester) async {
-      final repo = SingleBookFakeRepository(sampleBookOutOfStock);
+    testWidgets(
+      'Kiểm tra khi mô tả ngắn (<= 3 dòng) -> Hiển thị mô tả và KHÔNG có nút Xem thêm',
+      (tester) async {
+        final repo = SingleBookFakeRepository(sampleBookOutOfStock);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: BlocProvider<AuthBloc>.value(
-            value: authBloc,
-            child: BookDetailScreen(
-              bookId: sampleBookOutOfStock.id,
-              repository: repo,
-              reservationsRepository: reservationsRepository,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: BlocProvider<AuthBloc>.value(
+              value: authBloc,
+              child: BookDetailScreen(
+                bookId: sampleBookOutOfStock.id,
+                repository: repo,
+                reservationsRepository: reservationsRepository,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Tài liệu chuyên sâu.'), findsOneWidget);
-      expect(find.byKey(const ValueKey('toggle_description_button')), findsNothing);
-      expect(find.text('Xem thêm'), findsNothing);
-    });
+        expect(find.text('Tài liệu chuyên sâu.'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('toggle_description_button')),
+          findsNothing,
+        );
+        expect(find.text('Xem thêm'), findsNothing);
+      },
+    );
 
     testWidgets(
       'Kiểm tra khi mô tả ngắn (<= 3 dòng) -> Hiển thị mô tả và KHÔNG có nút Xem thêm',

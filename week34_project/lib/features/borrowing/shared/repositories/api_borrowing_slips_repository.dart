@@ -5,8 +5,8 @@ import 'borrowing_slips_repository.dart';
 import '../datasources/borrowing_slips_remote_data_source.dart';
 import '../models/borrowing_slip.dart';
 import '../models/paginated_borrowing_slips.dart';
-import '../../create_slip/models/create_borrowing_slip_request.dart';
-import '../../return_slip/models/return_slip_items_request.dart';
+import '../../create_slip/data/models/create_borrowing_slip_request.dart';
+import '../../return_slip/data/models/return_slip_items_request.dart';
 
 class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
   final BorrowingSlipsRemoteDataSource _remoteDataSource;
@@ -178,7 +178,8 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
     } on DioException catch (e) {
       final responseData = e.response?.data;
       if (responseData is Map) {
-        final code = responseData['code']?.toString() ??
+        final code =
+            responseData['code']?.toString() ??
             responseData['errorCode']?.toString();
         final message = responseData['message']?.toString() ?? '';
         final details = responseData['details'] is Map

@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/books_repository.dart';
+import '../data/repositories/books_repository.dart';
 import '../data/models/book.dart';
 import '../data/models/paginated_books.dart';
 import 'books_event.dart';

@@ -1,6 +1,6 @@
 import 'package:week34_project/features/books/data/models/book.dart';
 
-import 'models/paginated_books.dart';
+import '../models/paginated_books.dart';
 
 abstract class BooksRepository {
   Future<PaginatedBooks> getBooks({

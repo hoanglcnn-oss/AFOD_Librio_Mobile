@@ -5,9 +5,8 @@ import '../../../../../core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
-import 'package:week34_project/features/members/data/api_members_repository.dart';
-import 'package:week34_project/features/members/data/member_resolver.dart';
-import 'package:week34_project/features/members/data/members_repository.dart';
+import 'package:week34_project/features/members/data/repositories/api_members_repository.dart';
+import 'package:week34_project/features/members/data/repositories/members_repository.dart';
 import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 
 import '../../bloc/borrowing_slip_bloc.dart';
@@ -15,7 +14,7 @@ import '../../bloc/borrowing_slip_event.dart';
 import '../../bloc/borrowing_slip_state.dart';
 import '../../../shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
-import '../../models/create_borrowing_slip_request.dart';
+import '../../data/models/create_borrowing_slip_request.dart';
 import '../widgets/borrow_debt_summary_card.dart';
 import '../widgets/borrow_slip_form_card.dart';
 
@@ -87,9 +86,11 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     if (authState is! AuthAuthenticated) return null;
 
     final user = authState.user;
-    return MemberResolver(
-      membersRepository: widget.membersRepository,
-    ).resolve(memberId: user.memberId, email: user.email, role: user.role);
+    return widget.membersRepository.resolveMemberId(
+      memberId: user.memberId,
+      email: user.email,
+      role: user.role,
+    );
   }
 
   void _loadDebtSummary(String memberId) {
@@ -194,14 +195,16 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                       debtSnapshot.connectionState != ConnectionState.done;
                   final isDebtError = debtSnapshot.hasError;
 
-                  final isExceedingLimit = debtSummary != null &&
+                  final isExceedingLimit =
+                      debtSummary != null &&
                       totalSelected > debtSummary.remainingBorrowLimit;
                   final canBorrowCondition =
                       debtSummary != null && debtSummary.canBorrow;
 
                   final isDaysValid = _days >= 1 && _days <= 30;
 
-                  final canSubmit = !isDebtLoading &&
+                  final canSubmit =
+                      !isDebtLoading &&
                       !isDebtError &&
                       debtSummary != null &&
                       canBorrowCondition &&
@@ -211,7 +214,8 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                   String? notAllowedReason;
                   if (debtSummary != null) {
                     if (!debtSummary.canBorrow) {
-                      notAllowedReason = debtSummary.reasonIfNotAllowed ??
+                      notAllowedReason =
+                          debtSummary.reasonIfNotAllowed ??
                           'Tài khoản hiện không đủ điều kiện mượn sách';
                     } else if (isExceedingLimit) {
                       notAllowedReason =

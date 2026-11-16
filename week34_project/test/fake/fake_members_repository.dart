@@ -1,8 +1,8 @@
-import 'package:week34_project/features/members/data/members_repository.dart';
+import 'package:week34_project/features/members/data/repositories/members_repository.dart';
 import 'package:week34_project/features/members/data/models/member.dart';
 import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 
-class FakeMembersRepository implements MembersRepository {
+class FakeMembersRepository extends MembersRepository {
   final List<Member> members;
   final bool shouldFail;
 
