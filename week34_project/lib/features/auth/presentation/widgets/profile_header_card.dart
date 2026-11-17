@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'modals/digital_card_modal.dart';
-import 'modals/edit_profile_sheet.dart';
+import 'profile_digital_card_modal.dart';
+import 'profile_edit_sheet.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
   final dynamic user;

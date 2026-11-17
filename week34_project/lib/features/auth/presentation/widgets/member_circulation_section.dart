@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../../../../borrowing/renewal/presentation/widgets/slip_renewal_dialog.dart';
-import '../../../../borrowing/shared/models/borrowing_slip.dart';
-import '../../../../borrowing/shared/models/paginated_borrowing_slips.dart';
-import '../../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
-import '../../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../../../borrowing/shared/widgets/borrowing_slip_ui_helper.dart';
-import '../../../../borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
-import '../../../../members/data/models/member_debt_summary.dart';
-import '../../../../members/data/repositories/api_members_repository.dart';
-import '../../../../members/data/repositories/members_repository.dart';
-import '../../../../members/presentation/pages/borrowing_limit_screen.dart';
-import '../../../../reservations/data/models/paginated_reservations.dart';
-import '../../../../reservations/data/repositories/api_reservations_repository.dart';
-import '../../../../reservations/data/repositories/reservations_repository.dart';
-import '../../../../reservations/presentation/pages/my_reservations_screen.dart';
+import 'package:week34_project/features/borrowing/renewal/presentation/widgets/slip_renewal_dialog.dart';
+import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
+import 'package:week34_project/features/borrowing/shared/models/paginated_borrowing_slips.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/api_borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing/shared/widgets/borrowing_slip_ui_helper.dart';
+import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
+import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
+import 'package:week34_project/features/members/data/repositories/api_members_repository.dart';
+import 'package:week34_project/features/members/data/repositories/members_repository.dart';
+import 'package:week34_project/features/members/presentation/pages/borrowing_limit_screen.dart';
+import 'package:week34_project/features/reservations/data/models/paginated_reservations.dart';
+import 'package:week34_project/features/reservations/data/repositories/api_reservations_repository.dart';
+import 'package:week34_project/features/reservations/data/repositories/reservations_repository.dart';
+import 'package:week34_project/features/reservations/presentation/pages/my_reservations_screen.dart';
 
 class MemberCirculationSection extends StatefulWidget {
   final String? memberId;

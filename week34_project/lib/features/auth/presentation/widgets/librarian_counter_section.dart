@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../../../books/data/repositories/api_books_repository.dart';
-import '../../../../books/data/repositories/books_repository.dart';
-import '../../../../books/presentation/pages/barcode_scanner_screen.dart';
-import '../../../../books/presentation/pages/books_screen.dart';
-import '../../../../borrowing/pending_slips/presentation/pages/pending_borrowing_slips_screen.dart';
-import '../../../../borrowing/shared/models/paginated_borrowing_slips.dart';
-import '../../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
-import '../../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../../../borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
-import '../../../../members/data/repositories/api_members_repository.dart';
-import '../../../../members/data/repositories/members_repository.dart';
-import '../../../../members/presentation/pages/borrowing_limit_screen.dart';
+import 'package:week34_project/features/books/data/repositories/api_books_repository.dart';
+import 'package:week34_project/features/books/data/repositories/books_repository.dart';
+import 'package:week34_project/features/books/presentation/pages/barcode_scanner_screen.dart';
+import 'package:week34_project/features/books/presentation/pages/books_screen.dart';
+import 'package:week34_project/features/borrowing/pending_slips/presentation/pages/pending_borrowing_slips_screen.dart';
+import 'package:week34_project/features/borrowing/shared/models/paginated_borrowing_slips.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/api_borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
+import 'package:week34_project/features/members/data/repositories/api_members_repository.dart';
+import 'package:week34_project/features/members/data/repositories/members_repository.dart';
+import 'package:week34_project/features/members/presentation/pages/borrowing_limit_screen.dart';
 
 class LibrarianCounterSection extends StatefulWidget {
   final BorrowingSlipsRepository? borrowingSlipsRepository;

@@ -8,9 +8,9 @@ import '../../../reservations/data/repositories/reservations_repository.dart';
 import '../../bloc/auth_bloc.dart';
 import '../../bloc/auth_event.dart';
 import '../../bloc/auth_state.dart';
-import '../widgets/profile/librarian_counter_section.dart';
-import '../widgets/profile/member_circulation_section.dart';
-import '../widgets/profile/profile_header_card.dart';
+import '../widgets/librarian_counter_section.dart';
+import '../widgets/member_circulation_section.dart';
+import '../widgets/profile_header_card.dart';
 
 class ProfileScreen extends StatelessWidget {
   final MembersRepository? membersRepository;
