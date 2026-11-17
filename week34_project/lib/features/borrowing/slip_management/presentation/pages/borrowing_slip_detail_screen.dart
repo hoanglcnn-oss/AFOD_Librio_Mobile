@@ -21,8 +21,8 @@ import '../widgets/slip_summary_card.dart';
 import '../widgets/slip_bottom_action_bar.dart';
 import '../../../shared/widgets/borrowing_slip_ui_helper.dart';
 import '../../../pending_slips/presentation/widgets/slip_decision_dialog.dart';
-import '../../../return_slip/presentation/pages/borrowing_slip_return_screen.dart';
-import '../../../pay_slip_fine/presentation/pages/pay_slip_fine_screen.dart';
+import 'package:week34_project/features/borrowing/borrow_return/return/presentation/pages/borrowing_slip_return_screen.dart';
+import 'package:week34_project/features/borrowing/borrow_return/return/presentation/pages/pay_slip_fine_screen.dart';
 
 class BorrowingSlipDetailScreen extends StatefulWidget {
   final String slipId;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../books/data/models/book.dart';
-import '../../../shared/widgets/ticket_notch_divider.dart';
+import 'package:week34_project/features/books/data/models/book.dart';
+import 'package:week34_project/features/borrowing/shared/widgets/ticket_notch_divider.dart';
 import 'borrow_duration_picker.dart';
 import 'borrow_selected_book_card.dart';
 

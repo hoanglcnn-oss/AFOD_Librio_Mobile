@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../members/data/models/member_debt_summary.dart';
+import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 
 class BorrowDebtSummaryCard extends StatelessWidget {
   final bool isDebtLoading;

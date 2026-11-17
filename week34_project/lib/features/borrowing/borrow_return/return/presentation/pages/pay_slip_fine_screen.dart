@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/pay_slip_fine_bloc.dart';
 import '../../bloc/pay_slip_fine_event.dart';
 import '../../bloc/pay_slip_fine_state.dart';
-import '../../../shared/repositories/borrowing_slips_repository.dart';
-import '../../../shared/models/borrowing_slip.dart';
-import '../../../shared/widgets/borrowing_slip_ui_helper.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
+import 'package:week34_project/features/borrowing/shared/widgets/borrowing_slip_ui_helper.dart';
 
 class PaySlipFineScreen extends StatelessWidget {
   final BorrowingSlip slip;

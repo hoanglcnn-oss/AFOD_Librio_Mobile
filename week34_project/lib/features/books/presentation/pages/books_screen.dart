@@ -10,7 +10,8 @@ import '../widgets/book_card.dart';
 import '../widgets/book_search_bar.dart';
 import 'barcode_scanner_screen.dart';
 import 'books_detail_screen.dart';
-import '../../../borrowing/create_slip/presentation/pages/slip_confirm_screen.dart';
+import '../../../borrowing/borrow_return/create/presentation/pages/slip_confirm_screen.dart';
+import '../../../reservations/presentation/pages/my_reservations_screen.dart';
 
 class BooksScreen extends StatefulWidget {
   final BooksRepository repository;
@@ -240,29 +241,74 @@ class _BooksScreenState extends State<BooksScreen> {
                     state.paginatedBooks.books.isNotEmpty) {
                   return Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 2),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text.rich(
-                        key: const Key('books_result_count'),
-                        TextSpan(
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF64748B),
-                          ),
-                          children: [
-                            const TextSpan(text: 'Hiển thị '),
-                            TextSpan(
-                              text: '${state.paginatedBooks.books.length}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF0F172A),
-                              ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text.rich(
+                          key: const Key('books_result_count'),
+                          TextSpan(
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF64748B),
                             ),
-                            const TextSpan(text: ' sách'),
-                          ],
+                            children: [
+                              const TextSpan(text: 'Hiển thị '),
+                              TextSpan(
+                                text: '${state.paginatedBooks.books.length}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              const TextSpan(text: ' sách'),
+                            ],
+                          ),
                         ),
-                      ),
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => MyReservationsScreen(
+                                  booksRepository: widget.repository,
+                                ),
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(6),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 2,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.bookmark_border_rounded,
+                                  size: 16,
+                                  color: Color(0xFF15803D),
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Đã đặt trước',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                SizedBox(width: 2),
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 16,
+                                  color: Color(0xFF64748B),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }

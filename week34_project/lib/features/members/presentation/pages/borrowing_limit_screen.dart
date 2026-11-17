@@ -30,6 +30,15 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
   bool _isResolvingMember = false;
   String? _resolveError;
 
+  static const primaryNavy = Color(0xFF0F172A);
+  static const textMuted = Color(0xFF64748B);
+  static const borderHairline = Color(0xFFE2E8F0);
+  static const tealAccent = Color(0xFF0D9488);
+  static const tealBg = Color(0xFFF0FDFA);
+  static const surfaceLow = Color(0xFFF8FAFC);
+  static const errorRed = Color(0xFFDC2626);
+  static const successGreen = Color(0xFF10B981);
+
   @override
   void initState() {
     super.initState();
@@ -110,18 +119,18 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: surfaceLow,
       appBar: AppBar(
         title: const Text(
           'Hạn mức mượn sách',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF0F172A),
+            color: primaryNavy,
           ),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+        foregroundColor: primaryNavy,
         elevation: 0,
         scrolledUnderElevation: 0,
         bottom: const PreferredSize(
@@ -129,7 +138,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
           child: Divider(
             height: 1,
             thickness: 1,
-            color: Color(0xFFE2E8F0),
+            color: borderHairline,
           ),
         ),
       ),
@@ -141,7 +150,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
     if (_isResolvingMember) {
       return const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+          valueColor: AlwaysStoppedAnimation<Color>(tealAccent),
         ),
       );
     }
@@ -160,7 +169,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F172A),
+                  color: primaryNavy,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -170,7 +179,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                 icon: const Icon(Icons.refresh),
                 label: const Text('Thử lại'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF0F172A),
+                  foregroundColor: primaryNavy,
                   side: const BorderSide(color: Color(0xFFCBD5E1)),
                 ),
               ),
@@ -190,7 +199,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+              valueColor: AlwaysStoppedAnimation<Color>(tealAccent),
             ),
           );
         }
@@ -202,7 +211,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Color(0xFFDC2626)),
+                  const Icon(Icons.error_outline, size: 48, color: errorRed),
                   const SizedBox(height: 12),
                   const Text(
                     'Không thể tải thông tin hạn mức mượn sách',
@@ -210,7 +219,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF0F172A),
+                      color: primaryNavy,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -219,7 +228,7 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                     icon: const Icon(Icons.refresh),
                     label: const Text('Thử lại'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF0F172A),
+                      foregroundColor: primaryNavy,
                       side: const BorderSide(color: Color(0xFFCBD5E1)),
                     ),
                   ),
@@ -230,62 +239,140 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
         }
 
         final summary = snapshot.data!;
+        final maxLimit = summary.maxBorrowLimit > 0 ? summary.maxBorrowLimit : 5;
+        final progress = (summary.currentBorrowedCount / maxLimit).clamp(0.0, 1.0);
+
         return RefreshIndicator(
-          color: const Color(0xFF0D9488),
+          color: tealAccent,
           onRefresh: _refresh,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
             children: [
-              const Text(
-                'Theo dõi số sách đang mượn và điều kiện mượn thêm',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Thẻ tổng quan số sách đang mượn
-              Card(
-                elevation: 0,
-                color: const Color(0xFF0F172A),
+              // 1. Thẻ tổng quan Hạn mức mượn (Hero Quota Card)
+              Material(
+                color: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
+                  side: const BorderSide(color: borderHairline),
                 ),
+                elevation: 0,
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Đang mượn',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF94A3B8),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.auto_stories_outlined,
+                                size: 20,
+                                color: tealAccent,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Đang mượn',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: summary.canBorrow
+                                  ? const Color(0xFFECFDF5)
+                                  : const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: summary.canBorrow
+                                    ? const Color(0xFFA7F3D0)
+                                    : const Color(0xFFFECACA),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: summary.canBorrow
+                                        ? successGreen
+                                        : errorRed,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  summary.canBorrow
+                                      ? 'Khả dụng'
+                                      : 'Giới hạn',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: summary.canBorrow
+                                        ? const Color(0xFF047857)
+                                        : errorRed,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${summary.currentBorrowedCount}/${summary.maxBorrowLimit} cuốn',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      const SizedBox(height: 12),
+
+                      // Số lượng sách lớn (Required by tests: '3/5 cuốn' or '5/5 cuốn')
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            '${summary.currentBorrowedCount}/${summary.maxBorrowLimit} cuốn',
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: primaryNavy,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Thanh tiến trình Quota
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 8,
+                          backgroundColor: const Color(0xFFE2E8F0),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            summary.canBorrow ? tealAccent : errorRed,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
+
+                      // Dòng diễn giải điều kiện
                       Row(
                         children: [
                           Icon(
                             summary.canBorrow
-                                ? Icons.check_circle
+                                ? Icons.check_circle_rounded
                                 : Icons.warning_amber_rounded,
-                            size: 18,
-                            color: summary.canBorrow
-                                ? const Color(0xFF34D399)
-                                : const Color(0xFFF87171),
+                            size: 16,
+                            color: summary.canBorrow ? successGreen : errorRed,
                           ),
                           const SizedBox(width: 6),
                           Expanded(
@@ -295,10 +382,11 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                                   : (summary.reasonIfNotAllowed ??
                                         'Không đủ điều kiện mượn thêm'),
                               style: TextStyle(
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: summary.canBorrow
-                                    ? const Color(0xFF34D399)
-                                    : const Color(0xFFFCA5A5),
+                                    ? const Color(0xFF047857)
+                                    : errorRed,
                               ),
                             ),
                           ),
@@ -311,76 +399,122 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
 
               const SizedBox(height: 16),
 
-              // Thẻ chi tiết điều kiện mượn
-              Card(
-                elevation: 0,
+              // 2. Thẻ chi tiết điều kiện mượn (Conditions Card)
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 8),
+                child: Text(
+                  'CHI TIẾT ĐIỀU KIỆN',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                    color: textMuted,
+                  ),
+                ),
+              ),
+              Material(
                 color: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                  borderRadius: BorderRadius.circular(18),
+                  side: const BorderSide(color: borderHairline),
                 ),
+                elevation: 0,
                 child: Column(
                   children: [
                     ListTile(
-                      leading: const Icon(
-                        Icons.bookmark_added_outlined,
-                        color: Color(0xFF0D9488),
+                      leading: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: tealBg,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.bookmark_added_outlined,
+                          color: tealAccent,
+                          size: 20,
+                        ),
                       ),
                       title: const Text(
                         'Còn được mượn',
                         style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w500,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          color: primaryNavy,
                         ),
                       ),
                       trailing: Text(
                         '${summary.remainingBorrowLimit} cuốn',
                         style: const TextStyle(
-                          color: Color(0xFF0D9488),
+                          color: tealAccent,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 15,
                         ),
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    const Divider(height: 1, indent: 64, endIndent: 16, color: Color(0xFFF1F5F9)),
                     ListTile(
-                      leading: Icon(
-                        Icons.timer_off_outlined,
-                        color: summary.overdueCount > 0
-                            ? const Color(0xFFDC2626)
-                            : const Color(0xFF64748B),
+                      leading: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: summary.overdueCount > 0
+                              ? const Color(0xFFFEF2F2)
+                              : surfaceLow,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.timer_off_outlined,
+                          color: summary.overdueCount > 0
+                              ? errorRed
+                              : textMuted,
+                          size: 20,
+                        ),
                       ),
                       title: const Text(
                         'Sách quá hạn',
                         style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w500,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          color: primaryNavy,
                         ),
                       ),
                       trailing: Text(
                         '${summary.overdueCount}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 15,
                           color: summary.overdueCount > 0
-                              ? const Color(0xFFDC2626)
-                              : const Color(0xFF0F172A),
+                              ? errorRed
+                              : primaryNavy,
                         ),
                       ),
                     ),
-                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    const Divider(height: 1, indent: 64, endIndent: 16, color: Color(0xFFF1F5F9)),
                     ListTile(
-                      leading: Icon(
-                        Icons.payments_outlined,
-                        color: summary.unpaidFineAmount > 0
-                            ? const Color(0xFFDC2626)
-                            : const Color(0xFF64748B),
+                      leading: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: summary.unpaidFineAmount > 0
+                              ? const Color(0xFFFEF2F2)
+                              : surfaceLow,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.payments_outlined,
+                          color: summary.unpaidFineAmount > 0
+                              ? errorRed
+                              : textMuted,
+                          size: 20,
+                        ),
                       ),
                       title: const Text(
                         'Tiền phạt chưa thanh toán',
                         style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w500,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          color: primaryNavy,
                         ),
                       ),
                       trailing: Text(
@@ -389,10 +523,10 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                         ),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 15,
                           color: summary.unpaidFineAmount > 0
-                              ? const Color(0xFFDC2626)
-                              : const Color(0xFF0F172A),
+                              ? errorRed
+                              : primaryNavy,
                         ),
                       ),
                     ),
@@ -400,13 +534,14 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                 ),
               ),
 
+              // 3. Khung cảnh báo khi không đủ điều kiện
               if (!summary.canBorrow && summary.reasonIfNotAllowed != null) ...[
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFEF2F2),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: const Color(0xFFFECACA),
                     ),
@@ -414,16 +549,18 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                   child: Row(
                     children: [
                       const Icon(
-                        Icons.info_outline,
-                        color: Color(0xFFDC2626),
+                        Icons.info_outline_rounded,
+                        color: errorRed,
+                        size: 22,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           summary.reasonIfNotAllowed!,
                           style: const TextStyle(
-                            color: Color(0xFFDC2626),
-                            fontWeight: FontWeight.w500,
+                            color: errorRed,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -431,6 +568,75 @@ class _BorrowingLimitScreenState extends State<BorrowingLimitScreen> {
                   ),
                 ),
               ],
+
+              const SizedBox(height: 16),
+
+              // 4. Khối Quy định mượn sách học thuật (Academic Policy Card)
+              const Padding(
+                padding: EdgeInsets.only(left: 4, bottom: 8),
+                child: Text(
+                  'QUY ĐỊNH LƯU HÀNH',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                    color: textMuted,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: borderHairline),
+                ),
+                child: const Column(
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check_circle_outline, size: 16, color: tealAccent),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Hạn mức mượn tối đa: 5 ấn bản tài liệu giấy cùng một thời điểm.',
+                            style: TextStyle(fontSize: 12.5, color: textMuted),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check_circle_outline, size: 16, color: tealAccent),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Thời hạn mượn tiêu chuẩn: 14 đến 30 ngày (tùy theo loại tài liệu).',
+                            style: TextStyle(fontSize: 12.5, color: textMuted),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.check_circle_outline, size: 16, color: tealAccent),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Gia hạn: Được phép gia hạn tối đa 2 lần nếu sách chưa có người khác đặt trước.',
+                            style: TextStyle(fontSize: 12.5, color: textMuted),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         );

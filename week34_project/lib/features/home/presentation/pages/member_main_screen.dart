@@ -8,7 +8,6 @@ import '../../../books/bloc/books_bloc.dart';
 import '../../../books/bloc/books_event.dart';
 import '../../../books/data/repositories/api_books_repository.dart';
 import '../../../books/presentation/pages/books_screen.dart';
-import '../../../reservations/presentation/pages/my_reservations_screen.dart';
 import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
 import '../../../members/data/repositories/api_members_repository.dart';
@@ -213,56 +212,10 @@ class _MemberBorrowingsTabState extends State<_MemberBorrowingsTab> {
           return _buildMessage('Không tìm thấy hồ sơ độc giả.');
         }
 
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('my_reservations_entry_button'),
-                      icon: const Icon(
-                        Icons.bookmark_outline,
-                        size: 18,
-                        color: Color(0xFF0D9488),
-                      ),
-                      label: const Text(
-                        'Đặt trước của tôi',
-                        style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF0F172A),
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                MyReservationsScreen(memberId: memberId),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: BorrowingSlipsScreen(
-                memberId: memberId,
-                repository: ApiBorrowingSlipsRepository(),
-                onReturnSucceeded: widget.onReturnSucceeded,
-              ),
-            ),
-          ],
+        return BorrowingSlipsScreen(
+          memberId: memberId,
+          repository: ApiBorrowingSlipsRepository(),
+          onReturnSucceeded: widget.onReturnSucceeded,
         );
       },
     );

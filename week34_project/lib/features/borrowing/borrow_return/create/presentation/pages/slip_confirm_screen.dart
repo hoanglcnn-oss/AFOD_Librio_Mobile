@@ -5,13 +5,15 @@ import 'package:week34_project/core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
-import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_bloc.dart';
-import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_event.dart';
-import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_state.dart';
-import 'package:week34_project/features/borrowing/create_slip/data/models/create_slip_request.dart';
+import '../../bloc/create_slip_bloc.dart';
+import '../../bloc/create_slip_event.dart';
+import '../../bloc/create_slip_state.dart';
+import '../../data/models/create_slip_request.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
-import 'borrowing_slip_created_screen.dart';
+import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
+import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
+import '../widgets/borrow_slip_success_dialog.dart';
 import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 import 'package:week34_project/features/members/data/repositories/api_members_repository.dart';
 import 'package:week34_project/features/members/data/repositories/members_repository.dart';
@@ -179,13 +181,57 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CreateSlipBloc, CreateSlipState>(
+    return BlocConsumer<CreateSlipBloc, CreateSlipState>(
+      listener: (context, state) async {
+        if (state is CreateSlipSuccess) {
+          final repo = widget.borrowingSlipsRepository;
+          final memRepo = widget.membersRepository;
+          final slip = state.slip;
+
+          await Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (ctx) {
+                WidgetsBinding.instance.addPostFrameCallback((_) async {
+                  if (!ctx.mounted) return;
+                  final openDetail = await showBorrowSlipSuccessDialog(
+                    ctx,
+                    slipNumber: slip.slipNumber,
+                  );
+                  if (openDetail == true && ctx.mounted) {
+                    await Navigator.of(ctx).push<void>(
+                      MaterialPageRoute(
+                        builder: (_) => BorrowingSlipDetailScreen(
+                          slipId: slip.id,
+                          repository: repo,
+                          membersRepository: memRepo,
+                        ),
+                      ),
+                    );
+                  }
+                });
+                return Scaffold(
+                  backgroundColor: const Color(0xFFF8FAFC),
+                  appBar: AppBar(
+                    title: const Text('Phiếu mượn của tôi'),
+                    leading: BackButton(
+                      onPressed: () => Navigator.of(ctx).pop(true),
+                    ),
+                  ),
+                  body: BorrowingSlipsScreen(
+                    repository: repo,
+                    memberId: slip.memberId,
+                    initialStatus: 'PENDING_APPROVAL',
+                  ),
+                );
+              },
+            ),
+          );
+        }
+      },
       builder: (context, state) {
         if (state is CreateSlipSuccess) {
-          return BorrowingSlipCreatedScreen(
-            slip: state.slip,
-            repository: widget.borrowingSlipsRepository,
-            membersRepository: widget.membersRepository,
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 

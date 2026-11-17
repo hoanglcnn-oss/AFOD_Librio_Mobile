@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../books/data/models/book.dart';
+import 'package:week34_project/features/books/data/models/book.dart';
 
 class BorrowSelectedBookCard extends StatelessWidget {
   final Book book;

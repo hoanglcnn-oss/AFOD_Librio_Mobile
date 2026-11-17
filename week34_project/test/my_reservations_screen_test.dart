@@ -14,7 +14,7 @@ import 'fake/fake_borrowing_repository.dart';
 import 'fake/fake_members_repository.dart';
 import 'fake/fake_reservations_repository.dart';
 import 'fake/fake_token_storage.dart';
-import 'package:week34_project/features/borrowing/create_slip/presentation/pages/slip_confirm_screen.dart';
+import 'package:week34_project/features/borrowing/borrow_return/create/presentation/pages/slip_confirm_screen.dart';
 import 'package:week34_project/features/members/data/models/member.dart';
 
 void main() {

@@ -167,8 +167,10 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
     final isLibrarian =
         widget.memberId == null || widget.memberId!.trim().isEmpty;
 
-    return Column(
-      children: [
+    return Material(
+      color: Colors.transparent,
+      child: Column(
+        children: [
         // Thanh bộ lọc trạng thái dùng chung
         Container(
           decoration: const BoxDecoration(
@@ -342,6 +344,7 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
           ),
         ),
       ],
+    ),
     );
   }
 

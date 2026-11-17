@@ -110,7 +110,9 @@ class _PendingBorrowingSlipsScreenState
 
         final result = snapshot.data!;
 
-        return Column(
+        return Material(
+          color: Colors.transparent,
+          child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -237,6 +239,7 @@ class _PendingBorrowingSlipsScreenState
                 ),
               ),
           ],
+        ),
         );
       },
     );

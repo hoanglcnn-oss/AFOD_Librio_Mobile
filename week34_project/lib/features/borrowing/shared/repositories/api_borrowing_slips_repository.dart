@@ -5,8 +5,8 @@ import 'borrowing_slips_repository.dart';
 import '../datasources/borrowing_slips_remote_data_source.dart';
 import '../models/borrowing_slip.dart';
 import '../models/paginated_borrowing_slips.dart';
-import '../../create_slip/data/models/create_slip_request.dart';
-import '../../return_slip/data/models/return_slip_items_request.dart';
+import '../../borrow_return/create/data/models/create_slip_request.dart';
+import '../../borrow_return/return/data/models/return_slip_items_request.dart';
 
 class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
   final BorrowingSlipsRemoteDataSource _remoteDataSource;

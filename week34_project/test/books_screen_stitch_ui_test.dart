@@ -127,11 +127,13 @@ void main() {
         expect(find.byIcon(Icons.clear), findsOneWidget);
         expect(find.byIcon(Icons.qr_code_scanner), findsOneWidget);
 
-        // 4. Số lượng kết quả
+        // 4. Số lượng kết quả & shortcut "Đã đặt trước"
         final resultCountWidget = tester.widget<Text>(
           find.byKey(const Key('books_result_count')),
         );
         expect(resultCountWidget.textSpan?.toPlainText(), 'Hiển thị 2 sách');
+        expect(find.text('Đã đặt trước'), findsOneWidget);
+        expect(find.byIcon(Icons.bookmark_border_rounded), findsOneWidget);
 
         // 5. Chuyển sang chế độ chọn nhiều
         await tester.tap(find.text('Chọn nhiều'));
