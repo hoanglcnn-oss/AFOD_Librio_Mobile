@@ -8,7 +8,7 @@ import '../../../auth/bloc/auth_state.dart';
 import '../../../books/data/repositories/books_repository.dart';
 import '../../../books/data/models/book.dart';
 import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../../borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
+import '../../../borrowing/create_slip/presentation/pages/slip_confirm_screen.dart';
 import '../../../members/data/repositories/api_members_repository.dart';
 import '../../../members/data/repositories/members_repository.dart';
 import '../../bloc/reservations_bloc.dart';
@@ -225,7 +225,7 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
     await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
         builder: (_) {
-          final screen = BorrowingSlipConfirmScreen(
+          final screen = SlipConfirmScreen(
             books: [book!],
             borrowingSlipsRepository: widget.borrowingSlipsRepository,
             membersRepository: widget.membersRepository,

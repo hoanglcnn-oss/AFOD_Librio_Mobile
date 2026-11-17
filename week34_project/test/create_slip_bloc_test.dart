@@ -1,15 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 
-import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_bloc.dart';
-import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_event.dart';
-import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_state.dart';
-import 'package:week34_project/features/borrowing/create_slip/data/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_bloc.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_event.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_state.dart';
+import 'package:week34_project/features/borrowing/create_slip/data/models/create_slip_request.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 
 void main() {
-  const request = CreateBorrowingSlipRequest(
+  const request = CreateSlipRequest(
     memberId: 'mem-01',
     items: [
       BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1),
@@ -17,12 +17,12 @@ void main() {
     ],
   );
 
-  group('BorrowingSlipBloc', () {
+  group('CreateSlipBloc', () {
     test(
       'CreateSlipRequested | Repository thành công | Submitting -> Success, trạng thái PENDING_APPROVAL',
       () async {
         final repository = FakeBorrowingRepository();
-        final bloc = BorrowingSlipBloc(borrowingSlipsRepository: repository);
+        final bloc = CreateSlipBloc(borrowingSlipsRepository: repository);
 
         final statesFuture = bloc.stream.take(2).toList();
 
@@ -30,10 +30,10 @@ void main() {
 
         final states = await statesFuture;
 
-        expect(states[0], isA<BorrowingSlipSubmitting>());
-        expect(states[1], isA<BorrowingSlipSuccess>());
+        expect(states[0], isA<CreateSlipSubmitting>());
+        expect(states[1], isA<CreateSlipSuccess>());
 
-        final success = states[1] as BorrowingSlipSuccess;
+        final success = states[1] as CreateSlipSuccess;
 
         expect(success.slip.memberId, 'mem-01');
         expect(success.slip.status, 'PENDING_APPROVAL');
@@ -50,7 +50,7 @@ void main() {
         final repository = FakeBorrowingRepository()
           ..shouldFailCreateSlip = true;
 
-        final bloc = BorrowingSlipBloc(borrowingSlipsRepository: repository);
+        final bloc = CreateSlipBloc(borrowingSlipsRepository: repository);
 
         final statesFuture = bloc.stream.take(2).toList();
 
@@ -58,10 +58,10 @@ void main() {
 
         final states = await statesFuture;
 
-        expect(states[0], isA<BorrowingSlipSubmitting>());
-        expect(states[1], isA<BorrowingSlipFailure>());
+        expect(states[0], isA<CreateSlipSubmitting>());
+        expect(states[1], isA<CreateSlipFailure>());
 
-        final failure = states[1] as BorrowingSlipFailure;
+        final failure = states[1] as CreateSlipFailure;
 
         expect(failure.message, isNotEmpty);
         expect(repository.createSlipCallCount, 1);
@@ -74,10 +74,10 @@ void main() {
       'CreateSlipRequested | Đã Success | bỏ qua event tiếp theo, không gọi lại Repository',
       () async {
         final repository = FakeBorrowingRepository();
-        final bloc = BorrowingSlipBloc(borrowingSlipsRepository: repository);
+        final bloc = CreateSlipBloc(borrowingSlipsRepository: repository);
 
         final successFuture = bloc.stream.firstWhere(
-          (state) => state is BorrowingSlipSuccess,
+          (state) => state is CreateSlipSuccess,
         );
 
         bloc.add(const CreateSlipRequested(request));
@@ -91,7 +91,7 @@ void main() {
         // Cho BLoC xử lý event thứ hai.
         await Future<void>.delayed(Duration.zero);
 
-        expect(bloc.state, isA<BorrowingSlipSuccess>());
+        expect(bloc.state, isA<CreateSlipSuccess>());
         expect(repository.createSlipCallCount, 1);
 
         await bloc.close();
@@ -123,10 +123,10 @@ void main() {
             type: DioExceptionType.badResponse,
           );
 
-        final bloc = BorrowingSlipBloc(borrowingSlipsRepository: repository);
+        final bloc = CreateSlipBloc(borrowingSlipsRepository: repository);
 
         // Độc giả đang mượn 4/5, yêu cầu thêm 2 cuốn.
-        const invalidRequest = CreateBorrowingSlipRequest(
+        const invalidRequest = CreateSlipRequest(
           memberId: 'mem-01',
           items: [
             BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1),
@@ -140,15 +140,15 @@ void main() {
 
         // Lần 1: Backend từ chối.
         final failureFuture = bloc.stream.firstWhere(
-          (state) => state is BorrowingSlipFailure,
+          (state) => state is CreateSlipFailure,
         );
 
         bloc.add(const CreateSlipRequested(invalidRequest));
 
-        final failure = await failureFuture as BorrowingSlipFailure;
+        final failure = await failureFuture as CreateSlipFailure;
 
         expect(failure.message, backendMessage);
-        expect(bloc.state, isA<BorrowingSlipFailure>());
+        expect(bloc.state, isA<CreateSlipFailure>());
         expect(repository.createSlipCallCount, 1);
 
         // Xác nhận request gốc vẫn giữ 2 cuốn.
@@ -158,7 +158,7 @@ void main() {
         );
 
         // Lần 2: Người dùng chỉ yêu cầu 1 cuốn.
-        const adjustedRequest = CreateBorrowingSlipRequest(
+        const adjustedRequest = CreateSlipRequest(
           memberId: 'mem-01',
           items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
           expectedReturnDays: 14,
@@ -168,12 +168,12 @@ void main() {
 
         final states = await statesFuture;
 
-        expect(states[0], isA<BorrowingSlipSubmitting>());
-        expect(states[1], isA<BorrowingSlipFailure>());
-        expect(states[2], isA<BorrowingSlipSubmitting>());
-        expect(states[3], isA<BorrowingSlipSuccess>());
+        expect(states[0], isA<CreateSlipSubmitting>());
+        expect(states[1], isA<CreateSlipFailure>());
+        expect(states[2], isA<CreateSlipSubmitting>());
+        expect(states[3], isA<CreateSlipSuccess>());
 
-        final success = states[3] as BorrowingSlipSuccess;
+        final success = states[3] as CreateSlipSuccess;
 
         expect(success.slip.status, 'PENDING_APPROVAL');
         expect(success.slip.items.length, 1);

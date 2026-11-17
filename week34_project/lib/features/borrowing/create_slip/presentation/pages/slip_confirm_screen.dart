@@ -5,10 +5,10 @@ import 'package:week34_project/core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
-import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_bloc.dart';
-import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_event.dart';
-import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_state.dart';
-import 'package:week34_project/features/borrowing/create_slip/data/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_bloc.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_event.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/create_slip_state.dart';
+import 'package:week34_project/features/borrowing/create_slip/data/models/create_slip_request.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
 import 'borrowing_slip_created_screen.dart';
@@ -17,14 +17,14 @@ import 'package:week34_project/features/members/data/repositories/api_members_re
 import 'package:week34_project/features/members/data/repositories/members_repository.dart';
 
 import '../widgets/borrow_debt_summary_card.dart';
-import '../widgets/borrow_slip_form_card.dart';
+import '../widgets/slip_form_frame.dart';
 
-class BorrowingSlipConfirmScreen extends StatelessWidget {
+class SlipConfirmScreen extends StatelessWidget {
   final List<Book> books;
   final MembersRepository? membersRepository;
   final BorrowingSlipsRepository? borrowingSlipsRepository;
 
-  const BorrowingSlipConfirmScreen({
+  const SlipConfirmScreen({
     super.key,
     required this.books,
     this.membersRepository,
@@ -46,7 +46,7 @@ class BorrowingSlipConfirmScreen extends StatelessWidget {
 
     return BlocProvider(
       create: (context) =>
-          BorrowingSlipBloc(borrowingSlipsRepository: effectiveSlipsRepo),
+          CreateSlipBloc(borrowingSlipsRepository: effectiveSlipsRepo),
       child: _SlipConfirmContent(
         books: books,
         membersRepository: effectiveMembersRepo,
@@ -161,7 +161,7 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
       // Tiếp tục để backend kiểm tra nếu không fetch được
     }
 
-    final request = CreateBorrowingSlipRequest(
+    final request = CreateSlipRequest(
       memberId: memberId,
       expectedReturnDays: _days,
       items: [
@@ -174,14 +174,14 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     );
 
     if (!mounted) return;
-    context.read<BorrowingSlipBloc>().add(CreateSlipRequested(request));
+    context.read<CreateSlipBloc>().add(CreateSlipRequested(request));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<BorrowingSlipBloc, BorrowingSlipState>(
+    return BlocBuilder<CreateSlipBloc, CreateSlipState>(
       builder: (context, state) {
-        if (state is BorrowingSlipSuccess) {
+        if (state is CreateSlipSuccess) {
           return BorrowingSlipCreatedScreen(
             slip: state.slip,
             repository: widget.borrowingSlipsRepository,
@@ -226,7 +226,7 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
             return FutureBuilder<MemberDebtSummary>(
               future: _debtSummaryFuture,
               builder: (context, debtSnapshot) {
-                final submitting = state is BorrowingSlipSubmitting;
+                final submitting = state is CreateSlipSubmitting;
                 final activeBooks = widget.books
                     .where((b) => !_excludedBookIds.contains(b.id))
                     .toList();
@@ -295,7 +295,7 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                       ],
                     ),
                   ),
-                  body: BorrowSlipFormCard(
+                  body: SlipFormFrame(
                     books: widget.books,
                     quantities: _quantities,
                     excludedBookIds: _excludedBookIds,
@@ -305,7 +305,7 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                     submitting: submitting,
                     canSubmit: canSubmit,
                     maxBorrowLimit: debtSummary?.maxBorrowLimit,
-                    errorMessage: state is BorrowingSlipFailure
+                    errorMessage: state is CreateSlipFailure
                         ? state.message
                         : null,
                     debtSummaryCard: BorrowDebtSummaryCard(

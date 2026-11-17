@@ -56,3 +56,20 @@ T vẫn giữ đúng quy trình vừa thử với Book Detail:
 5. Antigravity dùng Stitch MCP lấy đúng phiên bản đã duyệt và implement Flutter.
 6. Chạy flutter analyze, flutter test, kiểm tra responsive và so screenshot Flutter với Stitch.
 7. Một commit riêng cho mỗi màn hoặc nhóm component gắn chặt với màn đó.
+
+## Kế hoạch Refactor kiến trúc (Làm sau)
+
+### 1. Refactor Core Workflow: Mượn -> Trả (`borrow_return`)
+- **Ý tưởng:** Gom toàn bộ luồng cốt lõi Mượn $\rightarrow$ Trả (Circulation) vào folder chung `lib/features/borrowing/borrow_return/`, phản ánh trọn vẹn vòng đời phiếu mượn.
+- **Cấu trúc dự kiến:**
+  - `features/borrowing/borrow_return/`
+    - `create/` (Luồng Mượn / Tạo phiếu - Member):
+      - `bloc/`: `create_slip_bloc.dart` (event, state)
+      - `data/models/`: `create_slip_request.dart`
+      - `presentation/`: `slip_confirm_screen.dart`, `slip_form_frame.dart`, các widget cards/picker
+      - *(Kết hợp Hướng 1: Xóa bỏ `borrowing_slip_created_screen.dart`, dùng `BlocListener` trong `slip_confirm_screen` để show dialog và pushReplacement)*
+    - `return/` (Luồng Trả sách & Phạt - Librarian):
+      - `bloc/`: `return_slip_bloc.dart`, `pay_slip_fine_bloc.dart`
+      - `data/models/`: `return_slip_items_request.dart`
+      - `presentation/`: `borrowing_slip_return_screen.dart`, `pay_slip_fine_screen.dart`
+- **Lợi ích:** Xóa bỏ sự manh mún của 2 folder lẻ `return_slip` và `pay_slip_fine`, gom toàn bộ core workflow Mượn $\rightarrow$ Trả sách vào một cấu trúc chuẩn mực, mạch lạc.

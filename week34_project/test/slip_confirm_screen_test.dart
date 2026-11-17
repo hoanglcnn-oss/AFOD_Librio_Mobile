@@ -5,7 +5,7 @@ import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/auth/data/models/user_profile.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
-import 'package:week34_project/features/borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
+import 'package:week34_project/features/borrowing/create_slip/presentation/pages/slip_confirm_screen.dart';
 import 'package:week34_project/features/borrowing/slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
 import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 
@@ -66,7 +66,7 @@ void main() {
     return MaterialApp(
       home: BlocProvider<AuthBloc>.value(
         value: authBloc,
-        child: BorrowingSlipConfirmScreen(
+        child: SlipConfirmScreen(
           books: books ?? sampleBooks,
           membersRepository: membersRepository,
           borrowingSlipsRepository: borrowingSlipsRepository,
@@ -91,7 +91,7 @@ void main() {
     await authBloc.close();
   });
 
-  group('BorrowingSlipConfirmScreen - F1 Hạn mức mượn sách', () {
+  group('SlipConfirmScreen - F1 Hạn mức mượn sách', () {
     testWidgets(
       'Đủ hạn mức | Hiển thị thông tin rút gọn và nút Gửi phiếu enabled',
       (tester) async {

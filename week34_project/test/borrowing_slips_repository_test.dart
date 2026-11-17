@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:week34_project/features/borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
-import 'package:week34_project/features/borrowing/create_slip/data/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowing/create_slip/data/models/create_slip_request.dart';
 import 'fake/fake_token_storage.dart';
 
 void main() {
@@ -64,7 +64,7 @@ void main() {
         tokenStorage: tokenStorage,
       );
 
-      const request = CreateBorrowingSlipRequest(
+      const request = CreateSlipRequest(
         memberId: 'mem-01',
         items: [
           BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1),
@@ -109,7 +109,7 @@ void main() {
         tokenStorage: tokenStorage,
       );
 
-      const request = CreateBorrowingSlipRequest(
+      const request = CreateSlipRequest(
         memberId: 'mem-01',
         items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
       );
@@ -153,40 +153,40 @@ void main() {
 
       const invalidRequests = [
         // Không có memberId
-        CreateBorrowingSlipRequest(
+        CreateSlipRequest(
           memberId: '   ',
           items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
         ),
 
         // Danh sách sách rỗng
-        CreateBorrowingSlipRequest(memberId: 'mem-01', items: []),
+        CreateSlipRequest(memberId: 'mem-01', items: []),
 
         // Số ngày mượn ngoài khoảng 1-30
-        CreateBorrowingSlipRequest(
+        CreateSlipRequest(
           memberId: 'mem-01',
           items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
           expectedReturnDays: 0,
         ),
 
-        CreateBorrowingSlipRequest(
+        CreateSlipRequest(
           memberId: 'mem-01',
           items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 1)],
           expectedReturnDays: 31,
         ),
 
         // bookId rỗng
-        CreateBorrowingSlipRequest(
+        CreateSlipRequest(
           memberId: 'mem-01',
           items: [BorrowingSlipItemRequest(bookId: '  ', quantity: 1)],
         ),
 
         // Quantity ngoài khoảng 1-5
-        CreateBorrowingSlipRequest(
+        CreateSlipRequest(
           memberId: 'mem-01',
           items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 0)],
         ),
 
-        CreateBorrowingSlipRequest(
+        CreateSlipRequest(
           memberId: 'mem-01',
           items: [BorrowingSlipItemRequest(bookId: 'book-01', quantity: 6)],
         ),
@@ -814,7 +814,7 @@ void main() {
   });
 
   test(
-    'renewSlip | extraDays không hợp lệ (< 1 hoặc > 14) | throw ArgumentError',
+    'renewSlip | extraDays không hợp lệ (< 1 hoặc > 30) | throw ArgumentError',
     () async {
       final dio = Dio(BaseOptions(baseUrl: 'https://example.com/api'));
       final tokenStorage = FakeTokenStorage();
@@ -830,7 +830,7 @@ void main() {
         throwsArgumentError,
       );
       expect(
-        () => repository.renewSlip(slipId: 'slip-01', extraDays: 15),
+        () => repository.renewSlip(slipId: 'slip-01', extraDays: 31),
         throwsArgumentError,
       );
     },

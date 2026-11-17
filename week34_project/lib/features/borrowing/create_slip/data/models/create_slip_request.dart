@@ -12,13 +12,13 @@ class BorrowingSlipItemRequest {
   }
 }
 
-class CreateBorrowingSlipRequest {
+class CreateSlipRequest {
   final String memberId;
   final List<BorrowingSlipItemRequest> items;
   final int expectedReturnDays;
   final String? notes;
 
-  const CreateBorrowingSlipRequest({
+  const CreateSlipRequest({
     required this.memberId,
     required this.items,
     this.expectedReturnDays = 14,

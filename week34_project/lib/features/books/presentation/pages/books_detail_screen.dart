@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/app_toast.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
-import '../../../borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
+import '../../../borrowing/create_slip/presentation/pages/slip_confirm_screen.dart';
 import '../../../members/data/repositories/api_members_repository.dart';
 import '../../../members/data/repositories/members_repository.dart';
 import '../../../reservations/bloc/reservations_bloc.dart';
@@ -657,7 +657,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                 .push<bool>(
                                   MaterialPageRoute<bool>(
                                     builder: (_) =>
-                                        BorrowingSlipConfirmScreen(
+                                        SlipConfirmScreen(
                                           books: [book],
                                           membersRepository:
                                               widget.membersRepository,

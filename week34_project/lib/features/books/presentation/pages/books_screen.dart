@@ -10,7 +10,7 @@ import '../widgets/book_card.dart';
 import '../widgets/book_search_bar.dart';
 import 'barcode_scanner_screen.dart';
 import 'books_detail_screen.dart';
-import '../../../borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
+import '../../../borrowing/create_slip/presentation/pages/slip_confirm_screen.dart';
 
 class BooksScreen extends StatefulWidget {
   final BooksRepository repository;
@@ -81,7 +81,7 @@ class _BooksScreenState extends State<BooksScreen> {
 
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
-        builder: (_) => BorrowingSlipConfirmScreen(books: books),
+        builder: (_) => SlipConfirmScreen(books: books),
       ),
     );
 

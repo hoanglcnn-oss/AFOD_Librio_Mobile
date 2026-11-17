@@ -2,38 +2,38 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../shared/repositories/borrowing_slips_repository.dart';
 import '../../shared/errors/borrowing_slip_error_mapper.dart';
-import 'borrowing_slip_event.dart';
-import 'borrowing_slip_state.dart';
+import 'create_slip_event.dart';
+import 'create_slip_state.dart';
 
-class BorrowingSlipBloc extends Bloc<BorrowingSlipEvent, BorrowingSlipState> {
+class CreateSlipBloc extends Bloc<CreateSlipEvent, CreateSlipState> {
   final BorrowingSlipsRepository borrowingSlipsRepository;
 
   bool _isSubmitting = false;
 
-  BorrowingSlipBloc({required this.borrowingSlipsRepository})
-    : super(const BorrowingSlipInitial()) {
+  CreateSlipBloc({required this.borrowingSlipsRepository})
+    : super(const CreateSlipInitial()) {
     on<CreateSlipRequested>(_onCreateSlipRequested);
   }
 
   Future<void> _onCreateSlipRequested(
     CreateSlipRequested event,
-    Emitter<BorrowingSlipState> emit,
+    Emitter<CreateSlipState> emit,
   ) async {
-    if (_isSubmitting || state is BorrowingSlipSuccess) {
+    if (_isSubmitting || state is CreateSlipSuccess) {
       return;
     }
 
     _isSubmitting = true;
-    emit(const BorrowingSlipSubmitting());
+    emit(const CreateSlipSubmitting());
 
     try {
       final slip = await borrowingSlipsRepository.createBorrowingSlip(
         event.request,
       );
 
-      emit(BorrowingSlipSuccess(slip));
+      emit(CreateSlipSuccess(slip));
     } catch (error) {
-      emit(BorrowingSlipFailure(getBorrowingSlipErrorMessage(error)));
+      emit(CreateSlipFailure(getBorrowingSlipErrorMessage(error)));
     } finally {
       _isSubmitting = false;
     }

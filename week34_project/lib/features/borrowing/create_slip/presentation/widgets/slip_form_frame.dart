@@ -5,7 +5,7 @@ import '../../../shared/widgets/ticket_notch_divider.dart';
 import 'borrow_duration_picker.dart';
 import 'borrow_selected_book_card.dart';
 
-class BorrowSlipFormCard extends StatelessWidget {
+class SlipFormFrame extends StatelessWidget {
   final List<Book> books;
   final Map<String, int> quantities;
   final Set<String> excludedBookIds;
@@ -22,7 +22,7 @@ class BorrowSlipFormCard extends StatelessWidget {
   final void Function(String bookId)? onToggleExclude;
   final void Function(int days)? onDaysChanged;
 
-  const BorrowSlipFormCard({
+  const SlipFormFrame({
     super.key,
     required this.books,
     required this.quantities,

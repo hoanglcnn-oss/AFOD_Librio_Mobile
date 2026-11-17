@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/models/borrowing_slip.dart';
 import '../../../shared/repositories/borrowing_slips_repository.dart';
 import '../../../shared/models/paginated_borrowing_slips.dart';
 import '../widgets/slip_list_card.dart';
@@ -37,27 +38,89 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
   late Future<PaginatedBorrowingSlips> _future;
   String? _selectedStatus;
   int _page = 1;
+  final _scrollController = ScrollController();
+  final List<BorrowingSlip> _slips = [];
+  int _requestVersion = 0;
+  bool _hasNextPage = false;
+  bool _isLoadingMore = false;
+  bool _paginationError = false;
 
   @override
   void initState() {
     super.initState();
     _selectedStatus = widget.initialStatus;
+    _scrollController.addListener(_onScroll);
     _load();
   }
 
-  void _load() {
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<PaginatedBorrowingSlips> _fetchPage(int page) {
     final memberId = widget.memberId?.trim();
     if (memberId != null && memberId.isNotEmpty) {
-      _future = widget.repository.getBorrowingSlips(
+      return widget.repository.getBorrowingSlips(
         memberId: memberId,
         status: _selectedStatus,
-        page: _page,
+        page: page,
       );
     } else {
-      _future = widget.repository.getAllBorrowingSlips(
+      return widget.repository.getAllBorrowingSlips(
         status: _selectedStatus,
-        page: _page,
+        page: page,
       );
+    }
+  }
+
+  void _load() {
+    final version = ++_requestVersion;
+    _page = 1;
+    _hasNextPage = false;
+    _isLoadingMore = false;
+    _paginationError = false;
+    if (_scrollController.hasClients) _scrollController.jumpTo(0);
+    _future = _fetchPage(1).then((result) {
+      if (mounted && version == _requestVersion) {
+        _slips
+          ..clear()
+          ..addAll(result.slips);
+        _hasNextPage = result.hasNextPage;
+      }
+      return result;
+    });
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients || _paginationError) return;
+    if (_scrollController.position.extentAfter <= 200) _loadMore();
+  }
+
+  Future<void> _loadMore() async {
+    if (!_hasNextPage || _isLoadingMore) return;
+    final version = _requestVersion;
+    setState(() {
+      _isLoadingMore = true;
+      _paginationError = false;
+    });
+    try {
+      final result = await _fetchPage(_page + 1);
+      if (!mounted || version != _requestVersion) return;
+      setState(() {
+        final ids = _slips.map((slip) => slip.id).toSet();
+        _slips.addAll(result.slips.where((slip) => ids.add(slip.id)));
+        _page++;
+        _hasNextPage = result.hasNextPage;
+        _isLoadingMore = false;
+      });
+    } catch (_) {
+      if (!mounted || version != _requestVersion) return;
+      setState(() {
+        _isLoadingMore = false;
+        _paginationError = true;
+      });
     }
   }
 
@@ -79,14 +142,6 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
     setState(() {
       _selectedStatus = status;
       _page = 1;
-      _load();
-    });
-  }
-
-  void _changePage(int nextPage) {
-    if (nextPage < 1) return;
-    setState(() {
-      _page = nextPage;
       _load();
     });
   }
@@ -119,10 +174,7 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
           decoration: const BoxDecoration(
             color: Colors.white,
             border: Border(
-              bottom: BorderSide(
-                color: Color(0xFFE2E8F0),
-                width: 1,
-              ),
+              bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
             ),
           ),
           child: SingleChildScrollView(
@@ -140,8 +192,12 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
                       filter.label,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isSelected ? Colors.white : const Color(0xFF334155),
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFF334155),
                       ),
                     ),
                     selected: isSelected,
@@ -171,8 +227,9 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
               if (snapshot.connectionState != ConnectionState.done) {
                 return const Center(
                   child: CircularProgressIndicator(
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFF0D9488),
+                    ),
                   ),
                 );
               }
@@ -237,7 +294,7 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
                     child: RefreshIndicator(
                       color: const Color(0xFF0D9488),
                       onRefresh: () => _refresh(),
-                      child: result.slips.isEmpty
+                      child: _slips.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
                               children: const [
@@ -260,11 +317,15 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
                               ],
                             )
                           : ListView.builder(
+                              controller: _scrollController,
                               physics: const AlwaysScrollableScrollPhysics(),
                               padding: const EdgeInsets.all(12),
-                              itemCount: result.slips.length,
+                              itemCount: _slips.length + 1,
                               itemBuilder: (context, index) {
-                                final slip = result.slips[index];
+                                if (index == _slips.length) {
+                                  return _buildPaginationFooter();
+                                }
+                                final slip = _slips[index];
 
                                 return BorrowingSlipCard(
                                   slip: slip,
@@ -275,48 +336,92 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
                             ),
                     ),
                   ),
-                  if (result.totalPages > 1)
-                    Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            tooltip: 'Trang trước',
-                            onPressed: _page <= 1
-                                ? null
-                                : () => _changePage(_page - 1),
-                            icon: const Icon(
-                              Icons.chevron_left,
-                              color: Color(0xFF0F172A),
-                            ),
-                          ),
-                          Text(
-                            'Trang $_page/${result.totalPages}',
-                            style: const TextStyle(
-                              color: Color(0xFF64748B),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: 'Trang sau',
-                            onPressed: result.hasNextPage
-                                ? () => _changePage(_page + 1)
-                                : null,
-                            icon: const Icon(
-                              Icons.chevron_right,
-                              color: Color(0xFF0F172A),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                 ],
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPaginationFooter() {
+    if (_isLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Color(0xFF0D9488),
+              ),
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Đang tải thêm...',
+              style: TextStyle(fontSize: 13, color: Color(0xFF0D9488)),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_paginationError) {
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF2F2),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFFECACA)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline, size: 16, color: Color(0xFFDC2626)),
+            const SizedBox(width: 6),
+            const Expanded(
+              child: Text(
+                'Không thể tải thêm phiếu mượn.',
+                style: TextStyle(fontSize: 12, color: Color(0xFFDC2626)),
+              ),
+            ),
+            TextButton(
+              onPressed: _loadMore,
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFFDC2626),
+              ),
+              child: const Text('Thử lại'),
+            ),
+          ],
+        ),
+      );
+    }
+    if (!_hasNextPage) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          children: [
+            Expanded(child: Divider(color: Color(0xFFE2E8F0))),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Đã hiển thị tất cả phiếu mượn',
+                style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+              ),
+            ),
+            Expanded(child: Divider(color: Color(0xFFE2E8F0))),
+          ],
+        ),
+      );
+    }
+    return Center(
+      child: TextButton(
+        onPressed: _loadMore,
+        child: const Text('Tải thêm phiếu mượn'),
+      ),
     );
   }
 }
