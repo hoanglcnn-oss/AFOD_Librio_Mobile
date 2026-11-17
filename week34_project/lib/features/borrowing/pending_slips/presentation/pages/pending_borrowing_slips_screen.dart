@@ -119,28 +119,41 @@ class _PendingBorrowingSlipsScreenState
                   Expanded(
                     child: Text(
                       'Đang chờ: ${result.totalItems} phiếu',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
                     ),
                   ),
                   IconButton(
                     tooltip: 'Tải lại',
                     onPressed: () => _refresh(),
-                    icon: const Icon(Icons.refresh),
+                    icon: const Icon(Icons.refresh, color: Color(0xFF0F172A)),
                   ),
                 ],
               ),
             ),
             Expanded(
               child: RefreshIndicator(
+                color: const Color(0xFF0D9488),
                 onRefresh: () => _refresh(),
                 child: result.slips.isEmpty
                     ? ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: const [
                           SizedBox(height: 100),
-                          Icon(Icons.task_alt, size: 52),
+                          Icon(Icons.task_alt, size: 52, color: Color(0xFF94A3B8)),
                           SizedBox(height: 16),
-                          Center(child: Text('Không có phiếu chờ duyệt')),
+                          Center(
+                            child: Text(
+                              'Không có phiếu chờ duyệt',
+                              style: TextStyle(
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                         ],
                       )
                     : ListView.builder(
@@ -160,11 +173,27 @@ class _PendingBorrowingSlipsScreenState
                               runSpacing: 8,
                               children: [
                                 OutlinedButton(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFFDC2626),
+                                    side: const BorderSide(
+                                      color: Color(0xFFFECACA),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
                                   onPressed: () =>
                                       _processSlip(slip, approve: false),
                                   child: const Text('Từ chối'),
                                 ),
                                 FilledButton.icon(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: const Color(0xFF0F172A),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
                                   onPressed: () =>
                                       _processSlip(slip, approve: true),
                                   icon: const Icon(Icons.check, size: 18),
@@ -188,15 +217,21 @@ class _PendingBorrowingSlipsScreenState
                       onPressed: _page <= 1
                           ? null
                           : () => _changePage(_page - 1),
-                      icon: const Icon(Icons.chevron_left),
+                      icon: const Icon(Icons.chevron_left, color: Color(0xFF0F172A)),
                     ),
-                    Text('Trang $_page/${result.totalPages}'),
+                    Text(
+                      'Trang $_page/${result.totalPages}',
+                      style: const TextStyle(
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     IconButton(
                       tooltip: 'Trang sau',
                       onPressed: result.hasNextPage
                           ? () => _changePage(_page + 1)
                           : null,
-                      icon: const Icon(Icons.chevron_right),
+                      icon: const Icon(Icons.chevron_right, color: Color(0xFF0F172A)),
                     ),
                   ],
                 ),

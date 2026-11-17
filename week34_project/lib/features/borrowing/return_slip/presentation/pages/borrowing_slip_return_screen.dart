@@ -91,67 +91,123 @@ class _ReturnContentState extends State<_ReturnContent> {
         final submitting = state is ReturnSlipSubmitting;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Chọn sách trả')),
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: AppBar(
+            title: const Text(
+              'Chọn sách trả',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+            backgroundColor: Colors.white,
+            foregroundColor: const Color(0xFF0F172A),
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            bottom: const PreferredSize(
+              preferredSize: Size.fromHeight(1.0),
+              child: Divider(
+                height: 1,
+                thickness: 1,
+                color: Color(0xFFE2E8F0),
+              ),
+            ),
+          ),
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
               Text(
                 widget.slip.slipNumber,
-                style: Theme.of(context).textTheme.titleLarge,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
               ),
               const SizedBox(height: 8),
-              const Text('Chọn những cuốn thực tế muốn trả trong đợt này.'),
-              const SizedBox(height: 8),
+              const Text(
+                'Chọn những cuốn thực tế muốn trả trong đợt này.',
+                style: TextStyle(color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 4),
               const Text(
                 'Chỉ xử lý sách còn đang mượn. '
                 'Tình trạng trả: GOOD. '
                 'Tiền phạt chưa được đánh dấu là đã thanh toán.',
+                style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
               ),
               const SizedBox(height: 16),
 
               for (final item in available)
                 Card(
+                  elevation: 0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       children: [
                         CheckboxListTile(
+                          activeColor: const Color(0xFF0D9488),
                           value: _quantities.containsKey(item.id),
                           onChanged: submitting
                               ? null
                               : (value) => _toggle(item, value ?? false),
-                          title: Text(item.bookTitle),
+                          title: Text(
+                            item.bookTitle,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
                           subtitle: Text(
                             'Chưa trả: ${item.remainingQuantity} cuốn',
+                            style: const TextStyle(color: Color(0xFF64748B)),
                           ),
                         ),
                         if (_quantities.containsKey(item.id))
-                          Row(
-                            children: [
-                              const Text('Số lượng trả:'),
-                              const Spacer(),
-                              DropdownButton<int>(
-                                value: _quantities[item.id],
-                                onChanged: submitting
-                                    ? null
-                                    : (value) {
-                                        if (value != null) {
-                                          _changeQuantity(item.id, value);
-                                        }
-                                      },
-                                items: [
-                                  for (
-                                    int quantity = 1;
-                                    quantity <= item.remainingQuantity;
-                                    quantity++
-                                  )
-                                    DropdownMenuItem(
-                                      value: quantity,
-                                      child: Text('$quantity'),
-                                    ),
-                                ],
-                              ),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Số lượng trả:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF334155),
+                                  ),
+                                ),
+                                const Spacer(),
+                                DropdownButton<int>(
+                                  value: _quantities[item.id],
+                                  onChanged: submitting
+                                      ? null
+                                      : (value) {
+                                          if (value != null) {
+                                            _changeQuantity(item.id, value);
+                                          }
+                                        },
+                                  items: [
+                                    for (
+                                      int quantity = 1;
+                                      quantity <= item.remainingQuantity;
+                                      quantity++
+                                    )
+                                      DropdownMenuItem(
+                                        value: quantity,
+                                        child: Text('$quantity'),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                       ],
                     ),
@@ -162,24 +218,39 @@ class _ReturnContentState extends State<_ReturnContent> {
                 const SizedBox(height: 12),
                 Text(
                   state.message,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  style: const TextStyle(color: Color(0xFFDC2626)),
                 ),
               ],
 
               const SizedBox(height: 24),
 
               FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 onPressed: submitting || _quantities.isEmpty ? null : _submit,
                 child: submitting
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Text(
                         'Xác nhận trả '
                         '${_quantities.values.fold<int>(0, (a, b) => a + b)}'
                         ' cuốn',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
               ),
             ],

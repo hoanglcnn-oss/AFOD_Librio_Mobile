@@ -59,13 +59,13 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD8E4F1),
+                      color: const Color(0xFFF0FDFA),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
                       Icons.bookmark_add_outlined,
                       size: 18,
-                      color: Color(0xFF1A488E),
+                      color: Color(0xFF0D9488),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -75,13 +75,13 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF17263D),
+                        color: Color(0xFF0F172A),
                       ),
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 20),
-                    color: const Color(0xFF566B87),
+                    color: const Color(0xFF64748B),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     onPressed: () => Navigator.of(context).pop(),
@@ -95,7 +95,7 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
                 'Bạn có muốn đặt trước cuốn sách "${widget.book.title}"?',
                 style: const TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF17263D),
+                  color: Color(0xFF0F172A),
                   height: 1.4,
                 ),
               ),
@@ -105,9 +105,9 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F4F9),
+                  color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFCDD8E5), width: 1),
+                  border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,7 +117,7 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF566B87),
+                        color: Color(0xFF64748B),
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -127,7 +127,7 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF17263D),
+                        color: Color(0xFF0F172A),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -138,7 +138,7 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF1A488E),
+                        color: Color(0xFF0D9488),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -152,28 +152,28 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
               TextField(
                 controller: _notesController,
                 maxLines: 3,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF17263D)),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
                 decoration: InputDecoration(
                   labelText: 'Ghi chú (tùy chọn)',
                   labelStyle: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF566B87),
+                    color: Color(0xFF64748B),
                   ),
                   hintText: 'Nhập ghi chú cho thư viện...',
                   hintStyle: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF9AA8BC),
+                    color: Color(0xFF94A3B8),
                   ),
                   filled: true,
                   fillColor: Colors.white,
                   contentPadding: const EdgeInsets.all(12),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFFCDD8E5), width: 1),
+                    borderSide: const BorderSide(color: Color(0xFFCBD5E1), width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF1A488E), width: 1.5),
+                    borderSide: const BorderSide(color: Color(0xFF0D9488), width: 1.5),
                   ),
                 ),
               ),
@@ -188,11 +188,11 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFCDD8E5), width: 1),
+                          side: const BorderSide(color: Color(0xFFCBD5E1), width: 1),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          foregroundColor: const Color(0xFF566B87),
+                          foregroundColor: const Color(0xFF64748B),
                         ),
                         child: const Text(
                           'Hủy',
@@ -218,7 +218,7 @@ class _BookReserveDialogState extends State<BookReserveDialog> {
                           );
                         },
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF00316E),
+                          backgroundColor: const Color(0xFF0F172A),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),

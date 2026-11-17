@@ -44,14 +44,34 @@ class _MemberMainScreenState extends State<MemberMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: _selectedIndex == 0
           ? null
           : AppBar(
-              title: Text(switch (_selectedIndex) {
-                1 => 'Sách đang mượn',
-                2 => 'Tài khoản',
-                _ => 'Librio Mobile',
-              }),
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF0F172A),
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              bottom: const PreferredSize(
+                preferredSize: Size.fromHeight(1.0),
+                child: Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: Color(0xFFE2E8F0),
+                ),
+              ),
+              title: Text(
+                switch (_selectedIndex) {
+                  1 => 'Sách đang mượn',
+                  2 => 'Tài khoản',
+                  _ => 'Librio Mobile',
+                },
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
             ),
       body: IndexedStack(
         index: _selectedIndex,
@@ -84,39 +104,51 @@ class _MemberMainScreenState extends State<MemberMainScreen> {
         ],
       ),
 
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _selectedIndex = index;
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          ),
+        ),
+        child: NavigationBar(
+          selectedIndex: _selectedIndex,
+          backgroundColor: Colors.white,
+          indicatorColor: const Color(0xFFF0FDFA),
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          onDestinationSelected: (index) {
+            setState(() {
+              _selectedIndex = index;
 
-            if (index == 1) {
-              _hasOpenedBorrowings = true;
+              if (index == 1) {
+                _hasOpenedBorrowings = true;
 
-              if (_borrowingsNeedsRefresh) {
-                _borrowingsRefreshVersion++;
-                _borrowingsNeedsRefresh = false;
+                if (_borrowingsNeedsRefresh) {
+                  _borrowingsRefreshVersion++;
+                  _borrowingsNeedsRefresh = false;
+                }
               }
-            }
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Sách',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bookmark_border),
-            selectedIcon: Icon(Icons.bookmark),
-            label: 'Đang mượn',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Tài khoản',
-          ),
-        ],
+            });
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.menu_book_outlined),
+              selectedIcon: Icon(Icons.menu_book, color: Color(0xFF0D9488)),
+              label: 'Sách',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.bookmark_border),
+              selectedIcon: Icon(Icons.bookmark, color: Color(0xFF0D9488)),
+              label: 'Đang mượn',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person, color: Color(0xFF0D9488)),
+              label: 'Tài khoản',
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -190,8 +222,26 @@ class _MemberBorrowingsTabState extends State<_MemberBorrowingsTab> {
                   Expanded(
                     child: OutlinedButton.icon(
                       key: const ValueKey('my_reservations_entry_button'),
-                      icon: const Icon(Icons.bookmark_outline, size: 18),
-                      label: const Text('Đặt trước của tôi'),
+                      icon: const Icon(
+                        Icons.bookmark_outline,
+                        size: 18,
+                        color: Color(0xFF0D9488),
+                      ),
+                      label: const Text(
+                        'Đặt trước của tôi',
+                        style: TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF0F172A),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(

@@ -34,14 +34,17 @@ class SlipRenewalSection extends StatelessWidget {
             const SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+              ),
             ),
             const SizedBox(width: 8),
             Text(
               renewState is RenewSlipChecking
                   ? 'Đang kiểm tra điều kiện gia hạn...'
                   : 'Đang xử lý gia hạn...',
-              style: Theme.of(context).textTheme.bodySmall,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
             ),
           ],
         ),
@@ -53,6 +56,13 @@ class SlipRenewalSection extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: FilledButton.icon(
           onPressed: onRenewPressed,
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF0F172A),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
           icon: const Icon(Icons.update, size: 18),
           label: const Text('Gia hạn'),
         ),
@@ -71,6 +81,11 @@ class SlipRenewalSection extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: FilledButton.icon(
               onPressed: null,
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               icon: const Icon(Icons.update, size: 18),
               label: const Text('Gia hạn'),
             ),
@@ -78,9 +93,10 @@ class SlipRenewalSection extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             reason,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.error,
+            style: const TextStyle(
+              color: Color(0xFFDC2626),
               fontSize: 12,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -95,14 +111,21 @@ class SlipRenewalSection extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: OutlinedButton.icon(
             onPressed: onCheckEligibility,
-            icon: const Icon(Icons.search, size: 18),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF0F172A),
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            icon: const Icon(Icons.search, size: 18, color: Color(0xFF0D9488)),
             label: const Text('Kiểm tra gia hạn'),
           ),
         ),
         const SizedBox(height: 4),
-        Text(
+        const Text(
           'Chưa có thông tin gia hạn. Bấm để kiểm tra điều kiện.',
-          style: Theme.of(context).textTheme.bodySmall,
+          style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
         ),
       ],
     );

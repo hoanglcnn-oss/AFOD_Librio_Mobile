@@ -412,14 +412,145 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Đã gửi phiếu mượn!'), findsOneWidget);
-        expect(find.text('Xem chi tiết phiếu mượn'), findsOneWidget);
-        expect(find.text('Quay về danh sách sách'), findsOneWidget);
+        expect(find.text('Xem chi tiết'), findsOneWidget);
+        expect(find.text('Đóng'), findsOneWidget);
+        expect(find.byType(Dialog), findsOneWidget);
+        expect(find.text('Phiếu mượn của tôi'), findsOneWidget);
+        expect(
+          tester.getCenter(find.text('Đóng')).dy,
+          tester.getCenter(find.text('Xem chi tiết')).dy,
+        );
 
         // Bấm "Xem chi tiết phiếu mượn" -> pushReplacement mở BorrowingSlipDetailScreen
-        await tester.tap(find.text('Xem chi tiết phiếu mượn'));
+        await tester.tap(find.text('Xem chi tiết'));
         await tester.pumpAndSettle();
 
         expect(find.byType(BorrowingSlipDetailScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Loại trừ sách (Soft Delete) | Bấm thùng rác loại trừ sách -> Tổng số sách giảm và chỉ gửi sách còn lại',
+      (tester) async {
+        setLargeScreen(tester);
+
+        membersRepository.fakeDebtSummary = const MemberDebtSummary(
+          maxBorrowLimit: 5,
+          currentBorrowedCount: 0,
+          remainingBorrowLimit: 5,
+          canBorrow: true,
+        );
+
+        await tester.pumpWidget(createApp());
+        await tester.pumpAndSettle();
+
+        // Ban đầu có 2 sách
+        expect(find.text('2/2 cuốn'), findsOneWidget);
+        expect(find.text('2 cuốn đang chọn'), findsOneWidget);
+        expect(find.text('Tổng cộng: 2 cuốn'), findsOneWidget);
+
+        // Bấm nút thùng rác của cuốn đầu tiên (Clean Code)
+        await tester.tap(find.byIcon(Icons.delete_outline).first);
+        await tester.pumpAndSettle();
+
+        // Cuốn 1 bị loại trừ
+        expect(find.text('Đã loại trừ khỏi phiếu mượn'), findsOneWidget);
+        expect(find.text('1/2 cuốn'), findsOneWidget);
+        expect(find.text('1 cuốn đang chọn'), findsOneWidget);
+        expect(find.text('Tổng cộng: 1 cuốn'), findsOneWidget);
+
+        // Gửi phiếu
+        await tester.tap(find.widgetWithText(FilledButton, 'Gửi phiếu mượn'));
+        await tester.pumpAndSettle();
+
+        expect(borrowingSlipsRepository.createSlipCallCount, 1);
+        final request = borrowingSlipsRepository.createSlipRequests.first;
+        expect(request.items.length, 1);
+        expect(request.items.first.bookId, 'book-02'); // Chỉ còn book-02 (Pragmatic Programmer)
+      },
+    );
+
+    testWidgets(
+      'Loại trừ tất cả sách | Disable nút Gửi phiếu và báo lý do -> Khôi phục sách thì nút enabled lại',
+      (tester) async {
+        setLargeScreen(tester);
+
+        membersRepository.fakeDebtSummary = const MemberDebtSummary(
+          maxBorrowLimit: 5,
+          currentBorrowedCount: 0,
+          remainingBorrowLimit: 5,
+          canBorrow: true,
+        );
+
+        await tester.pumpWidget(createApp());
+        await tester.pumpAndSettle();
+
+        // Loại trừ cuốn 1
+        await tester.tap(find.byIcon(Icons.delete_outline).first);
+        await tester.pumpAndSettle();
+
+        // Loại trừ cuốn 2
+        await tester.tap(find.byIcon(Icons.delete_outline).first);
+        await tester.pumpAndSettle();
+
+        expect(find.text('0/2 cuốn'), findsOneWidget);
+        expect(find.text('0 cuốn đang chọn'), findsOneWidget);
+        expect(find.text('Tổng cộng: 0 cuốn'), findsOneWidget);
+        expect(
+          find.text('Chưa chọn sách nào để mượn (đã loại trừ tất cả)'),
+          findsOneWidget,
+        );
+
+        var submitButton = tester.widget<FilledButton>(
+          find.widgetWithText(FilledButton, 'Gửi phiếu mượn'),
+        );
+        expect(submitButton.onPressed, isNull);
+
+        // Khôi phục cuốn thứ 1
+        await tester.tap(find.text('Khôi phục').first);
+        await tester.pumpAndSettle();
+
+        expect(find.text('1/2 cuốn'), findsOneWidget);
+        expect(find.text('1 cuốn đang chọn'), findsOneWidget);
+        expect(find.text('Tổng cộng: 1 cuốn'), findsOneWidget);
+
+        submitButton = tester.widget<FilledButton>(
+          find.widgetWithText(FilledButton, 'Gửi phiếu mượn'),
+        );
+        expect(submitButton.onPressed, isNotNull);
+      },
+    );
+
+    testWidgets(
+      'Chạm vào thẻ Dự kiến trả sách | Mở DatePicker dialog chọn ngày',
+      (tester) async {
+        setLargeScreen(tester);
+
+        membersRepository.fakeDebtSummary = const MemberDebtSummary(
+          maxBorrowLimit: 5,
+          currentBorrowedCount: 0,
+          remainingBorrowLimit: 5,
+          canBorrow: true,
+        );
+
+        await tester.pumpWidget(createApp());
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('Dự kiến trả sách:'), findsOneWidget);
+
+        // Chạm vào thẻ ngày trả
+        await tester.tap(find.textContaining('Dự kiến trả sách:'));
+        await tester.pumpAndSettle();
+
+        // DatePicker dialog xuất hiện
+        expect(find.byType(DatePickerDialog), findsOneWidget);
+        expect(find.text('Chọn ngày hẹn trả sách'), findsOneWidget);
+
+        // Bấm Hủy đóng dialog
+        await tester.tap(find.text('Hủy'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(DatePickerDialog), findsNothing);
       },
     );
   });

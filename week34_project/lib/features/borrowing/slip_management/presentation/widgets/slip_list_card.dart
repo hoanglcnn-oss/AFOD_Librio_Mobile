@@ -51,6 +51,15 @@ class BorrowingSlipCard extends StatelessWidget {
               );
 
     return Card(
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: overdue ? const Color(0xFFFECACA) : const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+      ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -58,44 +67,64 @@ class BorrowingSlipCard extends StatelessWidget {
         children: [
           ListTile(
             onTap: onTap,
-            title: Text(slip.slipNumber),
+            title: Text(
+              slip.slipNumber,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A),
+              ),
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (showMember && _resolveMemberDisplay().isNotEmpty)
-                  Text('Độc giả: ${_resolveMemberDisplay()}'),
+                  Text(
+                    'Độc giả: ${_resolveMemberDisplay()}',
+                    style: const TextStyle(color: Color(0xFF334155)),
+                  ),
                 Text(
                   'Trạng thái: '
                   '${BorrowingSlipUiHelper.slipStatus(slip.status)}',
+                  style: const TextStyle(color: Color(0xFF64748B)),
                 ),
                 Text(
                   'Hạn trả: '
                   '${BorrowingSlipUiHelper.formatDate(slip.dueDate)}',
+                  style: const TextStyle(color: Color(0xFF64748B)),
                 ),
                 Text(
                   totalCopies > 0
                       ? '$totalCopies cuốn (${slip.items.length} đầu sách)'
                       : '${slip.items.length} đầu sách',
+                  style: const TextStyle(color: Color(0xFF64748B)),
                 ),
                 if (overdue)
-                  Text(
+                  const Text(
                     'Có sách quá hạn',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
+                      color: Color(0xFFDC2626),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 if (BorrowingSlipUiHelper.hasUnpaidFine(slip))
                   Text(
                     'Chưa thanh toán: '
                     '${BorrowingSlipUiHelper.formatMoney(slip.totalFine)}',
+                    style: const TextStyle(
+                      color: Color(0xFFD97706),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
               ],
             ),
             isThreeLine: true,
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const Icon(
+              Icons.chevron_right,
+              color: Color(0xFF94A3B8),
+            ),
           ),
           if (actions != null) ...[
-            const Divider(height: 1),
+            const Divider(height: 1, color: Color(0xFFE2E8F0)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: actions!,

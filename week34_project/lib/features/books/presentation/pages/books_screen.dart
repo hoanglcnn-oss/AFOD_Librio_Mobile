@@ -120,7 +120,7 @@ class _BooksScreenState extends State<BooksScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF7FAFD),
+      color: const Color(0xFFF8FAFC),
       child: SafeArea(
         bottom: false,
         child: Column(
@@ -140,7 +140,7 @@ class _BooksScreenState extends State<BooksScreen> {
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF17263D),
+                        color: Color(0xFF0F172A),
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -151,8 +151,8 @@ class _BooksScreenState extends State<BooksScreen> {
                       onPressed: _toggleSelectionMode,
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF1A488E),
-                        side: const BorderSide(color: Color(0xFFCDD8E5)),
+                        foregroundColor: const Color(0xFF0D9488),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -167,14 +167,14 @@ class _BooksScreenState extends State<BooksScreen> {
                       icon: const Icon(
                         Icons.checklist,
                         size: 20,
-                        color: Color(0xFF1A488E),
+                        color: Color(0xFF0D9488),
                       ),
                       label: const Text(
                         'Chọn nhiều',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A488E),
+                          color: Color(0xFF0D9488),
                         ),
                       ),
                     )
@@ -183,8 +183,8 @@ class _BooksScreenState extends State<BooksScreen> {
                       onPressed: _toggleSelectionMode,
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF566B87),
-                        side: const BorderSide(color: Color(0xFFCDD8E5)),
+                        foregroundColor: const Color(0xFF64748B),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -197,14 +197,14 @@ class _BooksScreenState extends State<BooksScreen> {
                       icon: const Icon(
                         Icons.close,
                         size: 20,
-                        color: Color(0xFF566B87),
+                        color: Color(0xFF64748B),
                       ),
                       label: const Text(
                         'Hủy',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF566B87),
+                          color: Color(0xFF64748B),
                         ),
                       ),
                     ),
@@ -247,7 +247,7 @@ class _BooksScreenState extends State<BooksScreen> {
                         TextSpan(
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF566B87),
+                            color: Color(0xFF64748B),
                           ),
                           children: [
                             const TextSpan(text: 'Hiển thị '),
@@ -256,7 +256,7 @@ class _BooksScreenState extends State<BooksScreen> {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF17263D),
+                                color: Color(0xFF0F172A),
                               ),
                             ),
                             const TextSpan(text: ' sách'),
@@ -289,6 +289,14 @@ class _BooksScreenState extends State<BooksScreen> {
                       onPressed: _selectedBooks.isEmpty
                           ? null
                           : _confirmSelection,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F172A),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                       icon: const Icon(Icons.arrow_forward),
                       label: Text('Tiếp tục (${_selectedBooks.length} sách)'),
                     ),
@@ -307,7 +315,7 @@ class _BooksScreenState extends State<BooksScreen> {
     if (state is BooksInitial || state is BooksLoading) {
       return const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A488E)),
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
         ),
       );
     }
@@ -320,11 +328,18 @@ class _BooksScreenState extends State<BooksScreen> {
           children: [
             Text(
               state.message,
-              style: const TextStyle(color: Color(0xFF17263D)),
+              style: const TextStyle(color: Color(0xFF0F172A)),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: _submitSearch,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F172A),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               child: const Text('Thử lại'),
             ),
           ],
@@ -341,7 +356,7 @@ class _BooksScreenState extends State<BooksScreen> {
         return const Center(
           child: Text(
             'Không tìm thấy sách phù hợp',
-            style: TextStyle(color: Color(0xFF566B87)),
+            style: TextStyle(color: Color(0xFF64748B)),
           ),
         );
       }
@@ -422,7 +437,7 @@ class _BooksScreenState extends State<BooksScreen> {
               height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A488E)),
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
               ),
             ),
             SizedBox(width: 8),
@@ -431,7 +446,7 @@ class _BooksScreenState extends State<BooksScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF1A488E),
+                color: Color(0xFF0D9488),
               ),
             ),
           ],
@@ -445,20 +460,20 @@ class _BooksScreenState extends State<BooksScreen> {
         margin: const EdgeInsets.symmetric(vertical: 8),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFDAD6),
+          color: const Color(0xFFFEF2F2),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: const Color(0xFFFECACA)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.error_outline, size: 16, color: Color(0xFFBA1A1A)),
+            const Icon(Icons.error_outline, size: 16, color: Color(0xFFDC2626)),
             const SizedBox(width: 6),
             const Expanded(
               child: Text(
                 'Không thể tải thêm sách.',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Color(0xFFBA1A1A),
+                  color: Color(0xFFDC2626),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -466,8 +481,8 @@ class _BooksScreenState extends State<BooksScreen> {
             TextButton(
               style: TextButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF1A488E),
-                side: const BorderSide(color: Color(0xFFCDD8E5)),
+                foregroundColor: const Color(0xFFDC2626),
+                side: const BorderSide(color: Color(0xFFFECACA)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6),
                 ),
@@ -486,7 +501,7 @@ class _BooksScreenState extends State<BooksScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A488E),
+                  color: Color(0xFFDC2626),
                 ),
               ),
             ),
@@ -501,7 +516,7 @@ class _BooksScreenState extends State<BooksScreen> {
         padding: EdgeInsets.symmetric(vertical: 16),
         child: Row(
           children: [
-            Expanded(child: Divider(color: Color(0xFFCDD8E5), thickness: 1)),
+            Expanded(child: Divider(color: Color(0xFFE2E8F0), thickness: 1)),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 12),
               child: Text(
@@ -509,11 +524,11 @@ class _BooksScreenState extends State<BooksScreen> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF566B87),
+                  color: Color(0xFF64748B),
                 ),
               ),
             ),
-            Expanded(child: Divider(color: Color(0xFFCDD8E5), thickness: 1)),
+            Expanded(child: Divider(color: Color(0xFFE2E8F0), thickness: 1)),
           ],
         ),
       );

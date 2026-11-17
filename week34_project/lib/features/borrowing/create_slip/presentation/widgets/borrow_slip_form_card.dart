@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../../../books/data/models/book.dart';
+import '../../../shared/widgets/ticket_notch_divider.dart';
+import 'borrow_duration_picker.dart';
+import 'borrow_selected_book_card.dart';
 
 class BorrowSlipFormCard extends StatelessWidget {
   final List<Book> books;
   final Map<String, int> quantities;
+  final Set<String> excludedBookIds;
   final int days;
   final TextEditingController daysController;
   final bool isDaysValid;
@@ -15,13 +19,14 @@ class BorrowSlipFormCard extends StatelessWidget {
   final Widget debtSummaryCard;
   final void Function(String bookId)? onDecreaseQuantity;
   final void Function(String bookId)? onIncreaseQuantity;
+  final void Function(String bookId)? onToggleExclude;
   final void Function(int days)? onDaysChanged;
-  final VoidCallback? onSubmit;
 
   const BorrowSlipFormCard({
     super.key,
     required this.books,
     required this.quantities,
+    required this.excludedBookIds,
     required this.days,
     required this.daysController,
     required this.isDaysValid,
@@ -32,141 +37,211 @@ class BorrowSlipFormCard extends StatelessWidget {
     this.errorMessage,
     this.onDecreaseQuantity,
     this.onIncreaseQuantity,
+    this.onToggleExclude,
     this.onDaysChanged,
-    this.onSubmit,
   });
 
   @override
   Widget build(BuildContext context) {
+    const primaryNavy = Color(0xFF0F172A);
+    const borderHairline = Color(0xFFE2E8F0);
+    const canvasBg = Color(0xFFF8FAFC);
+    const cardBorderWidth = 1.0;
+
+    final activeBooksCount = books
+        .where((b) => !excludedBookIds.contains(b.id))
+        .length;
+
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
+        constraints: const BoxConstraints(maxWidth: 520),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
-            Text('Sách đã chọn', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-
-            for (final book in books)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        book.title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text('Còn ${book.copiesAvailable} cuốn'),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Text('Số lượng:'),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: submitting || (quantities[book.id] ?? 1) <= 1
-                                ? null
-                                : () => onDecreaseQuantity?.call(book.id),
-                            icon: const Icon(Icons.remove_circle_outline),
-                          ),
-                          Text('${quantities[book.id] ?? 1}'),
-                          IconButton(
-                            onPressed: submitting ||
-                                    (quantities[book.id] ?? 1) >=
-                                        book.copiesAvailable ||
-                                    (maxBorrowLimit != null &&
-                                        maxBorrowLimit! > 0 &&
-                                        (quantities[book.id] ?? 1) >=
-                                            maxBorrowLimit!)
-                                ? null
-                                : () => onIncreaseQuantity?.call(book.id),
-                            icon: const Icon(Icons.add_circle_outline),
-                          ),
-                        ],
-                      ),
-                    ],
+            // ========================================================
+            // KHUNG THẺ VÉ MƯỢN DỰ THẢO (DRAFT TICKET PASS)
+            // ========================================================
+            Container(
+              decoration: const BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x0A0F172A),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
                   ),
-                ),
+                ],
               ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ========================================================
+                  // 1. NỬA TRÊN CỦA VÉ: DANH SÁCH SÁCH ĐÃ CHỌN
+                  // ========================================================
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      border: Border(
+                        top: BorderSide(
+                          color: borderHairline,
+                          width: cardBorderWidth,
+                        ),
+                        left: BorderSide(
+                          color: borderHairline,
+                          width: cardBorderWidth,
+                        ),
+                        right: BorderSide(
+                          color: borderHairline,
+                          width: cardBorderWidth,
+                        ),
+                      ),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Tiêu đề phần Sách đã chọn
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.auto_stories_outlined,
+                              size: 18,
+                              color: primaryNavy,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Sách đã chọn',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: primaryNavy,
+                              ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: borderHairline),
+                              ),
+                              child: Text(
+                                '$activeBooksCount/${books.length} cuốn',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                  color: primaryNavy,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Danh sách từng cuốn sách được chọn
+                        for (int i = 0; i < books.length; i++)
+                          BorrowSelectedBookCard(
+                            book: books[i],
+                            quantity: quantities[books[i].id] ?? 1,
+                            maxBorrowLimit: maxBorrowLimit,
+                            isExcluded: excludedBookIds.contains(books[i].id),
+                            submitting: submitting,
+                            marginBottom: i == books.length - 1 ? 6.0 : 10.0,
+                            onDecreaseQuantity: () =>
+                                onDecreaseQuantity?.call(books[i].id),
+                            onIncreaseQuantity: () =>
+                                onIncreaseQuantity?.call(books[i].id),
+                            onToggleExclude: () =>
+                                onToggleExclude?.call(books[i].id),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // ========================================================
+                  // 2. RÃNH XÉ VÉ Ở GIỮA: 2 BÁN NGUYỆT ĐỨT THỰC SỰ + NÉT ĐỨT
+                  // ========================================================
+                  const TicketPerforationRow(
+                    backgroundColor: canvasBg,
+                    ticketColor: Colors.white,
+                    borderColor: borderHairline,
+                    borderWidth: cardBorderWidth,
+                    height: 24,
+                  ),
+
+                  // ========================================================
+                  // 3. NỬA DƯỚI CỦA VÉ: THIẾT LẬP THỜI HẠN MƯỢN
+                  // ========================================================
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
+                      ),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: borderHairline,
+                          width: cardBorderWidth,
+                        ),
+                        left: BorderSide(
+                          color: borderHairline,
+                          width: cardBorderWidth,
+                        ),
+                        right: BorderSide(
+                          color: borderHairline,
+                          width: cardBorderWidth,
+                        ),
+                      ),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Widget chọn thời hạn mượn (nhúng phẳng vào nửa dưới của vé)
+                        BorrowDurationPicker(
+                          days: days,
+                          daysController: daysController,
+                          isDaysValid: isDaysValid,
+                          submitting: submitting,
+                          isEmbedded: true,
+                          onDaysChanged: onDaysChanged,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
             const SizedBox(height: 16),
 
-            // Card Hạn mức mượn sách
+            // Thẻ hạn mức độc giả (tích hợp lưu ý xét duyệt)
             debtSummaryCard,
-
-            const SizedBox(height: 20),
-
-            Text(
-              'Thời hạn mượn',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              controller: daysController,
-              enabled: !submitting,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Số ngày mượn',
-                hintText: 'Nhập từ 1 đến 30 ngày',
-                suffixText: 'ngày',
-                border: const OutlineInputBorder(),
-                errorText: !isDaysValid
-                    ? 'Thời hạn mượn phải từ 1 đến 30 ngày'
-                    : null,
-              ),
-              onChanged: (value) {
-                final parsed = int.tryParse(value);
-                onDaysChanged?.call(parsed ?? 0);
-              },
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [1, 3, 7, 14, 30].map((d) {
-                return ChoiceChip(
-                  label: Text('$d ngày'),
-                  selected: days == d,
-                  onSelected: submitting
-                      ? null
-                      : (selected) {
-                          if (selected) {
-                            daysController.text = '$d';
-                            onDaysChanged?.call(d);
-                          }
-                        },
-                );
-              }).toList(),
-            ),
-
-            const SizedBox(height: 16),
-
-            const Text(
-              'Phiếu sẽ được gửi để chờ duyệt. '
-              'Sách chưa được mượn ngay sau khi gửi.',
-            ),
 
             if (errorMessage != null) ...[
               const SizedBox(height: 12),
-              Text(
-                errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFECACA)),
+                ),
+                child: Text(
+                  errorMessage!,
+                  style: const TextStyle(color: Color(0xFFDC2626)),
+                ),
               ),
             ],
 
             const SizedBox(height: 24),
-
-            FilledButton(
-              onPressed: submitting || !canSubmit ? null : onSubmit,
-              child: submitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Gửi phiếu mượn'),
-            ),
           ],
         ),
       ),

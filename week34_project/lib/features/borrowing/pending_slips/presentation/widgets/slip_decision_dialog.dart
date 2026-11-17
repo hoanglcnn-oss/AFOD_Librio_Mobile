@@ -108,26 +108,45 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
         return PopScope(
           canPop: !submitting,
           child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            backgroundColor: Colors.white,
             title: Text(
               widget.approve ? 'Xác nhận duyệt phiếu' : 'Từ chối phiếu mượn',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A),
+              ),
             ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Mã phiếu: ${widget.slip.slipNumber}'),
+                  Text(
+                    'Mã phiếu: ${widget.slip.slipNumber}',
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text('Độc giả: ${_resolveMemberDisplay()}'),
+                  Text(
+                    'Độc giả: ${_resolveMemberDisplay()}',
+                    style: const TextStyle(color: Color(0xFF334155)),
+                  ),
                   Text(
                     'Số bản sách: '
                     '${widget.slip.items.fold<int>(0, (sum, item) => sum + item.quantity)}',
+                    style: const TextStyle(color: Color(0xFF334155)),
                   ),
                   const SizedBox(height: 16),
                   if (widget.approve)
                     const Text(
                       'Duyệt phiếu sẽ xuất kho và '
                       'chuyển trạng thái sang "Đã mượn".',
+                      style: TextStyle(color: Color(0xFF334155)),
                     )
                   else
                     TextField(
@@ -136,9 +155,20 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
                       autofocus: true,
                       maxLines: 3,
                       maxLength: 500,
-                      decoration: const InputDecoration(
+                      style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
+                      decoration: InputDecoration(
                         labelText: 'Lý do từ chối',
+                        labelStyle: const TextStyle(color: Color(0xFF64748B)),
                         hintText: 'Nhập lý do cụ thể',
+                        hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.5),
+                        ),
                       ),
                     ),
                   if (state is ApproveSlipFailure &&
@@ -146,8 +176,8 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
                     const SizedBox(height: 12),
                     Text(
                       state.message,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+                      style: const TextStyle(
+                        color: Color(0xFFDC2626),
                       ),
                     ),
                   ],
@@ -156,31 +186,29 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.errorContainer.withValues(alpha: 0.2),
+                        color: const Color(0xFFFEF2F2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.error,
+                          color: const Color(0xFFFECACA),
                         ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            children: [
+                            children: const [
                               Icon(
                                 Icons.warning_amber_rounded,
-                                color: Theme.of(context).colorScheme.error,
+                                color: Color(0xFFDC2626),
                                 size: 20,
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   'Không thể duyệt: Vượt hạn mức',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.error,
+                                    color: Color(0xFFDC2626),
                                   ),
                                 ),
                               ),
@@ -189,8 +217,8 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
                           const SizedBox(height: 8),
                           Text(
                             state.message,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
+                            style: const TextStyle(
+                              color: Color(0xFFDC2626),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -226,7 +254,11 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
                   ],
                   if (submitting) ...[
                     const SizedBox(height: 16),
-                    const Center(child: CircularProgressIndicator()),
+                    const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -236,10 +268,22 @@ class _SlipDecisionDialogState extends State<SlipDecisionDialog> {
                 onPressed: submitting
                     ? null
                     : () => Navigator.of(context).pop(false),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF64748B),
+                ),
                 child: Text(isLimitExceeded ? 'Đóng' : 'Hủy'),
               ),
               if (!isLimitExceeded)
                 FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: widget.approve
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFFDC2626),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   onPressed: submitting ? null : _submit,
                   child: Text(
                     submitting

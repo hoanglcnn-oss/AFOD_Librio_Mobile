@@ -9,12 +9,14 @@ class BorrowingSlipsScreen extends StatefulWidget {
   final BorrowingSlipsRepository repository;
   final String? memberId;
   final VoidCallback? onReturnSucceeded;
+  final String? initialStatus;
 
   const BorrowingSlipsScreen({
     super.key,
     required this.repository,
     this.memberId,
     this.onReturnSucceeded,
+    this.initialStatus,
   });
 
   @override
@@ -39,6 +41,7 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedStatus = widget.initialStatus;
     _load();
   }
 
@@ -113,10 +116,12 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
       children: [
         // Thanh bộ lọc trạng thái dùng chung
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
+            color: Colors.white,
             border: Border(
               bottom: BorderSide(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+                color: Color(0xFFE2E8F0),
+                width: 1,
               ),
             ),
           ),
@@ -131,8 +136,22 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: ChoiceChip(
                     visualDensity: VisualDensity.compact,
-                    label: Text(filter.label),
+                    label: Text(
+                      filter.label,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected ? Colors.white : const Color(0xFF334155),
+                      ),
+                    ),
                     selected: isSelected,
+                    selectedColor: const Color(0xFF0F172A),
+                    backgroundColor: Colors.white,
+                    side: BorderSide(
+                      color: isSelected
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFFE2E8F0),
+                    ),
                     onSelected: (selected) {
                       if (selected) {
                         _onStatusSelected(filter.value);
@@ -150,7 +169,12 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
             future: _future,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+                  ),
+                );
               }
 
               if (snapshot.hasError) {
@@ -158,12 +182,22 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Không thể tải danh sách phiếu mượn'),
+                      const Text(
+                        'Không thể tải danh sách phiếu mượn',
+                        style: TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         onPressed: () => _refresh(),
                         icon: const Icon(Icons.refresh),
                         label: const Text('Thử lại'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF0F172A),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
                       ),
                     ],
                   ),
@@ -181,28 +215,48 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
                         Expanded(
                           child: Text(
                             'Tổng số: ${result.totalItems} phiếu',
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
                           ),
                         ),
                         IconButton(
                           tooltip: 'Tải lại',
                           onPressed: () => _refresh(),
-                          icon: const Icon(Icons.refresh),
+                          icon: const Icon(
+                            Icons.refresh,
+                            color: Color(0xFF0F172A),
+                          ),
                         ),
                       ],
                     ),
                   ),
                   Expanded(
                     child: RefreshIndicator(
+                      color: const Color(0xFF0D9488),
                       onRefresh: () => _refresh(),
                       child: result.slips.isEmpty
                           ? ListView(
                               physics: const AlwaysScrollableScrollPhysics(),
                               children: const [
                                 SizedBox(height: 80),
-                                Icon(Icons.assignment_outlined, size: 52),
+                                Icon(
+                                  Icons.assignment_outlined,
+                                  size: 52,
+                                  color: Color(0xFF94A3B8),
+                                ),
                                 SizedBox(height: 16),
-                                Center(child: Text('Không có phiếu mượn nào')),
+                                Center(
+                                  child: Text(
+                                    'Không có phiếu mượn nào',
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
                               ],
                             )
                           : ListView.builder(
@@ -232,15 +286,27 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
                             onPressed: _page <= 1
                                 ? null
                                 : () => _changePage(_page - 1),
-                            icon: const Icon(Icons.chevron_left),
+                            icon: const Icon(
+                              Icons.chevron_left,
+                              color: Color(0xFF0F172A),
+                            ),
                           ),
-                          Text('Trang $_page/${result.totalPages}'),
+                          Text(
+                            'Trang $_page/${result.totalPages}',
+                            style: const TextStyle(
+                              color: Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                           IconButton(
                             tooltip: 'Trang sau',
                             onPressed: result.hasNextPage
                                 ? () => _changePage(_page + 1)
                                 : null,
-                            icon: const Icon(Icons.chevron_right),
+                            icon: const Icon(
+                              Icons.chevron_right,
+                              color: Color(0xFF0F172A),
+                            ),
                           ),
                         ],
                       ),

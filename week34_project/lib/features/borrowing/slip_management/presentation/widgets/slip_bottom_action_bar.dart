@@ -146,6 +146,11 @@ class SlipBottomActionBar extends StatelessWidget {
                 label: const Text('Ghi nhận đã thu tiền phạt'),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               )
             else
@@ -157,7 +162,7 @@ class SlipBottomActionBar extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFFB91C1C),
+                    color: Color(0xFFDC2626),
                   ),
                 ),
               ),
@@ -174,7 +179,11 @@ class SlipBottomActionBar extends StatelessWidget {
                     onPressed: onReject,
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(48),
-                      side: BorderSide(color: theme.colorScheme.outline),
+                      foregroundColor: const Color(0xFFDC2626),
+                      side: const BorderSide(color: Color(0xFFFECACA)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: const Text('Từ chối'),
                   ),
@@ -185,6 +194,11 @@ class SlipBottomActionBar extends StatelessWidget {
                     onPressed: onApprove,
                     style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(48),
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: const Text('Duyệt phiếu'),
                   ),
@@ -201,15 +215,20 @@ class SlipBottomActionBar extends StatelessWidget {
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFFDC2626)),
+                      ),
                     )
                   : const Icon(Icons.cancel_outlined, size: 18),
               label: Text(isCancelling ? 'Đang hủy...' : 'Hủy phiếu mượn'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
-                foregroundColor: theme.colorScheme.error,
-                side: BorderSide(
-                  color: theme.colorScheme.error.withValues(alpha: 0.5),
+                foregroundColor: const Color(0xFFDC2626),
+                side: const BorderSide(color: Color(0xFFFECACA)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
@@ -222,6 +241,11 @@ class SlipBottomActionBar extends StatelessWidget {
               label: const Text('Xác nhận trả sách'),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
+                backgroundColor: const Color(0xFF0F172A),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
 
@@ -236,7 +260,11 @@ class SlipBottomActionBar extends StatelessWidget {
                     const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -259,6 +287,11 @@ class SlipBottomActionBar extends StatelessWidget {
                 label: const Text('Gia hạn'),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               )
             else if (slip.canRenew == false) ...[
@@ -269,8 +302,8 @@ class SlipBottomActionBar extends StatelessWidget {
                       mapRenewalReasonCode(slip.renewalReasonCode) ??
                       'Sách đang có người đặt trước, không thể gia hạn.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: theme.colorScheme.error,
+                  style: const TextStyle(
+                    color: Color(0xFFDC2626),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -282,6 +315,9 @@ class SlipBottomActionBar extends StatelessWidget {
                 label: const Text('Gia hạn'),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ] else ...[
@@ -295,10 +331,15 @@ class SlipBottomActionBar extends StatelessWidget {
               ),
               OutlinedButton.icon(
                 onPressed: onCheckEligibility,
-                icon: const Icon(Icons.search, size: 18),
+                icon: const Icon(Icons.search, size: 18, color: Color(0xFF0D9488)),
                 label: const Text('Kiểm tra gia hạn'),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
+                  foregroundColor: const Color(0xFF0F172A),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ],

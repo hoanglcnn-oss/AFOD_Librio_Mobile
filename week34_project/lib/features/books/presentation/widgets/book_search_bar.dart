@@ -23,9 +23,10 @@ class BookSearchBar extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFCBD5E1), width: 1),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x0F17263D),
+              color: Color(0x0F0F172A),
               blurRadius: 8,
               offset: Offset(0, 2),
             ),
@@ -40,7 +41,7 @@ class BookSearchBar extends StatelessWidget {
               icon: const Icon(
                 Icons.search,
                 size: 22,
-                color: Color(0xFF566B87),
+                color: Color(0xFF64748B),
               ),
               onPressed: onSearch,
             ),
@@ -50,10 +51,10 @@ class BookSearchBar extends StatelessWidget {
                 controller: controller,
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => onSearch(),
-                style: const TextStyle(fontSize: 14, color: Color(0xFF17263D)),
+                style: const TextStyle(fontSize: 14, color: Color(0xFF0F172A)),
                 decoration: const InputDecoration(
                   hintText: 'Tìm theo tên sách, tác giả...',
-                  hintStyle: TextStyle(fontSize: 14, color: Color(0xFF566B87)),
+                  hintStyle: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
@@ -68,7 +69,7 @@ class BookSearchBar extends StatelessWidget {
             IconButton(
               tooltip: 'Xóa tìm kiếm',
               splashRadius: 20,
-              icon: const Icon(Icons.clear, size: 20, color: Color(0xFF566B87)),
+              icon: const Icon(Icons.clear, size: 20, color: Color(0xFF64748B)),
               onPressed: onClear,
             ),
             // Vertical divider separating clear action from ISBN scanner action
@@ -85,7 +86,7 @@ class BookSearchBar extends StatelessWidget {
               icon: const Icon(
                 Icons.qr_code_scanner,
                 size: 20,
-                color: Color(0xFF1A488E),
+                color: Color(0xFF0D9488),
               ),
               onPressed: onScanBarcode,
             ),

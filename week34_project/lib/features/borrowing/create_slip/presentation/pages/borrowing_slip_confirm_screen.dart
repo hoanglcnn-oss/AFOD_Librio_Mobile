@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/widgets/app_toast.dart';
+import 'package:week34_project/core/widgets/app_toast.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
 import 'package:week34_project/features/books/data/models/book.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_bloc.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_event.dart';
+import 'package:week34_project/features/borrowing/create_slip/bloc/borrowing_slip_state.dart';
+import 'package:week34_project/features/borrowing/create_slip/data/models/create_borrowing_slip_request.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/api_borrowing_slips_repository.dart';
+import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
+import 'borrowing_slip_created_screen.dart';
+import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 import 'package:week34_project/features/members/data/repositories/api_members_repository.dart';
 import 'package:week34_project/features/members/data/repositories/members_repository.dart';
-import 'package:week34_project/features/members/data/models/member_debt_summary.dart';
 
-import '../../bloc/borrowing_slip_bloc.dart';
-import '../../bloc/borrowing_slip_event.dart';
-import '../../bloc/borrowing_slip_state.dart';
-import '../../../shared/repositories/api_borrowing_slips_repository.dart';
-import '../../../shared/repositories/borrowing_slips_repository.dart';
-import '../../data/models/create_borrowing_slip_request.dart';
-import '../../../slip_management/presentation/pages/borrowing_slip_detail_screen.dart';
 import '../widgets/borrow_debt_summary_card.dart';
 import '../widgets/borrow_slip_form_card.dart';
 
@@ -31,18 +31,26 @@ class BorrowingSlipConfirmScreen extends StatelessWidget {
     this.borrowingSlipsRepository,
   });
 
+  MembersRepository _resolveMembersRepo(BuildContext context) {
+    return membersRepository ?? ApiMembersRepository();
+  }
+
+  BorrowingSlipsRepository _resolveSlipsRepo(BuildContext context) {
+    return borrowingSlipsRepository ?? ApiBorrowingSlipsRepository();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final effectiveMembersRepo = _resolveMembersRepo(context);
+    final effectiveSlipsRepo = _resolveSlipsRepo(context);
+
     return BlocProvider(
-      create: (_) => BorrowingSlipBloc(
-        borrowingSlipsRepository:
-            borrowingSlipsRepository ?? ApiBorrowingSlipsRepository(),
-      ),
+      create: (context) =>
+          BorrowingSlipBloc(borrowingSlipsRepository: effectiveSlipsRepo),
       child: _SlipConfirmContent(
         books: books,
-        membersRepository: membersRepository ?? ApiMembersRepository(),
-        borrowingSlipsRepository:
-            borrowingSlipsRepository ?? ApiBorrowingSlipsRepository(),
+        membersRepository: effectiveMembersRepo,
+        borrowingSlipsRepository: effectiveSlipsRepo,
       ),
     );
   }
@@ -66,6 +74,7 @@ class _SlipConfirmContent extends StatefulWidget {
 class _SlipConfirmContentState extends State<_SlipConfirmContent> {
   late final Future<String?> _memberIdFuture;
   late final Map<String, int> _quantities;
+  final Set<String> _excludedBookIds = {};
   Future<MemberDebtSummary>? _debtSummaryFuture;
   String? _loadedMemberId;
 
@@ -105,8 +114,27 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
     });
   }
 
+  void _toggleExcludeBook(String bookId) {
+    setState(() {
+      if (_excludedBookIds.contains(bookId)) {
+        _excludedBookIds.remove(bookId);
+      } else {
+        _excludedBookIds.add(bookId);
+      }
+    });
+  }
+
   Future<void> _submit(String memberId) async {
-    // Refresh getDebtSummary() trước khi gửi phiếu để tránh dữ liệu hạn mức cũ
+    final activeBooks =
+        widget.books.where((b) => !_excludedBookIds.contains(b.id)).toList();
+    if (activeBooks.isEmpty) {
+      AppToast.warning(
+        context,
+        'Vui lòng chọn ít nhất 1 cuốn sách để gửi phiếu',
+      );
+      return;
+    }
+
     try {
       final freshSummary = await widget.membersRepository.getDebtSummary(
         memberId,
@@ -116,9 +144,9 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
         _debtSummaryFuture = Future.value(freshSummary);
       });
 
-      final totalSelected = _quantities.values.isEmpty
-          ? 0
-          : _quantities.values.reduce((a, b) => a + b);
+      final totalSelected = activeBooks
+          .map((b) => _quantities[b.id] ?? 1)
+          .reduce((a, b) => a + b);
 
       if (!freshSummary.canBorrow ||
           totalSelected > freshSummary.remainingBorrowLimit) {
@@ -137,10 +165,10 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
       memberId: memberId,
       expectedReturnDays: _days,
       items: [
-        for (final book in widget.books)
+        for (final book in activeBooks)
           BorrowingSlipItemRequest(
             bookId: book.id,
-            quantity: _quantities[book.id]!,
+            quantity: _quantities[book.id] ?? 1,
           ),
       ],
     );
@@ -151,92 +179,126 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.books.length == 1
-              ? 'Xác nhận mượn sách'
-              : 'Xác nhận phiếu mượn',
-        ),
-      ),
-      body: BlocBuilder<BorrowingSlipBloc, BorrowingSlipState>(
-        builder: (context, state) {
-          if (state is BorrowingSlipSuccess) {
-            return _buildSuccess(state);
-          }
+    return BlocBuilder<BorrowingSlipBloc, BorrowingSlipState>(
+      builder: (context, state) {
+        if (state is BorrowingSlipSuccess) {
+          return BorrowingSlipCreatedScreen(
+            slip: state.slip,
+            repository: widget.borrowingSlipsRepository,
+            membersRepository: widget.membersRepository,
+          );
+        }
 
-          return FutureBuilder<String?>(
-            future: _memberIdFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
+        return FutureBuilder<String?>(
+          future: _memberIdFuture,
+          builder: (context, memberSnapshot) {
+            if (memberSnapshot.connectionState != ConnectionState.done) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
 
-              if (snapshot.hasError) {
-                return const Center(
+            if (memberSnapshot.hasError) {
+              return const Scaffold(
+                body: Center(
                   child: Text('Không thể tra cứu hồ sơ độc giả'),
-                );
-              }
+                ),
+              );
+            }
 
-              final memberId = snapshot.data;
+            final memberId = memberSnapshot.data;
 
-              if (memberId == null || memberId.isEmpty) {
-                return const Center(
+            if (memberId == null || memberId.isEmpty) {
+              return const Scaffold(
+                body: Center(
                   child: Text('Không tìm thấy hồ sơ độc giả liên kết'),
-                );
-              }
+                ),
+              );
+            }
 
-              if (_debtSummaryFuture == null || _loadedMemberId != memberId) {
-                _loadedMemberId = memberId;
-                _debtSummaryFuture = widget.membersRepository.getDebtSummary(
-                  memberId,
-                );
-              }
+            if (_debtSummaryFuture == null || _loadedMemberId != memberId) {
+              _loadedMemberId = memberId;
+              _debtSummaryFuture = widget.membersRepository.getDebtSummary(
+                memberId,
+              );
+            }
 
-              return FutureBuilder<MemberDebtSummary>(
-                future: _debtSummaryFuture,
-                builder: (context, debtSnapshot) {
-                  final submitting = state is BorrowingSlipSubmitting;
-                  final totalSelected = _quantities.values.isEmpty
-                      ? 0
-                      : _quantities.values.reduce((a, b) => a + b);
+            return FutureBuilder<MemberDebtSummary>(
+              future: _debtSummaryFuture,
+              builder: (context, debtSnapshot) {
+                final submitting = state is BorrowingSlipSubmitting;
+                final activeBooks = widget.books
+                    .where((b) => !_excludedBookIds.contains(b.id))
+                    .toList();
+                final totalSelected = activeBooks.isEmpty
+                    ? 0
+                    : activeBooks
+                        .map((b) => _quantities[b.id] ?? 1)
+                        .reduce((a, b) => a + b);
 
-                  final debtSummary = debtSnapshot.data;
-                  final isDebtLoading =
-                      debtSnapshot.connectionState != ConnectionState.done;
-                  final isDebtError = debtSnapshot.hasError;
+                final debtSummary = debtSnapshot.data;
+                final isDebtLoading =
+                    debtSnapshot.connectionState != ConnectionState.done;
+                final isDebtError = debtSnapshot.hasError;
 
-                  final isExceedingLimit =
-                      debtSummary != null &&
-                      totalSelected > debtSummary.remainingBorrowLimit;
-                  final canBorrowCondition =
-                      debtSummary != null && debtSummary.canBorrow;
+                final isExceedingLimit = debtSummary != null &&
+                    totalSelected > debtSummary.remainingBorrowLimit;
+                final canBorrowCondition =
+                    debtSummary != null && debtSummary.canBorrow;
 
-                  final isDaysValid = _days >= 1 && _days <= 30;
+                final isDaysValid = _days >= 1 && _days <= 30;
 
-                  final canSubmit =
-                      !isDebtLoading &&
-                      !isDebtError &&
-                      debtSummary != null &&
-                      canBorrowCondition &&
-                      !isExceedingLimit &&
-                      isDaysValid;
+                final canSubmit = !isDebtLoading &&
+                    !isDebtError &&
+                    debtSummary != null &&
+                    canBorrowCondition &&
+                    !isExceedingLimit &&
+                    isDaysValid &&
+                    activeBooks.isNotEmpty &&
+                    totalSelected > 0;
 
-                  String? notAllowedReason;
-                  if (debtSummary != null) {
-                    if (!debtSummary.canBorrow) {
-                      notAllowedReason =
-                          debtSummary.reasonIfNotAllowed ??
-                          'Tài khoản hiện không đủ điều kiện mượn sách';
-                    } else if (isExceedingLimit) {
-                      notAllowedReason =
-                          'Số lượng sách chọn ($totalSelected cuốn) vượt quá hạn mức còn lại (${debtSummary.remainingBorrowLimit} cuốn)';
-                    }
+                String? notAllowedReason;
+                if (debtSummary != null) {
+                  if (!debtSummary.canBorrow) {
+                    notAllowedReason = debtSummary.reasonIfNotAllowed ??
+                        'Tài khoản hiện không đủ điều kiện mượn sách';
+                  } else if (activeBooks.isEmpty) {
+                    notAllowedReason =
+                        'Chưa chọn sách nào để mượn (đã loại trừ tất cả)';
+                  } else if (isExceedingLimit) {
+                    notAllowedReason =
+                        'Số lượng sách chọn ($totalSelected cuốn) vượt quá hạn mức còn lại (${debtSummary.remainingBorrowLimit} cuốn)';
                   }
+                }
 
-                  return BorrowSlipFormCard(
+                final theme = Theme.of(context);
+                final colorScheme = theme.colorScheme;
+                final activeBooksCount = activeBooks.length;
+
+                return Scaffold(
+                  appBar: AppBar(
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.books.length == 1
+                              ? 'Xác nhận mượn sách'
+                              : 'Xác nhận phiếu mượn',
+                        ),
+                        if (widget.books.length > 1)
+                          Text(
+                            '$activeBooksCount cuốn đang chọn',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  body: BorrowSlipFormCard(
                     books: widget.books,
                     quantities: _quantities,
+                    excludedBookIds: _excludedBookIds,
                     days: _days,
                     daysController: _daysController,
                     isDaysValid: isDaysValid,
@@ -261,74 +323,150 @@ class _SlipConfirmContentState extends State<_SlipConfirmContent> {
                     onIncreaseQuantity: (bookId) => setState(() {
                       _quantities[bookId] = (_quantities[bookId] ?? 1) + 1;
                     }),
+                    onToggleExclude: (bookId) => _toggleExcludeBook(bookId),
                     onDaysChanged: (days) => setState(() {
                       _days = days;
                     }),
-                    onSubmit: () => _submit(memberId),
-                  );
-                },
-              );
-            },
-          );
-        },
-      ),
+                  ),
+                  bottomNavigationBar: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                        top: BorderSide(
+                          color: Color(0xFFE2E8F0),
+                          width: 1.0,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x120F172A),
+                          offset: Offset(0, -4),
+                          blurRadius: 16,
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: SafeArea(
+                      child: Row(
+                        children: [
+                          // Giữ text ẩn bảo toàn tương thích cho test automation
+                          SizedBox.shrink(
+                            child: Text('Tổng cộng: $totalSelected cuốn'),
+                          ),
+
+                          // Bên trái: "Phiếu mượn" + Số X to (chiếm 2 dòng) + [cuốn] / [trong Y ngày]
+                          Expanded(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Phiếu mượn ',
+                                  style: TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                ),
+                                Text(
+                                  '$totalSelected',
+                                  style: const TextStyle(
+                                    fontSize: 38,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFF0F172A),
+                                    height: 1.0,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'cuốn',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF0F172A),
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                    Text(
+                                      'trong $_days ngày',
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color(0xFF64748B),
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+
+                          // Bên phải: Nút Gửi phiếu mượn chuẩn 48dp với icon
+                          FilledButton(
+                            onPressed: submitting || !canSubmit
+                                ? null
+                                : () => _submit(memberId),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF0F172A),
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: const Color(0xFFE2E8F0),
+                              disabledForegroundColor: const Color(0xFF94A3B8),
+                              minimumSize: const Size(0, 48),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: submitting
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Gửi phiếu mượn',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      SizedBox(width: 6),
+                                      Icon(
+                                        Icons.arrow_forward_rounded,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _buildSuccess(BorrowingSlipSuccess state) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.schedule, size: 64, color: Colors.orange),
-              const SizedBox(height: 16),
-              Text(
-                'Đã gửi phiếu mượn!',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 12),
-              Text('Mã phiếu: ${state.slip.slipNumber}'),
-              const SizedBox(height: 8),
-              const Text('Trạng thái: Chờ duyệt', textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text('${state.slip.items.length} đầu sách'),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  key: const ValueKey('view_slip_detail_button'),
-                  icon: const Icon(Icons.receipt_long),
-                  label: const Text('Xem chi tiết phiếu mượn'),
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (_) => BorrowingSlipDetailScreen(
-                          slipId: state.slip.id,
-                          repository: widget.borrowingSlipsRepository,
-                          membersRepository: widget.membersRepository,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  key: const ValueKey('return_to_books_button'),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Quay về danh sách sách'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

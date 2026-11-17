@@ -4,125 +4,9 @@ import 'package:flutter/services.dart';
 import '../../../../../core/widgets/app_toast.dart';
 import '../../../shared/models/borrowing_slip.dart';
 import '../../../shared/widgets/borrowing_slip_ui_helper.dart';
+import '../../../shared/widgets/ticket_notch_divider.dart';
 
-/// Painter vẽ vết khuyết bán nguyệt (Notch cutouts) ở hai mép vé
-/// Khoét sâu vào mép card và viền theo đường cong giống như vé giấy đục lỗ thực tế
-class TicketNotchPainter extends CustomPainter {
-  final Color backgroundColor;
-  final Color borderColor;
-  final double borderWidth;
-  final bool isLeft;
-
-  const TicketNotchPainter({
-    required this.backgroundColor,
-    required this.borderColor,
-    this.borderWidth = 1.0,
-    required this.isLeft,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final fillPaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.fill;
-
-    final borderPaint = Paint()
-      ..color = borderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth;
-
-    final path = Path();
-    if (isLeft) {
-      // Phủ qua mép trái 2px để che đường viền dọc của card
-      path.moveTo(-2.0, 0);
-      path.lineTo(0, 0);
-      path.arcToPoint(
-        Offset(0, size.height),
-        radius: Radius.circular(size.height / 2),
-        clockwise: true,
-      );
-      path.lineTo(-2.0, size.height);
-      path.close();
-      canvas.drawPath(path, fillPaint);
-
-      // Đường viền cong lõm vào trong
-      final borderPath = Path()
-        ..moveTo(0, 0)
-        ..arcToPoint(
-          Offset(0, size.height),
-          radius: Radius.circular(size.height / 2),
-          clockwise: true,
-        );
-      canvas.drawPath(borderPath, borderPaint);
-    } else {
-      // Phủ qua mép phải 2px để che đường viền dọc của card
-      path.moveTo(size.width + 2.0, 0);
-      path.lineTo(size.width, 0);
-      path.arcToPoint(
-        Offset(size.width, size.height),
-        radius: Radius.circular(size.height / 2),
-        clockwise: false,
-      );
-      path.lineTo(size.width + 2.0, size.height);
-      path.close();
-      canvas.drawPath(path, fillPaint);
-
-      // Đường viền cong lõm vào trong
-      final borderPath = Path()
-        ..moveTo(size.width, 0)
-        ..arcToPoint(
-          Offset(size.width, size.height),
-          radius: Radius.circular(size.height / 2),
-          clockwise: false,
-        );
-      canvas.drawPath(borderPath, borderPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant TicketNotchPainter oldDelegate) =>
-      oldDelegate.backgroundColor != backgroundColor ||
-      oldDelegate.borderColor != borderColor ||
-      oldDelegate.borderWidth != borderWidth ||
-      oldDelegate.isLeft != isLeft;
-}
-
-/// Đường kẻ nét đứt phong cách vé thư viện (Ticket Pass)
-class TicketDashedDivider extends StatelessWidget {
-  final double height;
-  final Color color;
-  final double dashWidth;
-  final double dashSpace;
-
-  const TicketDashedDivider({
-    super.key,
-    this.height = 1.5,
-    this.color = const Color(0xFFCBD5E1),
-    this.dashWidth = 6,
-    this.dashSpace = 4,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final boxWidth = constraints.constrainWidth();
-        final dashCount = (boxWidth / (dashWidth + dashSpace)).floor();
-        return Flex(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          direction: Axis.horizontal,
-          children: List.generate(dashCount, (_) {
-            return SizedBox(
-              width: dashWidth,
-              height: height,
-              child: DecoratedBox(decoration: BoxDecoration(color: color)),
-            );
-          }),
-        );
-      },
-    );
-  }
-}
+export '../../../shared/widgets/ticket_notch_divider.dart';
 
 /// Khung vé mượn (Digital Ticket Pass) liền mạch chứa thông tin phiếu và danh sách sách
 class SlipTicketPassCard extends StatelessWidget {
@@ -585,35 +469,12 @@ class SlipTicketPassCard extends StatelessWidget {
           ),
 
           // Đường rãnh xé vé đứt đoạn (- - - - -) với vết khuyết bán nguyệt 2 mép
-          SizedBox(
+          TicketPerforationRow(
+            backgroundColor: const Color(0xFFF8FAFC),
+            ticketColor: Colors.white,
+            borderColor: cardBorderColor,
+            borderWidth: cardBorderWidth,
             height: 24,
-            child: Row(
-              children: [
-                // Vết khuyết bán nguyệt bên trái (lõm vào từ mép trái)
-                CustomPaint(
-                  size: const Size(12, 24),
-                  painter: TicketNotchPainter(
-                    backgroundColor: const Color(0xFFF8FAFC),
-                    borderColor: cardBorderColor,
-                    borderWidth: cardBorderWidth,
-                    isLeft: true,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Expanded(child: TicketDashedDivider()),
-                const SizedBox(width: 6),
-                // Vết khuyết bán nguyệt bên phải (lõm vào từ mép phải)
-                CustomPaint(
-                  size: const Size(12, 24),
-                  painter: TicketNotchPainter(
-                    backgroundColor: const Color(0xFFF8FAFC),
-                    borderColor: cardBorderColor,
-                    borderWidth: cardBorderWidth,
-                    isLeft: false,
-                  ),
-                ),
-              ],
-            ),
           ),
 
           // Nửa dưới của vé: Danh sách sách mượn

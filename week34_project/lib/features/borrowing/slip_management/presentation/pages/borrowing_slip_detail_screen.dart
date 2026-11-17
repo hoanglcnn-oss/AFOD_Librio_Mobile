@@ -359,21 +359,81 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
               return Scaffold(
-                appBar: AppBar(title: const Text('Chi tiết phiếu mượn')),
-                body: const Center(child: CircularProgressIndicator()),
+                backgroundColor: const Color(0xFFF8FAFC),
+                appBar: AppBar(
+                  title: const Text(
+                    'Chi tiết phiếu mượn',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF0F172A),
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  bottom: const PreferredSize(
+                    preferredSize: Size.fromHeight(1.0),
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFE2E8F0),
+                    ),
+                  ),
+                ),
+                body: const Center(
+                  child: CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+                  ),
+                ),
               );
             }
 
             if (snapshot.hasError) {
               return Scaffold(
-                appBar: AppBar(title: const Text('Chi tiết phiếu mượn')),
+                backgroundColor: const Color(0xFFF8FAFC),
+                appBar: AppBar(
+                  title: const Text(
+                    'Chi tiết phiếu mượn',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF0F172A),
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  bottom: const PreferredSize(
+                    preferredSize: Size.fromHeight(1.0),
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Color(0xFFE2E8F0),
+                    ),
+                  ),
+                ),
                 body: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Không thể tải chi tiết phiếu'),
-                      TextButton(
+                      const Text(
+                        'Không thể tải chi tiết phiếu',
+                        style: TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
                         onPressed: _refresh,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF0F172A),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        ),
                         child: const Text('Thử lại'),
                       ),
                     ],
@@ -452,17 +512,38 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
                 );
 
                 return Scaffold(
+                  backgroundColor: const Color(0xFFF8FAFC),
                   appBar: AppBar(
-                    title: const Text('Chi tiết phiếu mượn'),
+                    title: const Text(
+                      'Chi tiết phiếu mượn',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF0F172A),
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    bottom: const PreferredSize(
+                      preferredSize: Size.fromHeight(1.0),
+                      child: Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Color(0xFFE2E8F0),
+                      ),
+                    ),
                     actions: [
                       IconButton(
-                        icon: const Icon(Icons.refresh),
+                        icon: const Icon(Icons.refresh, color: Color(0xFF0F172A)),
                         tooltip: 'Làm mới',
                         onPressed: _refresh,
                       ),
                     ],
                   ),
                   body: RefreshIndicator(
+                    color: const Color(0xFF0D9488),
                     onRefresh: () async {
                       _refresh();
                       await _future;
