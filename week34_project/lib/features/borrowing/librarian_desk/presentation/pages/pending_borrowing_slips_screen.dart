@@ -165,43 +165,15 @@ class _PendingBorrowingSlipsScreenState
                         itemBuilder: (context, index) {
                           final slip = result.slips[index];
 
-                          return BorrowingSlipCard(
-                            slip: slip,
-                            showMember: true,
-                            onTap: () => _openDetail(slip.id),
-                            actions: Wrap(
-                              alignment: WrapAlignment.end,
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFFDC2626),
-                                    side: const BorderSide(
-                                      color: Color(0xFFFECACA),
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  onPressed: () =>
-                                      _processSlip(slip, approve: false),
-                                  child: const Text('Từ chối'),
-                                ),
-                                FilledButton.icon(
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: const Color(0xFF0F172A),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  onPressed: () =>
-                                      _processSlip(slip, approve: true),
-                                  icon: const Icon(Icons.check, size: 18),
-                                  label: const Text('Duyệt phiếu'),
-                                ),
-                              ],
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: BorrowingSlipCard(
+                              key: ValueKey('slip_${slip.id}'),
+                              slip: slip,
+                              showMember: true,
+                              onTap: () => _openDetail(slip.id),
+                              onApprove: () => _processSlip(slip, approve: true),
+                              onReject: () => _processSlip(slip, approve: false),
                             ),
                           );
                         },

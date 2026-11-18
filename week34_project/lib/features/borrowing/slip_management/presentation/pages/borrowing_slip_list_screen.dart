@@ -167,184 +167,246 @@ class _BorrowingSlipsScreenState extends State<BorrowingSlipsScreen> {
     final isLibrarian =
         widget.memberId == null || widget.memberId!.trim().isEmpty;
 
-    return Material(
-      color: Colors.transparent,
-      child: Column(
-        children: [
-        // Thanh bộ lọc trạng thái dùng chung
-        Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
-            ),
-          ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            child: Row(
-              children: _statusFilters.map((filter) {
-                final isSelected = _selectedStatus == filter.value;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ChoiceChip(
-                    visualDensity: VisualDensity.compact,
-                    label: Text(
-                      filter.label,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFF334155),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth >= 900;
+
+        return Material(
+          color: Colors.transparent,
+          child: Column(
+            children: [
+              // Thanh bộ lọc trạng thái dùng chung
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+                  ),
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1100),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                      child: Row(
+                        children: _statusFilters.map((filter) {
+                          final isSelected = _selectedStatus == filter.value;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: ChoiceChip(
+                              visualDensity: VisualDensity.compact,
+                              label: Text(
+                                filter.label,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF334155),
+                                ),
+                              ),
+                              selected: isSelected,
+                              selectedColor: const Color(0xFF0F172A),
+                              backgroundColor: Colors.white,
+                              side: BorderSide(
+                                color: isSelected
+                                    ? const Color(0xFF0F172A)
+                                    : const Color(0xFFE2E8F0),
+                              ),
+                              onSelected: (selected) {
+                                if (selected) {
+                                  _onStatusSelected(filter.value);
+                                }
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
-                    selected: isSelected,
-                    selectedColor: const Color(0xFF0F172A),
-                    backgroundColor: Colors.white,
-                    side: BorderSide(
-                      color: isSelected
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFFE2E8F0),
-                    ),
-                    onSelected: (selected) {
-                      if (selected) {
-                        _onStatusSelected(filter.value);
-                      }
-                    },
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
+                ),
+              ),
 
-        Expanded(
-          child: FutureBuilder<PaginatedBorrowingSlips>(
-            future: _future,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF0D9488),
-                    ),
-                  ),
-                );
-              }
-
-              if (snapshot.hasError) {
-                return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Không thể tải danh sách phiếu mượn',
-                        style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w500,
+              Expanded(
+                child: FutureBuilder<PaginatedBorrowingSlips>(
+                  future: _future,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFF0D9488),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: () => _refresh(),
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Thử lại'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF0F172A),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      );
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Không thể tải danh sách phiếu mượn',
+                              style: TextStyle(
+                                color: Color(0xFF0F172A),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: () => _refresh(),
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Thử lại'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF0F172A),
+                                side: const BorderSide(
+                                  color: Color(0xFFCBD5E1),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }
+                      );
+                    }
 
-              final result = snapshot.data!;
+                    final result = snapshot.data!;
 
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                    child: Row(
+                    return Column(
                       children: [
-                        Expanded(
-                          child: Text(
-                            'Tổng số: ${result.totalItems} phiếu',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F172A),
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1100),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Tổng số: ${result.totalItems} phiếu',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Tải lại',
+                                    onPressed: () => _refresh(),
+                                    icon: const Icon(
+                                      Icons.refresh,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                        IconButton(
-                          tooltip: 'Tải lại',
-                          onPressed: () => _refresh(),
-                          icon: const Icon(
-                            Icons.refresh,
-                            color: Color(0xFF0F172A),
+                        Expanded(
+                          child: RefreshIndicator(
+                            color: const Color(0xFF0D9488),
+                            onRefresh: () => _refresh(),
+                            child: _slips.isEmpty
+                                ? ListView(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    children: const [
+                                      SizedBox(height: 80),
+                                      Icon(
+                                        Icons.assignment_outlined,
+                                        size: 52,
+                                        color: Color(0xFF94A3B8),
+                                      ),
+                                      SizedBox(height: 16),
+                                      Center(
+                                        child: Text(
+                                          'Không có phiếu mượn nào',
+                                          style: TextStyle(
+                                            color: Color(0xFF64748B),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : isTablet
+                                ? _buildTabletGrid(isLibrarian)
+                                : _buildMobileList(isLibrarian),
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  Expanded(
-                    child: RefreshIndicator(
-                      color: const Color(0xFF0D9488),
-                      onRefresh: () => _refresh(),
-                      child: _slips.isEmpty
-                          ? ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              children: const [
-                                SizedBox(height: 80),
-                                Icon(
-                                  Icons.assignment_outlined,
-                                  size: 52,
-                                  color: Color(0xFF94A3B8),
-                                ),
-                                SizedBox(height: 16),
-                                Center(
-                                  child: Text(
-                                    'Không có phiếu mượn nào',
-                                    style: TextStyle(
-                                      color: Color(0xFF64748B),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : ListView.builder(
-                              controller: _scrollController,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.all(12),
-                              itemCount: _slips.length + 1,
-                              itemBuilder: (context, index) {
-                                if (index == _slips.length) {
-                                  return _buildPaginationFooter();
-                                }
-                                final slip = _slips[index];
-
-                                return BorrowingSlipCard(
-                                  slip: slip,
-                                  showMember: isLibrarian,
-                                  onTap: () => _openDetail(slip.id),
-                                );
-                              },
-                            ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileList(bool isLibrarian) {
+    return ListView.builder(
+      controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(12),
+      itemCount: _slips.length + 1,
+      itemBuilder: (context, index) {
+        if (index == _slips.length) {
+          return _buildPaginationFooter();
+        }
+        final slip = _slips[index];
+
+        return BorrowingSlipCard(
+          key: ValueKey('slip_${slip.id}'),
+          slip: slip,
+          showMember: isLibrarian,
+          onTap: () => _openDetail(slip.id),
+        );
+      },
+    );
+  }
+
+  Widget _buildTabletGrid(bool isLibrarian) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1100),
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 12,
+                  mainAxisExtent: 82,
+                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final slip = _slips[index];
+                  return BorrowingSlipCard(
+                    key: ValueKey('slip_${slip.id}'),
+                    slip: slip,
+                    showMember: isLibrarian,
+                    onTap: () => _openDetail(slip.id),
+                  );
+                }, childCount: _slips.length),
+              ),
+            ),
+            SliverToBoxAdapter(child: _buildPaginationFooter()),
+          ],
         ),
-      ],
-    ),
+      ),
     );
   }
 

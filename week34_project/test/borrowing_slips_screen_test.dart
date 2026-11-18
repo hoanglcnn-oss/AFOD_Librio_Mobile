@@ -72,9 +72,9 @@ void main() {
         await tester.pumpWidget(createApp(repository));
         await tester.pumpAndSettle();
 
-        expect(find.text('Tất cả'), findsOneWidget);
-        expect(find.text('Chờ duyệt'), findsOneWidget);
-        expect(find.text('Đang mượn'), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'Tất cả'), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'Chờ duyệt'), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'Đang mượn'), findsOneWidget);
         expect(find.text('SLIP-2026-0001'), findsOneWidget);
         expect(find.text('Độc giả: mem-01'), findsOneWidget);
         expect(repository.getAllSlipsCallCount, 1);
@@ -107,7 +107,7 @@ void main() {
         await tester.pumpWidget(createApp(repository));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Đang mượn'));
+        await tester.tap(find.widgetWithText(ChoiceChip, 'Đang mượn'));
         await tester.pumpAndSettle();
         expect(repository.lastGetAllSlipsStatus, 'BORROWED');
 
@@ -409,7 +409,7 @@ void main() {
         expect(find.textContaining('Độc giả:'), findsNothing);
 
         // 4. Chọn filter trạng thái
-        await tester.tap(find.text('Đang mượn'));
+        await tester.tap(find.widgetWithText(ChoiceChip, 'Đang mượn'));
         await tester.pumpAndSettle();
 
         expect(repository.getBorrowingSlipsCallCount, 2);

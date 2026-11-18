@@ -94,7 +94,7 @@ void main() {
       expect(find.text('Chỉ số lưu hành tài liệu'), findsNothing);
     });
 
-    testWidgets('LIBRARIAN | Hiển thị Nghiệp vụ quầy & ca trực', (
+    testWidgets('LIBRARIAN | Hiển thị Thông tin công tác & tài khoản', (
       tester,
     ) async {
       final user = UserProfile(
@@ -111,12 +111,11 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('Nghiệp vụ quầy & ca trực'), findsOneWidget);
-      expect(find.text('Phiếu mượn cần duyệt'), findsOneWidget);
-      expect(find.text('Quét Barcode / QR'), findsOneWidget);
-      expect(find.text('Tra cứu bạn đọc'), findsOneWidget);
-      expect(find.text('Tạo phiếu tại quầy'), findsOneWidget);
-      expect(find.text('Quản lý mượn trả'), findsOneWidget);
+      expect(find.text('Thông tin công tác & tài khoản'), findsOneWidget);
+      expect(find.text('Vai trò: Thủ thư vận hành'), findsOneWidget);
+      expect(find.text('Đổi mật khẩu'), findsOneWidget);
+      expect(find.text('Quy chế phục vụ thư viện'), findsOneWidget);
+      expect(find.text('Phiên bản ứng dụng'), findsOneWidget);
     });
 
     testWidgets('ADMIN | KHÔNG hiển thị Chỉ số lưu hành tài liệu', (
@@ -136,6 +135,35 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Chỉ số lưu hành tài liệu'), findsNothing);
+    });
+
+    testWidgets('Tablet (width >= 900) | Hiển thị bố cục 2 cột cho Profile', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1024, 768);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final user = UserProfile(
+        id: 'user-01',
+        email: 'member@example.com',
+        fullName: 'Nguyễn Văn Member',
+        phone: '0901234567',
+        role: 'MEMBER',
+        isActive: true,
+        memberId: 'mem-01',
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      await tester.pumpWidget(createApp(AuthAuthenticated(user: user)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Nguyễn Văn Member'), findsOneWidget);
+      expect(find.text('Đăng xuất tài khoản'), findsOneWidget);
+      expect(find.text('Chỉ số lưu hành tài liệu'), findsOneWidget);
     });
   });
 }

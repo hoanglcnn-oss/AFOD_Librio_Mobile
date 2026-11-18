@@ -303,14 +303,18 @@ class _MemberCirculationSectionState extends State<MemberCirculationSection> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Hạn mức mượn sách giấy',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: textMuted,
+                          const Flexible(
+                            child: Text(
+                              'Hạn mức mượn sách giấy',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: textMuted,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 8),
                           RichText(
                             text: TextSpan(
                               children: [

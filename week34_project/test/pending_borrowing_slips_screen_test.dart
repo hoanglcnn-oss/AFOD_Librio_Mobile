@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/borrowing/shared/repositories/borrowing_slips_repository.dart';
 import 'package:week34_project/features/borrowing/shared/models/borrowing_slip.dart';
 import 'package:week34_project/features/borrowing/shared/models/paginated_borrowing_slips.dart';
-import 'package:week34_project/features/borrowing/pending_slips/presentation/pages/pending_borrowing_slips_screen.dart';
+import 'package:week34_project/features/borrowing/librarian_desk/presentation/pages/pending_borrowing_slips_screen.dart';
 
 import 'fake/fake_borrowing_repository.dart';
 
@@ -283,7 +283,7 @@ void main() {
 
       // UI trên danh sách vẫn giữ nguyên phiếu ở trạng thái PENDING_APPROVAL, không chuyển sang BORROWED
       expect(find.text('SLIP-2026-0001'), findsOneWidget);
-      expect(find.text('Trạng thái: Chờ duyệt'), findsOneWidget);
+      expect(find.text('Từ chối'), findsOneWidget);
       expect(find.text('Duyệt phiếu'), findsOneWidget);
     },
   );

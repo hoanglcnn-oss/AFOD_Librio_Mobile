@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
-import '../../../borrowing/pending_slips/presentation/pages/pending_borrowing_slips_screen.dart';
+import '../../../borrowing/librarian_desk/presentation/pages/librarian_desk_screen.dart';
 
 class LibrarianMainScreen extends StatefulWidget {
   const LibrarianMainScreen({super.key});
@@ -15,7 +15,7 @@ class LibrarianMainScreen extends StatefulWidget {
 class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
   int _selectedIndex = 0;
 
-  static const _titles = ['Phiếu chờ duyệt', 'Quản lý phiếu mượn', 'Tài khoản'];
+  static const _titles = ['Bàn trực', 'Quản lý phiếu mượn', 'Tài khoản'];
   late final ApiBorrowingSlipsRepository _borrowingSlipsRepository;
 
   @override
@@ -53,7 +53,10 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          PendingBorrowingSlipsScreen(repository: _borrowingSlipsRepository),
+          LibrarianDeskScreen(
+            repository: _borrowingSlipsRepository,
+            onNavigateToSlipsTab: () => setState(() => _selectedIndex = 1),
+          ),
           BorrowingSlipsScreen(
             repository: _borrowingSlipsRepository,
           ),
@@ -78,10 +81,10 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
           },
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.assignment_turned_in_outlined),
+              icon: Icon(Icons.space_dashboard_outlined),
               selectedIcon:
-                  Icon(Icons.assignment_turned_in, color: Color(0xFF0D9488)),
-              label: 'Chờ duyệt',
+                  Icon(Icons.space_dashboard, color: Color(0xFF0D9488)),
+              label: 'Bàn trực',
             ),
             NavigationDestination(
               icon: Icon(Icons.receipt_long_outlined),
