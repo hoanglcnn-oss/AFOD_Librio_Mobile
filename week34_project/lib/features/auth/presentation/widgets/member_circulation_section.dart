@@ -181,16 +181,16 @@ class _MemberCirculationSectionState extends State<MemberCirculationSection> {
       color = const Color(0xFFD97706);
       bgColor = const Color(0xFFFFFBEB);
       borderColor = const Color(0xFFFDE68A);
-    } else if (!summary.canBorrow) {
-      label = summary.reasonIfNotAllowed ?? 'Tạm khoá mượn';
-      color = const Color(0xFFDC2626);
-      bgColor = const Color(0xFFFEF2F2);
-      borderColor = const Color(0xFFFECACA);
     } else if (summary.remainingBorrowLimit == 0) {
       label = 'Đạt tối đa';
       color = const Color(0xFFD97706);
       bgColor = const Color(0xFFFFFBEB);
       borderColor = const Color(0xFFFDE68A);
+    } else if (!summary.canBorrow) {
+      label = summary.reasonIfNotAllowed ?? 'Tạm khoá mượn';
+      color = const Color(0xFFDC2626);
+      bgColor = const Color(0xFFFEF2F2);
+      borderColor = const Color(0xFFFECACA);
     } else if (summary.canBorrow && summary.remainingBorrowLimit > 0) {
       label = 'Khả dụng';
       color = const Color(0xFF0D9488);
@@ -203,34 +203,41 @@ class _MemberCirculationSectionState extends State<MemberCirculationSection> {
       borderColor = const Color(0xFFFECACA);
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 220),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
             ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -356,8 +363,11 @@ class _MemberCirculationSectionState extends State<MemberCirculationSection> {
                       const SizedBox(height: 10),
 
                       // Dòng trạng thái đa chiều & chính xác
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
                         children: [
                           Text(
                             'Còn được mượn: $remaining tài liệu',

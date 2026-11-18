@@ -273,7 +273,12 @@ class _BorrowingSlipDetailScreenState extends State<BorrowingSlipDetailScreen> {
         if (e is DioException) {
           final data = e.response?.data;
           if (data is Map && data['message'] != null) {
-            message = data['message'].toString();
+            final rawMessage = data['message'];
+            if (rawMessage is List && rawMessage.isNotEmpty) {
+              message = rawMessage.first.toString();
+            } else {
+              message = rawMessage.toString();
+            }
           }
         }
         AppToast.error(context, message);

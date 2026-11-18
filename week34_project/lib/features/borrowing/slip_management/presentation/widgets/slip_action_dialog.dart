@@ -449,6 +449,7 @@ class CancelSlipDialog extends StatefulWidget {
 
 class _CancelSlipDialogState extends State<CancelSlipDialog> {
   late final TextEditingController _reasonController;
+  String? _errorText;
 
   @override
   void initState() {
@@ -491,22 +492,40 @@ class _CancelSlipDialogState extends State<CancelSlipDialog> {
             const SizedBox(height: 16),
             TextField(
               controller: _reasonController,
+              maxLength: 500,
               style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
               decoration: InputDecoration(
-                labelText: 'Lý do hủy (tùy chọn)',
+                labelText: 'Lý do hủy (bắt buộc)',
                 labelStyle: const TextStyle(color: Color(0xFF64748B)),
-                hintText: 'Nhập lý do nếu có',
+                hintText: 'Nhập lý do hủy phiếu mượn...',
                 hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                errorText: _errorText,
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFF0D9488), width: 1.5),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF0D9488), width: 1.5),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFDC2626), width: 1.5),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFDC2626), width: 1.5),
                 ),
               ),
               maxLines: 2,
+              onChanged: (val) {
+                if (_errorText != null && val.trim().isNotEmpty) {
+                  setState(() => _errorText = null);
+                }
+              },
             ),
           ],
         ),
@@ -530,8 +549,14 @@ class _CancelSlipDialogState extends State<CancelSlipDialog> {
           ),
           onPressed: () {
             final reason = _reasonController.text.trim();
+            if (reason.isEmpty) {
+              setState(() {
+                _errorText = 'Vui lòng nhập lý do hủy phiếu';
+              });
+              return;
+            }
             Navigator.of(context).pop(
-              CancelSlipDialogResult(reason: reason.isEmpty ? null : reason),
+              CancelSlipDialogResult(reason: reason),
             );
           },
           child: const Text('Xác nhận hủy'),

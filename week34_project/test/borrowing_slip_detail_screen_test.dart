@@ -474,6 +474,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      await tester.enterText(
+        find.byType(TextField),
+        'Đổi ý không muốn mượn sách này nữa',
+      );
+      await tester.pumpAndSettle();
+
       await tester.tap(
         find.byKey(const ValueKey('confirm_cancel_slip_button')),
       );
@@ -581,7 +587,7 @@ void main() {
   );
 
   testWidgets(
-    'C5.5 | MEMBER hủy phiếu mượn không nhập lý do | Gửi reason null',
+    'C5.5 | MEMBER hủy phiếu mượn không nhập lý do | Báo lỗi validation bắt buộc và không gọi API',
     (tester) async {
       final repository = FakeBorrowingRepository();
       repository.fakeSlipDetail = BorrowingSlip(
@@ -609,8 +615,24 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      // Kiểm tra có thông báo lỗi validation trên dialog và chưa gọi cancel API
+      expect(find.text('Vui lòng nhập lý do hủy phiếu'), findsOneWidget);
+      expect(repository.cancelSlipCallCount, 0);
+
+      // Nhập lý do hợp lệ rồi gửi lại
+      await tester.enterText(
+        find.byType(TextField),
+        'Có việc bận đột xuất không mượn được',
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.byKey(const ValueKey('confirm_cancel_slip_button')),
+      );
+      await tester.pumpAndSettle();
+
       expect(repository.cancelSlipCallCount, 1);
-      expect(repository.lastCancelSlipReason, isNull);
+      expect(repository.lastCancelSlipReason, 'Có việc bận đột xuất không mượn được');
       expect(find.text('Đã hủy phiếu mượn thành công'), findsOneWidget);
     },
   );

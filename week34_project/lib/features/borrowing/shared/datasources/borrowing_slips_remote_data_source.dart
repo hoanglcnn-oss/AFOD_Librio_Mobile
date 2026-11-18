@@ -243,14 +243,15 @@ class BorrowingSlipsRemoteDataSourceImpl
     required String token,
     String? reason,
   }) async {
-    final data = <String, dynamic>{};
-    if (reason != null && reason.trim().isNotEmpty) {
-      data['reason'] = reason.trim();
-    }
+    final trimmedReason = reason?.trim();
+    final data = <String, dynamic>{
+      if (trimmedReason != null && trimmedReason.isNotEmpty)
+        'reason': trimmedReason,
+    };
 
     final response = await _dio.patch(
       '${ApiConstants.borrowingSlips}/$slipId/cancel',
-      data: data.isNotEmpty ? data : null,
+      data: data,
       options: Options(headers: {'Authorization': 'Bearer $token'}),
     );
 
