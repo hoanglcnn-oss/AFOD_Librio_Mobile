@@ -38,34 +38,51 @@ class ReservationCard extends StatelessWidget {
   Color _getStatusColor(BuildContext context) {
     switch (reservation.status) {
       case 'PENDING':
-        return Colors.orange.shade700;
+        return const Color(0xFFD97706);
       case 'READY':
-        return Colors.green.shade700;
+        return const Color(0xFF16A34A);
       case 'FULFILLED':
-        return Colors.blue.shade700;
+        return const Color(0xFF0D9488);
       case 'CANCELLED':
-        return Colors.grey.shade600;
+        return const Color(0xFF64748B);
       case 'EXPIRED':
-        return Theme.of(context).colorScheme.error;
+        return const Color(0xFFDC2626);
       default:
-        return Colors.grey.shade700;
+        return const Color(0xFF64748B);
     }
   }
 
   Color _getStatusBgColor(BuildContext context) {
     switch (reservation.status) {
       case 'PENDING':
-        return Colors.orange.shade50;
+        return const Color(0xFFFFFBEB);
       case 'READY':
-        return Colors.green.shade50;
+        return const Color(0xFFF0FDF4);
       case 'FULFILLED':
-        return Colors.blue.shade50;
+        return const Color(0xFFF0FDFA);
       case 'CANCELLED':
-        return Colors.grey.shade100;
+        return const Color(0xFFF1F5F9);
       case 'EXPIRED':
-        return Colors.red.shade50;
+        return const Color(0xFFFEF2F2);
       default:
-        return Colors.grey.shade100;
+        return const Color(0xFFF8FAFC);
+    }
+  }
+
+  Color _getStatusBorderColor(BuildContext context) {
+    switch (reservation.status) {
+      case 'PENDING':
+        return const Color(0xFFFDE68A);
+      case 'READY':
+        return const Color(0xFFBBF7D0);
+      case 'FULFILLED':
+        return const Color(0xFFCCFBF1);
+      case 'CANCELLED':
+        return const Color(0xFFE2E8F0);
+      case 'EXPIRED':
+        return const Color(0xFFFECACA);
+      default:
+        return const Color(0xFFE2E8F0);
     }
   }
 
@@ -73,16 +90,18 @@ class ReservationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor(context);
     final statusBgColor = _getStatusBgColor(context);
+    final statusBorderColor = _getStatusBorderColor(context);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 1.5,
+      elevation: 0,
+      color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         side: BorderSide(
           color: reservation.isReady
-              ? Colors.green.shade300
-              : Colors.grey.shade200,
+              ? const Color(0xFFBBF7D0)
+              : const Color(0xFFE2E8F0),
           width: reservation.isReady ? 1.5 : 1,
         ),
       ),
@@ -101,7 +120,7 @@ class ReservationCard extends StatelessWidget {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: Colors.black87,
+                      color: Color(0xFF0F172A),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -112,7 +131,7 @@ class ReservationCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: statusBgColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: statusColor.withValues(alpha: 0.5)),
+                    border: Border.all(color: statusBorderColor),
                   ),
                   child: Text(
                     reservation.statusLabel,
@@ -134,6 +153,7 @@ class ReservationCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
+                color: Color(0xFF0F172A),
               ),
             ),
 
@@ -142,14 +162,17 @@ class ReservationCard extends StatelessWidget {
             // Ngày đặt
             Row(
               children: [
-                Icon(Icons.calendar_today_outlined,
-                    size: 15, color: Colors.grey.shade600),
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 15,
+                  color: Color(0xFF64748B),
+                ),
                 const SizedBox(width: 6),
                 Text(
                   'Ngày đặt: ${_formatDate(reservation.reservedAt)}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade700,
+                    color: Color(0xFF64748B),
                   ),
                 ),
               ],
@@ -160,25 +183,28 @@ class ReservationCard extends StatelessWidget {
               const SizedBox(height: 10),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: const Color(0xFFF0FDF4),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.shade200),
+                  border: Border.all(color: const Color(0xFFBBF7D0)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      children: [
-                        Icon(Icons.check_circle_outline,
-                            color: Colors.green.shade700, size: 18),
-                        const SizedBox(width: 6),
+                      children: const [
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: Color(0xFF16A34A),
+                          size: 18,
+                        ),
+                        SizedBox(width: 6),
                         Text(
                           'Sách đã sẵn sàng để lấy!',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.green.shade800,
+                            color: Color(0xFF16A34A),
                             fontSize: 13,
                           ),
                         ),
@@ -188,8 +214,8 @@ class ReservationCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'Hạn lấy sách: ${_formatDateTime(reservation.expiresAt!)}',
-                        style: TextStyle(
-                          color: Colors.green.shade900,
+                        style: const TextStyle(
+                          color: Color(0xFF15803D),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -204,15 +230,19 @@ class ReservationCard extends StatelessWidget {
             if (reservation.isPending) ...[
               const SizedBox(height: 8),
               Row(
-                children: [
-                  Icon(Icons.hourglass_top,
-                      size: 15, color: Colors.orange.shade700),
-                  const SizedBox(width: 6),
+                children: const [
+                  Icon(
+                    Icons.hourglass_top,
+                    size: 15,
+                    color: Color(0xFFD97706),
+                  ),
+                  SizedBox(width: 6),
                   Text(
                     'Đang chờ sách có sẵn từ thư viện',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.orange.shade800,
+                      color: Color(0xFFD97706),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -225,10 +255,10 @@ class ReservationCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Ghi chú: ${reservation.notes}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
-                  color: Colors.grey.shade700,
+                  color: Color(0xFF64748B),
                 ),
               ),
             ],
@@ -240,9 +270,9 @@ class ReservationCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Lý do hủy: ${reservation.cancellationReason}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade700,
+                  color: Color(0xFFDC2626),
                 ),
               ),
             ],
@@ -250,7 +280,7 @@ class ReservationCard extends StatelessWidget {
             // Actions row: Nút Tạo phiếu mượn (chỉ READY) và Hủy đặt trước (PENDING/READY) thuộc MEMBER
             if ((reservation.canCancel || (reservation.isReady && onCreateSlip != null)) && isOwner) ...[
               const SizedBox(height: 12),
-              const Divider(height: 1),
+              const Divider(height: 1, color: Color(0xFFE2E8F0)),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -259,6 +289,11 @@ class ReservationCard extends StatelessWidget {
                     FilledButton.icon(
                       key: ValueKey('create_slip_btn_${reservation.id}'),
                       style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF0F172A),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         visualDensity: VisualDensity.compact,
                       ),
                       onPressed: isCancelling ? null : onCreateSlip,
@@ -275,15 +310,22 @@ class ReservationCard extends StatelessWidget {
                       const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFFDC2626)),
+                        ),
                       )
                     else
                       OutlinedButton.icon(
                         key: ValueKey('cancel_btn_${reservation.id}'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.error,
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.error,
+                          foregroundColor: const Color(0xFFDC2626),
+                          side: const BorderSide(
+                            color: Color(0xFFFECACA),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           visualDensity: VisualDensity.compact,
                         ),

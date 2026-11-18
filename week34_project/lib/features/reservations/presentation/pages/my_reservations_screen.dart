@@ -8,7 +8,7 @@ import '../../../auth/bloc/auth_state.dart';
 import '../../../books/data/repositories/books_repository.dart';
 import '../../../books/data/models/book.dart';
 import '../../../borrowing/shared/repositories/borrowing_slips_repository.dart';
-import '../../../borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
+import '../../../borrowing/borrow_return/create/presentation/pages/slip_confirm_screen.dart';
 import '../../../members/data/repositories/api_members_repository.dart';
 import '../../../members/data/repositories/members_repository.dart';
 import '../../bloc/reservations_bloc.dart';
@@ -225,7 +225,7 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
     await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
         builder: (_) {
-          final screen = BorrowingSlipConfirmScreen(
+          final screen = SlipConfirmScreen(
             books: [book!],
             borrowingSlipsRepository: widget.borrowingSlipsRepository,
             membersRepository: widget.membersRepository,
@@ -245,14 +245,40 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Đặt trước của tôi')),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text(
+          'Đặt trước của tôi',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0F172A),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Color(0xFFE2E8F0),
+          ),
+        ),
+      ),
       body: _buildBody(),
     );
   }
 
   Widget _buildBody() {
     if (_isResolvingMember) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+        ),
+      );
     }
 
     if (_resolveError != null) {
@@ -262,10 +288,21 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_resolveError!, textAlign: TextAlign.center),
+              Text(
+                _resolveError!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF0F172A)),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _initMember,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
                 child: const Text('Thử lại'),
               ),
             ],
@@ -284,7 +321,11 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
       },
       builder: (context, state) {
         if (state is ReservationsLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+            ),
+          );
         }
 
         if (state is ReservationsFailure) {
@@ -294,10 +335,21 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(state.message, textAlign: TextAlign.center),
+                  Text(
+                    state.message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Color(0xFF0F172A)),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _loadData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                     child: const Text('Thử lại'),
                   ),
                 ],
@@ -315,13 +367,18 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
         };
 
         if (paginated == null) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+            ),
+          );
         }
 
         final reservations = paginated.items;
 
         if (reservations.isEmpty) {
           return RefreshIndicator(
+            color: const Color(0xFF0D9488),
             onRefresh: _onRefresh,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -330,11 +387,19 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
                 Center(
                   child: Column(
                     children: [
-                      Icon(Icons.bookmark_border, size: 64, color: Colors.grey),
+                      Icon(
+                        Icons.bookmark_border,
+                        size: 64,
+                        color: Color(0xFF94A3B8),
+                      ),
                       SizedBox(height: 16),
                       Text(
                         'Bạn chưa có yêu cầu đặt trước nào',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
@@ -349,6 +414,7 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
             : null;
 
         return RefreshIndicator(
+          color: const Color(0xFF0D9488),
           onRefresh: _onRefresh,
           child: Column(
             children: [
@@ -378,7 +444,7 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
                 ),
               ),
               if (paginated.totalPages > 1) ...[
-                const Divider(height: 1),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
@@ -389,15 +455,28 @@ class _MyReservationsViewState extends State<_MyReservationsView> {
                         onPressed: _page <= 1
                             ? null
                             : () => _changePage(_page - 1),
-                        icon: const Icon(Icons.chevron_left),
+                        icon: const Icon(
+                          Icons.chevron_left,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
-                      Text('Trang $_page/${paginated.totalPages}'),
+                      Text(
+                        'Trang $_page/${paginated.totalPages}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
                       IconButton(
                         tooltip: 'Trang tiếp',
                         onPressed: paginated.hasNextPage
                             ? () => _changePage(_page + 1)
                             : null,
-                        icon: const Icon(Icons.chevron_right),
+                        icon: const Icon(
+                          Icons.chevron_right,
+                          color: Color(0xFF0F172A),
+                        ),
                       ),
                     ],
                   ),

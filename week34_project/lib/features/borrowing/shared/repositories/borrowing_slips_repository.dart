@@ -1,10 +1,10 @@
 import '../models/borrowing_slip.dart';
 import '../models/paginated_borrowing_slips.dart';
-import '../../create_slip/data/models/create_borrowing_slip_request.dart';
-import '../../return_slip/data/models/return_slip_items_request.dart';
+import '../../borrow_return/create/data/models/create_slip_request.dart';
+import '../../borrow_return/return/data/models/return_slip_items_request.dart';
 
 abstract class BorrowingSlipsRepository {
-  Future<BorrowingSlip> createBorrowingSlip(CreateBorrowingSlipRequest request);
+  Future<BorrowingSlip> createBorrowingSlip(CreateSlipRequest request);
 
   Future<PaginatedBorrowingSlips> getBorrowingSlips({
     required String memberId,

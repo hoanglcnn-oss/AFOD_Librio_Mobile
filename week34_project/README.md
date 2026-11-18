@@ -78,11 +78,9 @@ lib/
 │   ├── auth/
 │   ├── books/
 │   ├── borrowing/
-│   │   ├── create_slip/
-│   │   ├── pay_slip_fine/
-│   │   ├── pending_slips/
+│   │   ├── borrow_return/
+│   │   ├── librarian_desk/
 │   │   ├── renewal/
-│   │   ├── return_slip/
 │   │   ├── shared/
 │   │   └── slip_management/
 │   ├── home/
@@ -134,11 +132,9 @@ Chứa các nhóm chức năng nghiệp vụ độc lập của hệ thống.
 
   | Subfolder | Responsibility |
   | :--- | :--- |
-  | `create_slip/` | Tạo yêu cầu hoặc phiếu mượn sách mới (bao gồm kiểm tra hạn mức & nợ phạt) |
-  | `pay_slip_fine/` | Xử lý thanh toán tiền phạt trễ hạn hoặc làm hư hỏng/mất sách |
-  | `pending_slips/` | Hiển thị và xử lý duyệt / từ chối phiếu mượn chờ xử lý (dành cho thủ thư) |
+  | `borrow_return/` | Luồng cốt lõi Mượn $\rightarrow$ Trả sách (`create/`: tạo phiếu mượn; `return/`: trả sách & thanh toán phạt) |
+  | `librarian_desk/` | Bàn trực thủ thư: thao tác quầy (quét barcode, tra cứu bạn đọc, tạo phiếu) và duyệt/từ chối phiếu chờ duyệt |
   | `renewal/` | Xử lý gia hạn thời hạn mượn cho phiếu mượn đủ điều kiện |
-  | `return_slip/` | Xử lý nghiệp vụ trả sách, ghi nhận hư hỏng/mất và tính tiền phạt |
   | `slip_management/` | Quản lý danh sách, bộ lọc trạng thái và màn hình chi tiết phiếu mượn (Ticket Pass) |
   | `shared/` | Data source, repository, model, error mapper và UI helper dùng chung trong domain Borrowing |
 

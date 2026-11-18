@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../auth/presentation/pages/profile_screen.dart';
 import '../../../borrowing/shared/repositories/api_borrowing_slips_repository.dart';
 import '../../../borrowing/slip_management/presentation/pages/borrowing_slip_list_screen.dart';
-import '../../../borrowing/pending_slips/presentation/pages/pending_borrowing_slips_screen.dart';
+import '../../../borrowing/librarian_desk/presentation/pages/librarian_desk_screen.dart';
 
 class LibrarianMainScreen extends StatefulWidget {
   const LibrarianMainScreen({super.key});
@@ -15,7 +15,7 @@ class LibrarianMainScreen extends StatefulWidget {
 class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
   int _selectedIndex = 0;
 
-  static const _titles = ['Phiếu chờ duyệt', 'Quản lý phiếu mượn', 'Tài khoản'];
+  static const _titles = ['Bàn trực', 'Quản lý phiếu mượn', 'Tài khoản'];
   late final ApiBorrowingSlipsRepository _borrowingSlipsRepository;
 
   @override
@@ -27,39 +27,78 @@ class _LibrarianMainScreenState extends State<LibrarianMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_titles[_selectedIndex])),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: Text(
+          _titles[_selectedIndex],
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0F172A),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Color(0xFFE2E8F0),
+          ),
+        ),
+      ),
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          PendingBorrowingSlipsScreen(repository: _borrowingSlipsRepository),
+          LibrarianDeskScreen(
+            repository: _borrowingSlipsRepository,
+            onNavigateToSlipsTab: () => setState(() => _selectedIndex = 1),
+          ),
           BorrowingSlipsScreen(
             repository: _borrowingSlipsRepository,
           ),
           const ProfileScreen(),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.assignment_turned_in_outlined),
-            selectedIcon: Icon(Icons.assignment_turned_in),
-            label: 'Chờ duyệt',
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'Phiếu mượn',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Tài khoản',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          selectedIndex: _selectedIndex,
+          backgroundColor: Colors.white,
+          indicatorColor: const Color(0xFFF0FDFA),
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          onDestinationSelected: (index) {
+            setState(() => _selectedIndex = index);
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.space_dashboard_outlined),
+              selectedIcon:
+                  Icon(Icons.space_dashboard, color: Color(0xFF0D9488)),
+              label: 'Bàn trực',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.receipt_long_outlined),
+              selectedIcon:
+                  Icon(Icons.receipt_long, color: Color(0xFF0D9488)),
+              label: 'Phiếu mượn',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person, color: Color(0xFF0D9488)),
+              label: 'Tài khoản',
+            ),
+          ],
+        ),
       ),
     );
   }

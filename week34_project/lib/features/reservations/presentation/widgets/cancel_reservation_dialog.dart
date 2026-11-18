@@ -39,21 +39,46 @@ class _CancelReservationDialogState extends State<CancelReservationDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Hủy đặt trước'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      backgroundColor: Colors.white,
+      title: const Text(
+        'Hủy đặt trước',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF0F172A),
+        ),
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Bạn có chắc chắn muốn hủy đặt trước cuốn sách "${widget.reservation.bookTitle}"?',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF334155),
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _reasonController,
-            decoration: const InputDecoration(
+            style: const TextStyle(fontSize: 13, color: Color(0xFF0F172A)),
+            decoration: InputDecoration(
               labelText: 'Lý do hủy (tùy chọn)',
-              border: OutlineInputBorder(),
+              labelStyle: const TextStyle(color: Color(0xFF64748B)),
               hintText: 'Nhập lý do hủy...',
+              hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF0D9488), width: 1.5),
+              ),
             ),
             maxLines: 2,
           ),
@@ -62,11 +87,18 @@ class _CancelReservationDialogState extends State<CancelReservationDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
+          style: TextButton.styleFrom(
+            foregroundColor: const Color(0xFF64748B),
+          ),
           child: const Text('Đóng'),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: const Color(0xFFDC2626),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
           onPressed: () {
             final trimmed = _reasonController.text.trim();

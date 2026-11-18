@@ -72,9 +72,9 @@ void main() {
         await tester.pumpWidget(createApp(repository));
         await tester.pumpAndSettle();
 
-        expect(find.text('Tất cả'), findsOneWidget);
-        expect(find.text('Chờ duyệt'), findsOneWidget);
-        expect(find.text('Đang mượn'), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'Tất cả'), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'Chờ duyệt'), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'Đang mượn'), findsOneWidget);
         expect(find.text('SLIP-2026-0001'), findsOneWidget);
         expect(find.text('Độc giả: mem-01'), findsOneWidget);
         expect(repository.getAllSlipsCallCount, 1);
@@ -107,7 +107,7 @@ void main() {
         await tester.pumpWidget(createApp(repository));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Đang mượn'));
+        await tester.tap(find.widgetWithText(ChoiceChip, 'Đang mượn'));
         await tester.pumpAndSettle();
         expect(repository.lastGetAllSlipsStatus, 'BORROWED');
 
@@ -118,88 +118,171 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Danh sách rỗng | Hiển thị thông báo không có phiếu mượn nào',
-      (tester) async {
-        final repository = FakeBorrowingRepository();
-        repository.fakeAllSlipsPage = const PaginatedBorrowingSlips(
-          slips: [],
-          page: 1,
-          limit: 10,
-          totalItems: 0,
-          totalPages: 1,
-          hasNextPage: false,
+    testWidgets('Danh sách rỗng | Hiển thị thông báo không có phiếu mượn nào', (
+      tester,
+    ) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeAllSlipsPage = const PaginatedBorrowingSlips(
+        slips: [],
+        page: 1,
+        limit: 10,
+        totalItems: 0,
+        totalPages: 1,
+        hasNextPage: false,
+      );
+
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Không có phiếu mượn nào'), findsOneWidget);
+      expect(find.byIcon(Icons.assignment_outlined), findsOneWidget);
+    });
+
+    testWidgets('Tải danh sách lỗi | Hiển thị nút Thử lại và tải lại', (
+      tester,
+    ) async {
+      final repository = FakeBorrowingRepository(shouldFail: true);
+      repository.shouldFailGetAllSlips = true;
+
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Không thể tải danh sách phiếu mượn'), findsOneWidget);
+      expect(find.text('Thử lại'), findsOneWidget);
+
+      repository.shouldFailGetAllSlips = false;
+      repository.shouldFail = false;
+
+      await tester.tap(find.text('Thử lại'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('SLIP-2026-0001'), findsOneWidget);
+    });
+
+    testWidgets('Nhiều trang | Tải thêm nối tiếp và giữ phiếu trang trước', (
+      tester,
+    ) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeAllSlipsBuilder = (status, page, limit) {
+        return PaginatedBorrowingSlips(
+          slips: [
+            BorrowingSlip(
+              id: 'slip-$page',
+              slipNumber: 'SLIP-PAGE-$page',
+              memberId: 'mem-01',
+              status: 'BORROWED',
+              dueDate: DateTime.utc(2026, 11, 25),
+              items: [],
+            ),
+          ],
+          page: page,
+          limit: limit,
+          totalItems: 20,
+          totalPages: 2,
+          hasNextPage: page == 1,
         );
+      };
 
-        await tester.pumpWidget(createApp(repository));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
 
-        expect(find.text('Không có phiếu mượn nào'), findsOneWidget);
-        expect(find.byIcon(Icons.assignment_outlined), findsOneWidget);
-      },
-    );
+      expect(find.byTooltip('Trang sau'), findsNothing);
+      expect(find.text('SLIP-PAGE-1'), findsOneWidget);
 
-    testWidgets(
-      'Tải danh sách lỗi | Hiển thị nút Thử lại và tải lại',
-      (tester) async {
-        final repository = FakeBorrowingRepository(shouldFail: true);
-        repository.shouldFailGetAllSlips = true;
+      await tester.tap(find.text('Tải thêm phiếu mượn'));
+      await tester.pumpAndSettle();
 
-        await tester.pumpWidget(createApp(repository));
-        await tester.pumpAndSettle();
+      expect(find.text('SLIP-PAGE-1'), findsOneWidget);
+      expect(find.text('Đã hiển thị tất cả phiếu mượn'), findsOneWidget);
+      expect(find.text('SLIP-PAGE-2'), findsOneWidget);
+      expect(repository.lastGetAllSlipsPage, 2);
+    });
 
-        expect(
-          find.text('Không thể tải danh sách phiếu mượn'),
-          findsOneWidget,
-        );
-        expect(find.text('Thử lại'), findsOneWidget);
-
-        repository.shouldFailGetAllSlips = false;
-        repository.shouldFail = false;
-
-        await tester.tap(find.text('Thử lại'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('SLIP-2026-0001'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'Nhiều trang | Chuyển sang trang tiếp theo khi nhấn nút',
-      (tester) async {
-        final repository = FakeBorrowingRepository();
-        repository.fakeAllSlipsBuilder = (status, page, limit) {
-          return PaginatedBorrowingSlips(
-            slips: [
-              BorrowingSlip(
-                id: 'slip-$page',
-                slipNumber: 'SLIP-PAGE-$page',
+    testWidgets('Cuộn gần cuối tự tải thêm; đổi bộ lọc xoá các trang cũ', (
+      tester,
+    ) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeAllSlipsBuilder = (status, page, limit) =>
+          PaginatedBorrowingSlips(
+            slips: List.generate(
+              10,
+              (index) => BorrowingSlip(
+                id: '${status ?? 'all'}-$page-$index',
+                slipNumber: '${status ?? 'ALL'}-$page-$index',
                 memberId: 'mem-01',
-                status: 'BORROWED',
-                dueDate: DateTime.utc(2026, 11, 25),
-                items: [],
+                status: status ?? 'BORROWED',
+                dueDate: DateTime(2026, 11, 25),
+                items: const [],
               ),
-            ],
+            ),
             page: page,
-            limit: limit,
+            limit: 10,
             totalItems: 20,
             totalPages: 2,
             hasNextPage: page == 1,
           );
-        };
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
+      final list = find.byType(ListView);
+      await tester.drag(list, const Offset(0, -3000));
+      await tester.pumpAndSettle();
+      expect(repository.lastGetAllSlipsPage, 2);
+      expect(repository.getAllSlipsCallCount, 2);
+      await tester.tap(find.text('Chờ duyệt'));
+      await tester.pumpAndSettle();
+      expect(repository.lastGetAllSlipsPage, 1);
+      expect(repository.lastGetAllSlipsStatus, 'PENDING_APPROVAL');
+      expect(find.text('PENDING_APPROVAL-1-0'), findsOneWidget);
+      expect(find.text('ALL-2-0'), findsNothing);
+    });
 
+    testWidgets(
+      'Tải thêm lỗi vẫn giữ dữ liệu và thử lại đúng trang, bỏ phiếu trùng',
+      (tester) async {
+        final repository = FakeBorrowingRepository();
+        var failNextPage = true;
+        repository.fakeAllSlipsBuilder = (status, page, limit) {
+          if (page == 2 && failNextPage) throw Exception('Offline');
+          return PaginatedBorrowingSlips(
+            slips: [
+              BorrowingSlip(
+                id: 'same',
+                slipNumber: 'OLD-SLIP',
+                memberId: 'mem-01',
+                status: 'BORROWED',
+                dueDate: DateTime(2026, 11, 25),
+                items: const [],
+              ),
+              if (page == 2)
+                BorrowingSlip(
+                  id: 'new',
+                  slipNumber: 'NEW-SLIP',
+                  memberId: 'mem-01',
+                  status: 'BORROWED',
+                  dueDate: DateTime(2026, 11, 25),
+                  items: const [],
+                ),
+            ],
+            page: page,
+            limit: 10,
+            totalItems: 2,
+            totalPages: 2,
+            hasNextPage: page == 1,
+          );
+        };
         await tester.pumpWidget(createApp(repository));
         await tester.pumpAndSettle();
-
-        expect(find.text('Trang 1/2'), findsOneWidget);
-        expect(find.text('SLIP-PAGE-1'), findsOneWidget);
-
-        await tester.tap(find.byTooltip('Trang sau'));
+        await tester.tap(find.text('Tải thêm phiếu mượn'));
         await tester.pumpAndSettle();
-
-        expect(find.text('Trang 2/2'), findsOneWidget);
-        expect(find.text('SLIP-PAGE-2'), findsOneWidget);
+        expect(find.text('OLD-SLIP'), findsOneWidget);
+        expect(find.text('Không thể tải thêm phiếu mượn.'), findsOneWidget);
+        failNextPage = false;
+        await tester.tap(find.text('Thử lại'));
+        await tester.pumpAndSettle();
         expect(repository.lastGetAllSlipsPage, 2);
+        expect(find.text('OLD-SLIP'), findsOneWidget);
+        expect(find.text('NEW-SLIP'), findsOneWidget);
+        expect(find.text('Đã hiển thị tất cả phiếu mượn'), findsOneWidget);
       },
     );
 
@@ -243,51 +326,47 @@ void main() {
       },
     );
 
-    testWidgets(
-      'Nhấn vào phiếu | Mở màn hình chi tiết phiếu',
-      (tester) async {
-        final repository = FakeBorrowingRepository();
+    testWidgets('Nhấn vào phiếu | Mở màn hình chi tiết phiếu', (tester) async {
+      final repository = FakeBorrowingRepository();
 
-        await tester.pumpWidget(createApp(repository));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.text('SLIP-2026-0001'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('SLIP-2026-0001'));
+      await tester.pumpAndSettle();
 
-        expect(find.byType(BorrowingSlipDetailScreen), findsOneWidget);
-        expect(find.text('Chi tiết phiếu mượn'), findsOneWidget);
-      },
-    );
+      expect(find.byType(BorrowingSlipDetailScreen), findsOneWidget);
+      expect(find.text('Chi tiết phiếu mượn'), findsOneWidget);
+    });
 
-    testWidgets(
-      'Phiếu có memberName | Ưu tiên hiển thị họ tên thay vì ID',
-      (tester) async {
-        final repository = FakeBorrowingRepository();
-        repository.fakeAllSlipsPage = PaginatedBorrowingSlips(
-          slips: [
-            BorrowingSlip(
-              id: 'slip-with-name',
-              slipNumber: 'SLIP-NAME-01',
-              memberId: 'mem-99',
-              memberName: 'Nguyễn Văn An',
-              status: 'BORROWED',
-              dueDate: DateTime.utc(2026, 11, 25),
-              items: [],
-            ),
-          ],
-          page: 1,
-          limit: 10,
-          totalItems: 1,
-          totalPages: 1,
-          hasNextPage: false,
-        );
+    testWidgets('Phiếu có memberName | Ưu tiên hiển thị họ tên thay vì ID', (
+      tester,
+    ) async {
+      final repository = FakeBorrowingRepository();
+      repository.fakeAllSlipsPage = PaginatedBorrowingSlips(
+        slips: [
+          BorrowingSlip(
+            id: 'slip-with-name',
+            slipNumber: 'SLIP-NAME-01',
+            memberId: 'mem-99',
+            memberName: 'Nguyễn Văn An',
+            status: 'BORROWED',
+            dueDate: DateTime.utc(2026, 11, 25),
+            items: [],
+          ),
+        ],
+        page: 1,
+        limit: 10,
+        totalItems: 1,
+        totalPages: 1,
+        hasNextPage: false,
+      );
 
-        await tester.pumpWidget(createApp(repository));
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(createApp(repository));
+      await tester.pumpAndSettle();
 
-        expect(find.text('Độc giả: Nguyễn Văn An'), findsOneWidget);
-      },
-    );
+      expect(find.text('Độc giả: Nguyễn Văn An'), findsOneWidget);
+    });
   });
 
   group('BorrowingSlipsScreen - Member View (memberId != null)', () {
@@ -330,7 +409,7 @@ void main() {
         expect(find.textContaining('Độc giả:'), findsNothing);
 
         // 4. Chọn filter trạng thái
-        await tester.tap(find.text('Đang mượn'));
+        await tester.tap(find.widgetWithText(ChoiceChip, 'Đang mượn'));
         await tester.pumpAndSettle();
 
         expect(repository.getBorrowingSlipsCallCount, 2);

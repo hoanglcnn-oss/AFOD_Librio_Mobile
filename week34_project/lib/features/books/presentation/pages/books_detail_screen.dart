@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/app_toast.dart';
 import '../../../auth/bloc/auth_bloc.dart';
 import '../../../auth/bloc/auth_state.dart';
-import '../../../borrowing/create_slip/presentation/pages/borrowing_slip_confirm_screen.dart';
+import '../../../borrowing/borrow_return/create/presentation/pages/slip_confirm_screen.dart';
 import '../../../members/data/repositories/api_members_repository.dart';
 import '../../../members/data/repositories/members_repository.dart';
 import '../../../reservations/bloc/reservations_bloc.dart';
@@ -145,18 +145,18 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               final book = snapshot.data;
 
               return Scaffold(
-                backgroundColor: const Color(0xFFF7FAFD),
+                backgroundColor: const Color(0xFFF8FAFC),
                 appBar: AppBar(
                   title: const Text(
                     'Chi tiết sách',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF17263D),
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                   backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF17263D),
+                  foregroundColor: const Color(0xFF0F172A),
                   elevation: 0,
                   scrolledUnderElevation: 0,
                   bottom: const PreferredSize(
@@ -164,7 +164,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     child: Divider(
                       height: 1,
                       thickness: 1,
-                      color: Color(0xFFCDD8E5),
+                      color: Color(0xFFE2E8F0),
                     ),
                   ),
                 ),
@@ -182,7 +182,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   Widget _buildBody(AsyncSnapshot<Book> snapshot) {
     if (snapshot.connectionState != ConnectionState.done) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF0D9488)),
+        ),
+      );
     }
 
     if (snapshot.hasError) {
@@ -199,7 +203,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               Icon(
                 notFound ? Icons.search_off_outlined : Icons.cloud_off_outlined,
                 size: 56,
-                color: const Color(0xFF566B87),
+                color: const Color(0xFF64748B),
               ),
               const SizedBox(height: 16),
               Text(
@@ -209,7 +213,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF17263D),
+                  color: Color(0xFF0F172A),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -219,7 +223,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('Thử lại'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1A488E),
+                  backgroundColor: const Color(0xFF0F172A),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -253,10 +257,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFCDD8E5), width: 1),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A17263D),
+            color: Color(0x0A0F172A),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -274,9 +278,9 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 width: 96,
                 height: 140,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F4F9),
+                  color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFCDD8E5), width: 1),
+                  border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: book.coverUrl != null && book.coverUrl!.isNotEmpty
@@ -288,7 +292,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             child: Icon(
                               Icons.menu_book,
                               size: 40,
-                              color: Color(0xFF566B87),
+                              color: Color(0xFF94A3B8),
                             ),
                           );
                         },
@@ -297,7 +301,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         child: Icon(
                           Icons.menu_book,
                           size: 40,
-                          color: Color(0xFF566B87),
+                          color: Color(0xFF94A3B8),
                         ),
                       ),
               ),
@@ -314,7 +318,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF17263D),
+                        color: Color(0xFF0F172A),
                         height: 1.3,
                       ),
                     ),
@@ -324,7 +328,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A488E),
+                        color: Color(0xFF0D9488),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -336,8 +340,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD8E4F1),
+                        color: const Color(0xFFF0FDFA),
                         borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: const Color(0xFFCCFBF1),
+                          width: 1,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -345,7 +353,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           const Icon(
                             Icons.category_outlined,
                             size: 13,
-                            color: Color(0xFF00316E),
+                            color: Color(0xFF0D9488),
                           ),
                           const SizedBox(width: 4),
                           Flexible(
@@ -354,7 +362,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF00316E),
+                                color: Color(0xFF0D9488),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -371,10 +379,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0F4F9),
+                        color: const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                          color: const Color(0xFFCDD8E5),
+                          color: const Color(0xFFE2E8F0),
                           width: 1,
                         ),
                       ),
@@ -383,7 +391,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF566B87),
+                          color: Color(0xFF64748B),
                         ),
                       ),
                     ),
@@ -396,7 +404,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           const SizedBox(height: 14),
 
           // Integrated Availability Badge Divider
-          const Divider(height: 1, thickness: 1, color: Color(0xFFF0F4F9)),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
 
           const SizedBox(height: 10),
 
@@ -410,8 +418,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: book.canBorrow
-                      ? const Color(0xFFE0F4EA)
-                      : const Color(0xFFFFDAD6),
+                      ? const Color(0xFFF0FDF4)
+                      : const Color(0xFFFEF2F2),
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
                     color: book.canBorrow
@@ -427,8 +435,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                       book.canBorrow ? Icons.check_circle : Icons.error_outline,
                       size: 14,
                       color: book.canBorrow
-                          ? const Color(0xFF228B53)
-                          : const Color(0xFFBA1A1A),
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFFDC2626),
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -439,8 +447,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: book.canBorrow
-                            ? const Color(0xFF196B3E)
-                            : const Color(0xFFBA1A1A),
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFDC2626),
                       ),
                     ),
                   ],
@@ -460,10 +468,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFCDD8E5), width: 1),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A17263D),
+            color: Color(0x0A0F172A),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -475,21 +483,21 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         children: [
           Row(
             children: const [
-              Icon(Icons.article_outlined, size: 18, color: Color(0xFF1A488E)),
+              Icon(Icons.article_outlined, size: 18, color: Color(0xFF0D9488)),
               SizedBox(width: 6),
               Text(
                 'Mô tả',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF17263D),
+                  color: Color(0xFF0F172A),
                 ),
               ),
             ],
           ),
 
           const SizedBox(height: 10),
-          const Divider(height: 1, thickness: 1, color: Color(0xFFF0F4F9)),
+          const Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
           const SizedBox(height: 12),
 
           if (!hasDescription)
@@ -497,7 +505,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               'Chưa có mô tả',
               style: TextStyle(
                 fontSize: 13,
-                color: Color(0xFF566B87),
+                color: Color(0xFF64748B),
                 fontStyle: FontStyle.italic,
               ),
             )
@@ -506,7 +514,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               builder: (context, constraints) {
                 const textStyle = TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF434751),
+                  color: Color(0xFF334155),
                   height: 1.5,
                 );
 
@@ -550,7 +558,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1A488E),
+                                  color: Color(0xFF0D9488),
                                 ),
                               ),
                               const SizedBox(width: 2),
@@ -559,7 +567,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                     ? Icons.expand_less
                                     : Icons.expand_more,
                                 size: 16,
-                                color: const Color(0xFF1A488E),
+                                color: const Color(0xFF0D9488),
                               ),
                             ],
                           ),
@@ -579,10 +587,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFCDD8E5), width: 1)),
+        border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x0F17263D),
+            color: Color(0x0A0F172A),
             blurRadius: 16,
             offset: Offset(0, -4),
           ),
@@ -603,13 +611,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     onPressed: isReserving ? null : () => _onReserveBook(book),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(
-                        color: Color(0xFF1A488E),
+                        color: Color(0xFFCBD5E1),
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      foregroundColor: const Color(0xFF1A488E),
+                      foregroundColor: const Color(0xFF0F172A),
                     ),
                     icon: isReserving
                         ? const SizedBox(
@@ -617,15 +625,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Color(0xFF1A488E),
+                              color: Color(0xFF0D9488),
                             ),
                           )
-                        : const Icon(Icons.bookmark_add_outlined, size: 20),
+                        : const Icon(Icons.bookmark_add_outlined,
+                            size: 20, color: Color(0xFF0D9488)),
                     label: Text(
                       isReserving ? 'Đang xử lý...' : 'Đặt trước',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
+                        color: Color(0xFF0F172A),
                       ),
                     ),
                   ),
@@ -647,8 +657,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                                 .push<bool>(
                                   MaterialPageRoute<bool>(
                                     builder: (_) =>
-                                        BorrowingSlipConfirmScreen(
+                                        SlipConfirmScreen(
                                           books: [book],
+                                          membersRepository:
+                                              widget.membersRepository,
                                         ),
                                   ),
                                 );
@@ -662,10 +674,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             }
                           },
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF00316E),
-                      disabledBackgroundColor: const Color(0xFFCDD8E5),
+                      backgroundColor: const Color(0xFF0F172A),
+                      disabledBackgroundColor: const Color(0xFFE2E8F0),
                       foregroundColor: Colors.white,
-                      disabledForegroundColor: const Color(0xFF737782),
+                      disabledForegroundColor: const Color(0xFF94A3B8),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

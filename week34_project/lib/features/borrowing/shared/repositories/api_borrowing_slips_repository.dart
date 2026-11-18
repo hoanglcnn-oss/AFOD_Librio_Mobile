@@ -5,8 +5,8 @@ import 'borrowing_slips_repository.dart';
 import '../datasources/borrowing_slips_remote_data_source.dart';
 import '../models/borrowing_slip.dart';
 import '../models/paginated_borrowing_slips.dart';
-import '../../create_slip/data/models/create_borrowing_slip_request.dart';
-import '../../return_slip/data/models/return_slip_items_request.dart';
+import '../../borrow_return/create/data/models/create_slip_request.dart';
+import '../../borrow_return/return/data/models/return_slip_items_request.dart';
 
 class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
   final BorrowingSlipsRemoteDataSource _remoteDataSource;
@@ -22,7 +22,7 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
 
   @override
   Future<BorrowingSlip> createBorrowingSlip(
-    CreateBorrowingSlipRequest request,
+    CreateSlipRequest request,
   ) async {
     final token = await _tokenStorage.readToken();
 
@@ -310,11 +310,11 @@ class ApiBorrowingSlipsRepository implements BorrowingSlipsRepository {
       throw ArgumentError('Mã phiếu không được để trống');
     }
 
-    if (extraDays < 1 || extraDays > 14) {
+    if (extraDays < 1 || extraDays > 30) {
       throw ArgumentError.value(
         extraDays,
         'extraDays',
-        'Số ngày gia hạn phải từ 1 đến 14',
+        'Số ngày gia hạn phải từ 1 đến 30',
       );
     }
 

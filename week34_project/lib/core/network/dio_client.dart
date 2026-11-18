@@ -12,8 +12,8 @@ class DioClient {
     final client = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
         headers: {'Accept': 'application/json'},
       ),
     );
@@ -47,6 +47,7 @@ class DioClient {
             debugPrint(
               '[HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.uri} '
               'status=${error.response?.statusCode} errorType=${error.type} '
+              'error=${error.error} message=${error.message} '
               'data=${error.response?.data}',
             );
             return handler.next(error);

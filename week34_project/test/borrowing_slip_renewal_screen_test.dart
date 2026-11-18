@@ -110,7 +110,7 @@ void main() {
         expect(find.text('Gia hạn phiếu mượn'), findsOneWidget);
         expect(find.text('Xác nhận gia hạn'), findsOneWidget);
         expect(
-          find.text('7 ngày (mặc định)'),
+          find.text('7 ngày'),
           findsOneWidget,
         ); // Giá trị mặc định 7 ngày
 
@@ -492,7 +492,7 @@ void main() {
     );
 
     testWidgets(
-      'RN2 UX | Chọn lựa chọn nhanh 3 ngày và 14 ngày | Cập nhật hạn trả dự kiến và không tự gọi API',
+      'RN2 UX | Chọn lựa chọn nhanh 3 ngày, 14 ngày và 30 ngày | Cập nhật hạn trả dự kiến và không tự gọi API',
       (tester) async {
         final repository = FakeBorrowingRepository();
         final initialSlip = BorrowingSlip(
@@ -528,22 +528,28 @@ void main() {
         expect(find.text('18/11/2026'), findsOneWidget);
 
         // Chuyển sang 14 ngày
-        await tester.tap(find.text('14 ngày (tối đa)'));
+        await tester.tap(find.text('14 ngày'));
         await tester.pumpAndSettle();
         expect(repository.renewSlipCallCount, 0);
         expect(find.text('29/11/2026'), findsOneWidget);
 
-        // Xác nhận gia hạn 14 ngày
+        // Chuyển sang 30 ngày
+        await tester.tap(find.text('30 ngày'));
+        await tester.pumpAndSettle();
+        expect(repository.renewSlipCallCount, 0);
+        expect(find.text('15/12/2026'), findsOneWidget);
+
+        // Xác nhận gia hạn 30 ngày
         await tester.tap(find.text('Xác nhận gia hạn'));
         await tester.pumpAndSettle();
 
         expect(repository.renewSlipCallCount, 1);
-        expect(repository.lastRenewSlipExtraDays, 14);
+        expect(repository.lastRenewSlipExtraDays, 30);
       },
     );
 
     testWidgets(
-      'RN2 UX | Chọn Số ngày khác | Validation 1–14 khóa/mở nút Xác nhận gia hạn',
+      'RN2 UX | Nhập số ngày tùy chỉnh | Validation 1–30 khóa/mở nút Xác nhận gia hạn',
       (tester) async {
         final repository = FakeBorrowingRepository();
         final initialSlip = BorrowingSlip(
@@ -564,14 +570,17 @@ void main() {
         await tester.tap(find.text('Gia hạn'));
         await tester.pumpAndSettle();
 
-        // Chọn Số ngày khác
-        await tester.tap(find.text('Số ngày khác'));
-        await tester.pumpAndSettle();
-
         expect(
           find.byKey(const ValueKey('renew_custom_input')),
           findsOneWidget,
         );
+
+        // Xóa rỗng ô nhập số ngày
+        await tester.enterText(
+          find.byKey(const ValueKey('renew_custom_input')),
+          '',
+        );
+        await tester.pumpAndSettle();
 
         // Khi chưa nhập số, nút Xác nhận bị disable
         final confirmBtnFinder = find.byKey(
@@ -587,16 +596,16 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNull);
-        expect(find.text('Số ngày phải từ 1 đến 14'), findsOneWidget);
+        expect(find.text('Số ngày phải từ 1 đến 30'), findsOneWidget);
 
-        // Nhập 15 (vượt quá 14) -> disabled
+        // Nhập 31 (vượt quá 30) -> disabled
         await tester.enterText(
           find.byKey(const ValueKey('renew_custom_input')),
-          '15',
+          '31',
         );
         await tester.pumpAndSettle();
         expect(tester.widget<FilledButton>(confirmBtnFinder).onPressed, isNull);
-        expect(find.text('Số ngày phải từ 1 đến 14'), findsOneWidget);
+        expect(find.text('Số ngày phải từ 1 đến 30'), findsOneWidget);
 
         // Nhập 5 (hợp lệ) -> enabled, hạn trả dự kiến 20/11/2026
         await tester.enterText(
