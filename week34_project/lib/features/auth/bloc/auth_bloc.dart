@@ -7,14 +7,20 @@ import '../data/repositories/auth_repository.dart';
 import '../../../core/storage/token_storage.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  static const String sessionExpiredMessage =
+      'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+
   final AuthRepository authRepository;
   final TokenStorage tokenStorage;
+  bool _isHandlingSessionExpired = false;
+
   AuthBloc({required this.authRepository, required this.tokenStorage})
     : super(const AuthInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<RegisterRequested>(_onRegisterRequested);
     on<RestoreSessionRequested>(_onRestoreSessionRequested);
     on<LogoutRequested>(_onLogoutRequested);
+    on<SessionExpiredRequested>(_onSessionExpiredRequested);
   }
 
   // Khi nhận LoginRequested:
@@ -103,6 +109,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           message: 'Không thể đăng xuất, vui lòng thử lại',
         ),
       );
+    }
+  }
+
+  Future<void> _onSessionExpiredRequested(
+    SessionExpiredRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (state is! AuthAuthenticated || _isHandlingSessionExpired) {
+      return;
+    }
+
+    _isHandlingSessionExpired = true;
+    try {
+      await tokenStorage.deleteToken();
+      emit(const AuthUnauthenticated(message: sessionExpiredMessage));
+    } finally {
+      _isHandlingSessionExpired = false;
     }
   }
 

@@ -6,7 +6,52 @@ import '../constants/api_constants.dart';
 class DioClient {
   DioClient._();
 
+  static const Set<String> _unauthenticatedPaths = {
+    ApiConstants.login,
+    ApiConstants.register,
+    ApiConstants.forgotPassword,
+  };
+
+  /// Callback được gọi khi một API yêu cầu xác thực trả về HTTP 401.
+  static VoidCallback? onUnauthorized;
+
   static final Dio dio = _createDio();
+
+  @visibleForTesting
+  static bool shouldHandleUnauthorized(DioException error) {
+    if (error.response?.statusCode != 401) {
+      return false;
+    }
+
+    final path = error.requestOptions.path;
+    final uriPath = error.requestOptions.uri.path;
+    final isUnauthenticatedPath = _unauthenticatedPaths.any(
+      (excluded) =>
+          path == excluded ||
+          uriPath == excluded ||
+          uriPath.endsWith(excluded),
+    );
+    if (isUnauthenticatedPath) {
+      return false;
+    }
+
+    final authHeader =
+        error.requestOptions.headers['Authorization'] ??
+        error.requestOptions.headers['authorization'];
+    return authHeader != null && authHeader.toString().trim().isNotEmpty;
+  }
+
+  @visibleForTesting
+  static Interceptor createAuthInterceptor() {
+    return InterceptorsWrapper(
+      onError: (error, handler) {
+        if (shouldHandleUnauthorized(error)) {
+          onUnauthorized?.call();
+        }
+        return handler.next(error);
+      },
+    );
+  }
 
   static Dio _createDio() {
     final client = Dio(
@@ -17,6 +62,8 @@ class DioClient {
         headers: {'Accept': 'application/json'},
       ),
     );
+
+    client.interceptors.add(createAuthInterceptor());
 
     if (kDebugMode) {
       client.interceptors.add(

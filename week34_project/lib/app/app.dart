@@ -3,10 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../core/network/dio_client.dart';
 import '../core/storage/token_storage.dart';
 import '../core/widgets/app_scroll_behaviour.dart';
+import '../core/widgets/app_toast.dart';
 import '../features/auth/bloc/auth_bloc.dart';
 import '../features/auth/bloc/auth_event.dart';
+import '../features/auth/bloc/auth_state.dart';
 import '../features/auth/data/repositories/api_auth_repository.dart';
 import 'router/app_router.dart';
 
@@ -34,10 +37,20 @@ class _DofaAppState extends State<DofaApp> {
           tokenStorage: TokenStorage(),
         )..add(const RestoreSessionRequested()));
     _router = createAppRouter(_authBloc);
+    DioClient.onUnauthorized = _handleUnauthorized;
+  }
+
+  void _handleUnauthorized() {
+    if (!_authBloc.isClosed) {
+      _authBloc.add(const SessionExpiredRequested());
+    }
   }
 
   @override
   void dispose() {
+    if (DioClient.onUnauthorized == _handleUnauthorized) {
+      DioClient.onUnauthorized = null;
+    }
     _router.dispose();
     if (!_isCustomAuthBloc) {
       _authBloc.close();
@@ -51,6 +64,25 @@ class _DofaAppState extends State<DofaApp> {
       value: _authBloc,
       child: MaterialApp.router(
         routerConfig: _router,
+        builder: (context, child) {
+          return BlocListener<AuthBloc, AuthState>(
+            listenWhen: (previous, current) =>
+                current is AuthUnauthenticated &&
+                current.message != null &&
+                current.message!.isNotEmpty &&
+                previous != current,
+            listener: (context, state) {
+              if (state is AuthUnauthenticated && state.message != null) {
+                final message = state.message!;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!context.mounted) return;
+                  AppToast.warning(context, message);
+                });
+              }
+            },
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
         scrollBehavior: const AppScrollBehavior(),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(

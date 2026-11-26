@@ -46,3 +46,7 @@ class RestoreSessionRequested extends AuthEvent {
 class LogoutRequested extends AuthEvent {
   const LogoutRequested();
 }
+
+class SessionExpiredRequested extends AuthEvent {
+  const SessionExpiredRequested();
+}

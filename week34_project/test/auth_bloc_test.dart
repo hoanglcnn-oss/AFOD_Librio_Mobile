@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:week34_project/features/auth/bloc/auth_bloc.dart';
 import 'package:week34_project/features/auth/bloc/auth_event.dart';
 import 'package:week34_project/features/auth/bloc/auth_state.dart';
+import 'package:week34_project/features/auth/data/models/user_profile.dart';
 
 import 'fake/fake_auth_repository.dart';
 import 'fake/fake_token_storage.dart';
@@ -115,4 +116,75 @@ void main() {
 
     await bloc.close();
   });
+
+  test(
+    'SessionExpiredRequested | Đang AuthAuthenticated | Xóa JWT và emit AuthUnauthenticated kèm thông báo hết hạn',
+    () async {
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('fake_token');
+
+      final bloc = AuthBloc(
+        authRepository: FakeAuthRepository(),
+        tokenStorage: tokenStorage,
+      );
+
+      bloc.emit(
+        AuthAuthenticated(
+          user: UserProfile(
+            id: 'user-01',
+            email: 'test@example.com',
+            phone: '0901234567',
+            fullName: 'Test User',
+            role: 'MEMBER',
+            isActive: true,
+            createdAt: DateTime(2026, 1, 1),
+          ),
+        ),
+      );
+
+      final emittedStates = <AuthState>[];
+      final sub = bloc.stream.listen(emittedStates.add);
+
+      bloc.add(const SessionExpiredRequested());
+      bloc.add(const SessionExpiredRequested());
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(emittedStates, [
+        const AuthUnauthenticated(
+          message: AuthBloc.sessionExpiredMessage,
+        ),
+      ]);
+      expect(tokenStorage.savedToken, isNull);
+
+      await sub.cancel();
+      await bloc.close();
+    },
+  );
+
+  test(
+    'SessionExpiredRequested | Chưa đăng nhập | Không xóa token và không emit thêm state',
+    () async {
+      final tokenStorage = FakeTokenStorage();
+      await tokenStorage.saveToken('fake_token');
+
+      final bloc = AuthBloc(
+        authRepository: FakeAuthRepository(),
+        tokenStorage: tokenStorage,
+      );
+
+      bloc.emit(const AuthRestoring());
+
+      final emittedStates = <AuthState>[];
+      final sub = bloc.stream.listen(emittedStates.add);
+
+      bloc.add(const SessionExpiredRequested());
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      expect(emittedStates, isEmpty);
+      expect(tokenStorage.savedToken, 'fake_token');
+
+      await sub.cancel();
+      await bloc.close();
+    },
+  );
 }
